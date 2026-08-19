@@ -669,6 +669,7 @@ export class TeleportingCreatureData {
 		particleSpeed: 6,
 		particleSpeedVariance: 2,
 		particleCrossSpeedVariance: 1,
+		decayRate: 0.9,
 	};
 
 	static CREATURES_PER_ROOM = 1.0; // 1.3 is pretty difficult
@@ -743,4 +744,8 @@ export class StartScreenData {
 	static INSTRUCTIONS_TEXT = "Press any key to start";
 
 	static TIME_BEFORE_CONTINUE = 30;
+}
+
+export class FirespawnerData {
+	static PARTICLE_DECAY = 0.9;
 }

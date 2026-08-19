@@ -195,6 +195,11 @@ export class TeleportingCreature extends RectangularCollideable {
 			this.velocity.y = 0;
 		}
 	}
+
+	translate(amount: Vector, world: World): void {
+		super.translate(amount, world);
+		this.fireSpawner.translate(amount);
+	}
 }
 
 class TeleportParticle extends Entity {

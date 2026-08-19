@@ -24,7 +24,7 @@ Features to add to improve game feel:
 	- [ ] Tile graphics - maybe add a faint crisscrossing lattice?
 	- [x] Squish effect when jumping
 	- [x] Particles when jumping and double jumping
-	- [ ] Fire particles should be "attached" to the entity that created them (the particles move when the entity moves).
+	- [x] Fire particles should be "attached" to the entity that created them (the particles move when the entity moves).
 	- [x] Fire particles should be circular and decrease in size over time
 	- [ ] Fire particles should have hue variation
 	- [ ] Fire should have a glow effect (one large glow effect, not one for each particle)

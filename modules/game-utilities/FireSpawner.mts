@@ -9,6 +9,7 @@ import { World } from "../world/World.mjs";
 import { RandomUtils } from "./RandomUtils.mjs";
 import { Particle, ParticleSettings } from "./Particle.mjs";
 import { Fireball } from "../entities/Fireball.mjs";
+import { FirespawnerData } from "../constants/GameData.mjs";
 
 export type FireSpawnerSettings = {
 	maxHurtboxSize: number;
@@ -39,6 +40,8 @@ export class FireSpawner {
 	particleCrossSpeedVariance: number;
 	particleSettings: ParticleSettings;
 
+	particles: Particle[] = [];
+
 	constructor(position: Vector, direction: Direction, settings: FireSpawnerSettings) {
 		this.position = position;
 		this.direction = direction;
@@ -57,12 +60,18 @@ export class FireSpawner {
 	update(world: World, canvasIO: CanvasIO) {
 		this.timeLeft --;
 		if(this.timeLeft > 0) {
+			this.particles = this.particles.filter(p => !p.isDead());
 			for(let i = 0; i < this.particlesPerFrame; i ++) {
-				world.particles.add(this.generateFireParticle(), world, canvasIO);
+				const particle = this.generateFireParticle();
+				world.particles.add(particle, world, canvasIO);
+				this.particles.push(particle);
 			}
 			this.hurtboxSize = Math.min(this.hurtboxSize + this.hurtboxSpeed, this.maxHurtboxSize);
 		}
 		else {
+			for(const particle of this.particles) {
+				particle.size *= FirespawnerData.PARTICLE_DECAY;
+			}
 			this.hurtboxSize = 0;
 		}
 	}
@@ -143,5 +152,12 @@ export class FireSpawner {
 	displayHurtbox(canvasIO: CanvasIO) {
 		canvasIO.ctx.strokeStyle = DEBUG_SETTINGS.LIZARDS.HURTBOX_COLOR;
 		canvasIO.strokeRect(this.hurtbox());
+	}
+
+	translate(amount: Vector) {
+		this.position = this.position.add(amount);
+		for(const particle of this.particles) {
+			particle.position = particle.position.add(amount);
+		}
 	}
 }
