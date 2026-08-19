@@ -7,7 +7,6 @@ import { LaserBlockData, RoomData, WorldData } from "../constants/GameData.mjs";
 import { GeomUtils } from "../game-utilities/GeomUtils.mjs";
 import { GraphicsUtils } from "../game-utilities/GraphicsUtils.mjs";
 import { RandomUtils } from "../game-utilities/RandomUtils.mjs";
-import { Particle } from "../game-utilities/Particle.mjs";
 import { RectangularCollideable } from "../game-utilities/physics-engine/RectangularCollideable.mjs";
 import { EntitySpawner } from "../level-generator/EntitySpawner.mjs";
 import { Renderable } from "../world/Renderer.mjs";
@@ -103,27 +102,16 @@ export class LaserBlock extends RectangularCollideable {
 		}
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
-		this.updateLengths(world, canvasIO);
+	update(world: World) {
+		this.updateLengths(world);
 		this.updateMode(world.frameCount);
 	}
-	updateLengths(world: World, canvasIO: CanvasIO) {
+	updateLengths(world: World) {
 		const player = world.player.hitbox;
 		for(const [i, direction] of this.directions(world.frameCount).entries()) {
 			const length = this.endpointDistance(direction, world);
 			this.lengths[i] = GeomUtils.moveTowards(this.lengths[i], length, LaserBlockData.LASER_LINEAR_SPEED);
 			this.lengths[i] = Math.min(this.lengths[i], length);
-			if(this.lengths[i] === length && this.lengths[i] < LaserBlockData.MAX_LENGTH && world.frameCount % LaserBlockData.FRAMES_PER_PARTICLE == 0) {
-				const particlePosition = this.hitbox.center().add(direction.multiply(length));
-				world.particles.add(new Particle(
-					particlePosition,
-					new Vector(
-						RandomUtils.random(-LaserBlockData.PARTICLE_SPEED, LaserBlockData.PARTICLE_SPEED),
-						RandomUtils.random(-LaserBlockData.PARTICLE_SPEED, LaserBlockData.PARTICLE_SPEED),
-					),
-					LaserBlockData.PARTICLE_INFO,
-				), world, canvasIO);
-			}
 			if(this.intersectsBox(direction, player, length)) {
 				if(this.mode === "unactivated") {
 					this.modeStartTime = world.frameCount;

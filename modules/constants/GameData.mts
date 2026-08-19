@@ -196,22 +196,6 @@ export class LaserBlockData {
 	static BARREL_THICKNESS = WorldData.TILE_SIZE * 0.2;
 	static BARREL_LENGTH = WorldData.TILE_SIZE * 0.4;
 
-	static FRAMES_PER_PARTICLE = 4;
-	static PARTICLE_INFO: ParticleSettings = {
-		color: {
-			red: 70,
-			green: 70,
-			blue: 70,
-		},
-		grayscaleColorVariance: 5,
-		size: 7,
-		opacityDecay: 1/120,
-		sizeDecay: 1/20,
-		glowIntensity: 0,
-		glowSize: 0,
-	};
-	static PARTICLE_SPEED = 0.1;
-
 	/* Generation settings */
 	static LASERS_PER_ROOM = 0.7;
 	static SPAWN_EVENNESS = 9;

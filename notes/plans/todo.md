@@ -20,7 +20,7 @@ Features to add to improve game feel:
 	- [ ] Spiders that fall while telegraphing an attack continue to telegraph while falling.
 - [ ] **Graphical improvements**
 	- [ ] Activated lasers should have a crackly lightning appearance
-	- [ ] Remove grey particles from unactivated lasers
+	- [x] Remove grey particles from unactivated lasers
 	- [ ] Tile graphics - maybe add a faint crisscrossing lattice?
 	- [ ] Squish effect when jumping
 	- [ ] Particles when jumping and double jumping
