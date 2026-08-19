@@ -4,7 +4,8 @@ import { Directions } from "../utils-ts/modules/geometry/Direction.mjs";
 import { Rectangle } from "../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../utils-ts/modules/geometry/Vector.mjs";
 import { MathUtils } from "../utils-ts/modules/math/MathUtils.mjs";
-import { ItemData, PlayerData, WorldData } from "./constants/GameData.mjs";
+import { ChainData, ItemData, PlayerData, WorldData } from "./constants/GameData.mjs";
+import { Chain } from "./entities/Chain.mjs";
 import { Debug } from "./game-utilities/Debug.mjs";
 import { GeomUtils } from "./game-utilities/GeomUtils.mjs";
 import { GraphicsUtils } from "./game-utilities/GraphicsUtils.mjs";
@@ -25,6 +26,13 @@ import { World } from "./world/World.mjs";
 type Input = { [key: string]: boolean };
 
 class DefaultState {
+	update(self: Player, world: World, canvasIO: CanvasIO) {
+		const input = Debug.getInput(canvasIO);
+		self.velocity.y += input.KeyZ && self.velocity.y <= 0 ? PlayerData.GRAVITY_WHILE_JUMPING : PlayerData.GRAVITY;
+		self.velocity.x = MathUtils.constrain(self.velocity.x, -PlayerData.MAX_X_VELOCITY, PlayerData.MAX_X_VELOCITY);
+		self.checkFriction(input);
+	}
+
 	checkInputs(self: Player, world: World, canvasIO: CanvasIO) {
 		const input = Debug.getInput(canvasIO);
 		self.checkMoveInputs(world, input);
@@ -32,12 +40,64 @@ class DefaultState {
 		self.checkThrowInputs(world, input, canvasIO);
 		self.checkCrouchInputs(world, input, canvasIO);
 		self.checkPickUpInputs(world, input);
+		self.checkClimbStartInputs(world, input, canvasIO);
 	}
 }
 
 class ClimbingState {
-	checkInputs() {
-		// TODO
+	chain: Chain;
+
+	constructor(chain: Chain) {
+		this.chain = chain;
+	}
+
+	checkInputs(self: Player, world: World, canvasIO: CanvasIO) {
+		const input = Debug.getInput(canvasIO);
+		this.checkClimbingInputs(self, world, input);
+		self.checkFriction(input);
+		this.checkJumpInputs(self, world, input, canvasIO);
+	}
+	checkClimbingInputs(self: Player, world: World, input: Input) {
+		if(input.ArrowUp) {
+			self.velocity = new Vector(0, -ChainData.CLIMB_SPEED);
+		}
+		else if(input.ArrowDown) {
+			self.velocity = new Vector(0, ChainData.CLIMB_SPEED);
+		}
+		else {
+			self.velocity = new Vector(0, 0);
+		}
+	}
+	checkJumpInputs(self: Player, world: World, input: Input, canvasIO: CanvasIO) {
+		if(input.ArrowDown) {
+			if(canvasIO.keys.KeyZ) {
+				self.state = new DefaultState();
+			}
+		}
+		else {
+			const jumped = self.checkJumpInputs(world, input, canvasIO);
+			if(jumped) {
+				self.hasDoubleJump = true;
+			}
+		}
+	}
+
+	update(self: Player, world: World, canvasIO: CanvasIO) {
+		self.hasDoubleJump = true;
+		this.snapToCenter(self, world, canvasIO);
+		this.checkOnGround(self, world, canvasIO);
+	}
+	checkOnGround(self: Player, world: World, canvasIO: CanvasIO) {
+		const onGround = !self.canMove("down", world, canvasIO);
+		const input = Debug.getInput(canvasIO);
+		if(onGround && !input.ArrowUp) {
+			self.state = new DefaultState();
+		}
+	}
+	snapToCenter(self: Player, world: World, canvasIO: CanvasIO) {
+		const centerX = (this.chain.tilePosition.x + 1/2) * WorldData.TILE_SIZE;
+		const targetX = GeomUtils.moveTowards(self.hitbox.center().x, centerX, ChainData.SNAP_SPEED);
+		self.move(new Vector(targetX - self.hitbox.center().x, 0), world, canvasIO, { });
 	}
 }
 
@@ -117,8 +177,9 @@ export class Player extends RectangularCollideable {
 	update(world: World, canvasIO: CanvasIO) {
 		if(Main.screen instanceof RoomEditor) { return; }
 		this.state.checkInputs(this, world, canvasIO);
-		this.updateCoyoteTime(world, canvasIO);
 		this.updateCrouching(world);
+		this.state.update(this, world, canvasIO);
+		this.updateCoyoteTime(world, canvasIO);
 		this.coyoteTime --;
 		this.invulnerabilityTime --;
 		this.squishFactor = GeomUtils.moveTowards(this.squishFactor, 1, PlayerData.SQUISH_RETURN_SPEED);
@@ -128,9 +189,6 @@ export class Player extends RectangularCollideable {
 				this.velocity.x *= PlayerData.CROUCHED_FRICTION;
 			}
 		}
-		const input = Debug.getInput(canvasIO);
-		this.velocity.y += input.KeyZ && this.velocity.y <= 0 ? PlayerData.GRAVITY_WHILE_JUMPING : PlayerData.GRAVITY;
-		this.velocity.x = MathUtils.constrain(this.velocity.x, -PlayerData.MAX_X_VELOCITY, PlayerData.MAX_X_VELOCITY);
 		this.move(new Vector(this.velocity.x, 0), world, canvasIO, { });
 		this.move(new Vector(0, this.velocity.y), world, canvasIO, {});
 	}
@@ -167,6 +225,8 @@ export class Player extends RectangularCollideable {
 			this.velocity.x -= PlayerData.HORIZONTAL_ACCELERATION;
 			this.facing = "left";
 		}
+	}
+	checkFriction(input: Input) {
 		if(
 			(!input.ArrowLeft && !input.ArrowRight) ||
 			(input.ArrowLeft && this.velocity.x > 0) ||
@@ -178,7 +238,9 @@ export class Player extends RectangularCollideable {
 	checkJumpInputs(world: World, input: Input, canvasIO: CanvasIO) {
 		if(input.KeyZ && !InputUtils.pastKeys.KeyZ && (this.coyoteTime > 0 || this.hasDoubleJump)) {
 			this.jump(world, canvasIO);
+			return true;
 		}
+		return false;
 	}
 	checkThrowInputs(world: World, input: Input, canvasIO: CanvasIO) {
 		if(input.KeyX && !InputUtils.pastKeys.KeyX) {
@@ -201,6 +263,24 @@ export class Player extends RectangularCollideable {
 	checkPickUpInputs(world: World, input: Input) {
 		if(input.Space && !InputUtils.pastKeys.Space) {
 			this.collectNearestItem(world);
+		}
+	}
+	checkClimbStartInputs(world: World, input: Input, canvasIO: CanvasIO) {
+		const up = input.ArrowUp;
+		const down = (input.ArrowDown && !this.onGround(world, canvasIO));
+		if(up || down) {
+			const chain = ([...world.entities.possiblyIntersecting(this.hitbox)]
+				.find(e => e instanceof Chain && e.climbRegion().intersects(this.hitbox))
+			) as Chain | undefined;
+			const shouldClimb = chain && (
+				!chain.isClimbed
+				|| (up && !InputUtils.pastKeys.ArrowUp)
+				|| (down && !InputUtils.pastKeys.ArrowDown)
+			);
+			if(shouldClimb) {
+				this.state = new ClimbingState(chain);
+				chain.isClimbed = true;
+			}
 		}
 	}
 	onGround(world: World, canvasIO: CanvasIO) {
@@ -229,6 +309,7 @@ export class Player extends RectangularCollideable {
 		this.hasDoubleJump = (this.coyoteTime > 0);
 		this.coyoteTime = -1;
 		this.squishFactor = PlayerData.JUMP_SQUISH_AMOUNT;
+		this.state = new DefaultState();
 		this.addJumpParticles(world, canvasIO);
 	}
 	addJumpParticles(world: World, canvasIO: CanvasIO) {

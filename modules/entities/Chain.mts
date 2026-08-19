@@ -5,10 +5,12 @@ import { ChainData, WorldData } from "../constants/GameData.mjs";
 import { Entity } from "../game-utilities/Entity.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
+import { World } from "../world/World.mjs";
 
 export class Chain extends Entity {
 	tilePosition: Vector;
 	height: number;
+	isClimbed: boolean = false;
 
 	constructor(tilePosition: Vector, height: number) {
 		super();
@@ -55,7 +57,11 @@ export class Chain extends Entity {
 		canvasIO.fillPoly(...Chain.THICK_SEGMENT_POLY_REFLECTED.map(v => v.add(position)));
 	}
 
-	update() { }
+	update(world: World) {
+		if(this.isClimbed && !world.player.hitbox.intersects(this.climbRegion())) {
+			this.isClimbed = false;
+		}
+	}
 
 
 	boundingBox(): Rectangle {
@@ -63,6 +69,15 @@ export class Chain extends Entity {
 			this.tilePosition.x * WorldData.TILE_SIZE,
 			this.tilePosition.y * WorldData.TILE_SIZE,
 			WorldData.TILE_SIZE,
+			this.height * WorldData.TILE_SIZE,
+		);
+	}
+	climbRegion() {
+		const centerX = (this.tilePosition.x + 1/2) * WorldData.TILE_SIZE;
+		return Rectangle.fromDimensions(
+			centerX - ChainData.CLIMB_WIDTH / 2,
+			this.tilePosition.y * WorldData.TILE_SIZE,
+			ChainData.CLIMB_WIDTH,
 			this.height * WorldData.TILE_SIZE,
 		);
 	}

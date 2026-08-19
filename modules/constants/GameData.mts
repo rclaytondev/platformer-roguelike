@@ -757,4 +757,9 @@ export class ChainData {
 	static NUM_SEGMENTS = 2;
 	static THIN_SEGMENT_LENGTH = (WorldData.TILE_SIZE / ChainData.NUM_SEGMENTS) * 0.7;
 	static THICK_SEGMENT_LENGTH = (WorldData.TILE_SIZE / ChainData.NUM_SEGMENTS) - ChainData.THIN_SEGMENT_LENGTH;
+
+
+	static CLIMB_SPEED = 7;
+	static CLIMB_WIDTH = 30;
+	static SNAP_SPEED = 7;
 }

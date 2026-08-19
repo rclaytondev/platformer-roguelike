@@ -16,5 +16,9 @@ export const chainScenario = new TestScenario(() => {
 	world.entities.add(new Chain(new Vector(5, -1), 2));
 	world.tiles.set(5, 1, TowerTile.TOWER_TILE);
 
+	world.tiles.set(7, -2, TowerTile.TOWER_TILE);
+	world.entities.add(new Chain(new Vector(7, -1), 20));
+	world.tiles.set(7, 19, TowerTile.TOWER_TILE);
+
 	return [world];
 });
