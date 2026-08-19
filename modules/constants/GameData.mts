@@ -749,3 +749,12 @@ export class StartScreenData {
 export class FirespawnerData {
 	static PARTICLE_DECAY = 0.9;
 }
+
+export class ChainData {
+	static COLOR = "rgb(0, 0, 0)";
+	static LINE_WIDTH = 7;
+	/* For chains to look nice, THIN_SEGMENT_LENGTH + THICK_SEGMENT_LENGTH should be a divisor of TILE_SIZE. */
+	static NUM_SEGMENTS = 2;
+	static THIN_SEGMENT_LENGTH = (WorldData.TILE_SIZE / ChainData.NUM_SEGMENTS) * 0.7;
+	static THICK_SEGMENT_LENGTH = (WorldData.TILE_SIZE / ChainData.NUM_SEGMENTS) - ChainData.THIN_SEGMENT_LENGTH;
+}

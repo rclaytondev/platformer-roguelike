@@ -5,9 +5,9 @@ import { DEBUG_SETTINGS } from "../constants/DebugSettings.mjs";
 import { LevelGenerator } from "../level-generator/LevelGenerator.mjs";
 import { Main } from "../Main.mjs";
 import { WorldScreen } from "../world/WorldScreen.mjs";
-import { lizardAdjacentTileScenario } from "../debug-scenarios/lizard-adjacent-tile-test.mjs";
+import { chainScenario } from "../debug-scenarios/chain-test.mjs";
 
-const [world] = lizardAdjacentTileScenario.setupWorld();
+const [world] = chainScenario.setupWorld();
 Main.screen = new WorldScreen(world);
 
 
