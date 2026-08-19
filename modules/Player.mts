@@ -6,6 +6,7 @@ import { Vector } from "../utils-ts/modules/geometry/Vector.mjs";
 import { MathUtils } from "../utils-ts/modules/math/MathUtils.mjs";
 import { ItemData, PlayerData, WorldData } from "./constants/GameData.mjs";
 import { Debug } from "./game-utilities/Debug.mjs";
+import { GeomUtils } from "./game-utilities/GeomUtils.mjs";
 import { GraphicsUtils } from "./game-utilities/GraphicsUtils.mjs";
 import { InputUtils } from "./game-utilities/InputUtils.mjs";
 import { Particle } from "./game-utilities/Particle.mjs";
@@ -29,6 +30,7 @@ export class Player extends RectangularCollideable {
 	coyoteTime: number = 0;
 	health: number = PlayerData.INITIAL_HEALTH;
 	invulnerabilityTime: number = 0;
+	squishFactor: number = 1;
 
 	equippedItems: [ThrowableTile | null, ThrowableTile | null] = [null, null];
 
@@ -40,12 +42,22 @@ export class Player extends RectangularCollideable {
 		return [new Renderable(this.display.bind(this), "player")];
 	}
 	display(canvasIO: CanvasIO) {
+		canvasIO.ctx.save();
 		const center = this.hitbox.center();
+		this.applySquish(canvasIO, center);
 		this.displayBody(canvasIO);
 		this.displayFace(canvasIO);
+		canvasIO.ctx.restore();
 
 		GraphicsUtils.glowCircle(center.x, center.y, PlayerData.GLOW_SIZE, PlayerData.GLOW_INTENSITY, canvasIO);
 	}
+
+	applySquish(canvasIO: CanvasIO, center: Vector = this.hitbox.center()) {
+		canvasIO.ctx.translate(center.x, center.y);
+		canvasIO.ctx.scale(this.squishFactor, 1 / this.squishFactor);
+		canvasIO.ctx.translate(-center.x, -center.y);
+	}
+
 	displayBody(canvasIO: CanvasIO) {
 		canvasIO.ctx.fillStyle = PlayerData.BODY_COLOR;
 		const offset = MathUtils.constrain(-this.velocity.x, -PlayerData.MAX_BODY_SLANT, PlayerData.MAX_BODY_SLANT);
@@ -87,6 +99,7 @@ export class Player extends RectangularCollideable {
 		this.checkInputs(world, canvasIO);
 		this.coyoteTime --;
 		this.invulnerabilityTime --;
+		this.squishFactor = GeomUtils.moveTowards(this.squishFactor, 1, PlayerData.SQUISH_RETURN_SPEED);
 		if(this.onGround(world, canvasIO)) {
 			this.hasDoubleJump = true;
 			if(this.isCrouched()) {
@@ -102,6 +115,9 @@ export class Player extends RectangularCollideable {
 	onCollision(collision: CollisionEvent): void {
 		if(collision.movingObject === this) {
 			if(Directions.isVertical(collision.direction)) {
+				if(collision.directionOf(this) === "down" && this.velocity.y > PlayerData.GRAVITY) {
+					this.squishFactor = PlayerData.GROUND_SQUISH_AMOUNT;
+				}
 				this.velocity.y = 0;
 			}
 			else {
@@ -178,6 +194,7 @@ export class Player extends RectangularCollideable {
 		this.velocity.y = -PlayerData.JUMP_VELOCITY;
 		this.hasDoubleJump = (this.coyoteTime > 0);
 		this.coyoteTime = -1;
+		this.squishFactor = PlayerData.JUMP_SQUISH_AMOUNT;
 		this.addJumpParticles(world, canvasIO);
 	}
 	addJumpParticles(world: World, canvasIO: CanvasIO) {

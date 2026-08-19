@@ -22,7 +22,7 @@ Features to add to improve game feel:
 	- [ ] Activated lasers should have a crackly lightning appearance
 	- [x] Remove grey particles from unactivated lasers
 	- [ ] Tile graphics - maybe add a faint crisscrossing lattice?
-	- [ ] Squish effect when jumping
+	- [x] Squish effect when jumping
 	- [x] Particles when jumping and double jumping
 	- [ ] Fire particles should be "attached" to the entity that created them (the particles move when the entity moves).
 	- [x] Fire particles should be circular and decrease in size over time

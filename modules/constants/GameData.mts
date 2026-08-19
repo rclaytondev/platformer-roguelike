@@ -131,6 +131,10 @@ export class PlayerData {
 		} as ParticleSettings,
 	};
 
+	static JUMP_SQUISH_AMOUNT = 0.85;
+	static GROUND_SQUISH_AMOUNT = 1.2;
+	static SQUISH_RETURN_SPEED = 0.03;
+
 	static DAMAGE_FLASH_TIME = 30;
 	static DAMAGE_FLASH_COLOR = "rgb(255, 0, 0)";
 	static DAMAGE_FLASH_OPACITY = 0.3;
