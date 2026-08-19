@@ -25,7 +25,8 @@ Features to add to improve game feel:
 	- [ ] Squish effect when jumping
 	- [ ] Particles when jumping and double jumping
 	- [ ] Fire particles should be "attached" to the entity that created them (the particles move when the entity moves).
-	- [ ] Fire particles should be circular, have hue variation, and decrease in size over time
+	- [x] Fire particles should be circular and decrease in size over time
+	- [ ] Fire particles should have hue variation
 	- [ ] Fire should have a glow effect (one large glow effect, not one for each particle)
 	- [ ] Explosions should have a single large glow effect that fades quickly
 	- [ ] Spikeball spawner graphic improvements (they look slightly weird now; I'm not sure how to improve them)

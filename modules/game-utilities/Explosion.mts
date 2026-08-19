@@ -43,9 +43,9 @@ export class Explosion {
 		this.screenShakeTime = options.screenShakeTime ?? 7;
 		this.particleSettings = options.particleSettings ?? {
 			color: { red: 255, green: 128, blue: 0 },
-			size: { min: 10, max: 15 },
-			shape: 3,
-			sizeDecay: 0.3,
+			size: 7,
+			shape: "circle",
+			sizeDecay: 0.2,
 			opacityDecay: { min: 0.015, max: 0.085 },
 			colorVariance: 40,
 		};

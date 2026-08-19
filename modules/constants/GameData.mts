@@ -223,9 +223,10 @@ export class LizardData {
 	static FIRE_PARTICLES: ParticleSettings = {
 		color: { red: 255, green: 128, blue: 0 },
 		size: WorldData.TILE_SIZE * 0.2,
-		shape: 3,
+		shape: "circle",
 		glowSize: 30,
 		glowIntensity: 1/8,
+		sizeDecay: WorldData.TILE_SIZE * 0.2 / 20,
 	};
 	static FIRE: FireSpawnerSettings = {
 		maxHurtboxSize: 100,
@@ -514,11 +515,12 @@ export class SpiderData {
 
 	static PROJECTILE_PARTICLE_SETTINGS: ParticleSettings = {
 		color: { red: 255, green: 128, blue: 0 },
-		size: { min: 15, max: 20 },
-		shape: 3,
+		size: 10,
+		shape: "circle",
 		glowSize: 30,
 		glowIntensity: 1/8,
 		sizeDecay: 0.2,
+		grayscaleColorVariance: 10,
 	};
 	static PROJECTILE_SPEED = 5.5;
 	static PROJECTILE_ACCELERATION = 0.07;
@@ -526,6 +528,16 @@ export class SpiderData {
 
 	static SPIDERS_PER_ROOM = 0.5;
 	static SPAWN_EVENNESS = 4;
+}
+
+export class FireballData {
+	static GLOW_SIZE = 150;
+	static GLOW_INTENSITY = 0.4;
+	static GLOW_COLOR = {
+		red: 255,
+		green: 150,
+		blue: 50,
+	};
 }
 
 export class ItemData {
@@ -626,11 +638,12 @@ export class TeleportingCreatureData {
 		particleSettings: {
 			color: { red: 255, green: 128, blue: 0 },
 			size: WorldData.TILE_SIZE * 0.2,
-			shape: 3,
+			shape: "circle",
 			glowSize: 30,
 			glowIntensity: 1/8,
 			opacityDecay: 1/30,
-		},
+			sizeDecay: (WorldData.TILE_SIZE * 0.2 / 20) * 0.8,
+		} as ParticleSettings,
 		particleSpeed: 6,
 		particleSpeedVariance: 2,
 		particleCrossSpeedVariance: 1,

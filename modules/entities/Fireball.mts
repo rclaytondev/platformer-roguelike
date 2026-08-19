@@ -1,12 +1,14 @@
 import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
-import { SpiderData } from "../constants/GameData.mjs";
+import { FireballData, SpiderData } from "../constants/GameData.mjs";
 import { Explosion } from "../game-utilities/Explosion.mjs";
+import { GraphicsUtils } from "../game-utilities/GraphicsUtils.mjs";
 import { Particle } from "../game-utilities/Particle.mjs";
 import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
 import { CollisionEvent } from "../game-utilities/physics-engine/CollisionEvent.mjs";
 import { RectangularCollideable } from "../game-utilities/physics-engine/RectangularCollideable.mjs";
+import { Renderable } from "../world/Renderer.mjs";
 import { World } from "../world/World.mjs";
 
 export class Fireball extends RectangularCollideable {
@@ -36,9 +38,19 @@ export class Fireball extends RectangularCollideable {
 		), world, canvasIO);
 	}
 
-	display() { }
+	displayGlowEffect(canvasIO: CanvasIO) {
+		const center = this.hitbox.center();
+		GraphicsUtils.glowCircle(
+			center.x, center.y,
+			FireballData.GLOW_SIZE, FireballData.GLOW_INTENSITY,
+			canvasIO,
+			FireballData.GLOW_COLOR.red, FireballData.GLOW_COLOR.green, FireballData.GLOW_COLOR.blue,
+		);
+	}
 	render() {
-		return [];
+		return [
+			new Renderable(c => this.displayGlowEffect(c), "glow"),
+		];
 	}
 
 
