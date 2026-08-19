@@ -8,8 +8,10 @@ import { ItemData, PlayerData, WorldData } from "./constants/GameData.mjs";
 import { Debug } from "./game-utilities/Debug.mjs";
 import { GraphicsUtils } from "./game-utilities/GraphicsUtils.mjs";
 import { InputUtils } from "./game-utilities/InputUtils.mjs";
+import { Particle } from "./game-utilities/Particle.mjs";
 import { CollisionEvent } from "./game-utilities/physics-engine/CollisionEvent.mjs";
 import { RectangularCollideable } from "./game-utilities/physics-engine/RectangularCollideable.mjs";
+import { RandomUtils } from "./game-utilities/RandomUtils.mjs";
 import { ScreenFade } from "./game-utilities/visual-effects/ScreenFade.mjs";
 import { ThrowableTile } from "./items/ThrowableTile.mjs";
 import { ThrowableTileEntity } from "./items/ThrowableTileEntity.mjs";
@@ -129,9 +131,7 @@ export class Player extends RectangularCollideable {
 			this.coyoteTime = PlayerData.COYOTE_FRAMES;
 		}
 		if(input.KeyZ && !InputUtils.pastKeys.KeyZ && (this.coyoteTime > 0 || this.hasDoubleJump)) {
-			this.velocity.y = -PlayerData.JUMP_VELOCITY;
-			this.hasDoubleJump = (this.coyoteTime > 0);
-			this.coyoteTime = -1;
+			this.jump(world, canvasIO);
 		}
 
 		if(input.KeyX && !InputUtils.pastKeys.KeyX) {
@@ -171,6 +171,28 @@ export class Player extends RectangularCollideable {
 				world.entities.delete(this);
 			}
 			this.invulnerabilityTime = PlayerData.INVULNERABIlITY_TIME;
+		}
+	}
+
+	jump(world: World, canvasIO: CanvasIO) {
+		this.velocity.y = -PlayerData.JUMP_VELOCITY;
+		this.hasDoubleJump = (this.coyoteTime > 0);
+		this.coyoteTime = -1;
+		this.addJumpParticles(world, canvasIO);
+	}
+	addJumpParticles(world: World, canvasIO: CanvasIO) {
+		const hitboxBottom = this.hitbox.edgeCenter("down");
+		for(let i = 0; i < PlayerData.JUMP_PARTICLES.AMOUNT; i ++) {
+			const position = new Vector(
+				hitboxBottom.x + RandomUtils.random(-PlayerData.JUMP_PARTICLES.SPAWN_RECT_WIDTH / 2, PlayerData.JUMP_PARTICLES.SPAWN_RECT_WIDTH / 2),
+				hitboxBottom.y,
+			);
+			const particle = new Particle(
+				position,
+				RandomUtils.randomInCircle(0, 0, PlayerData.JUMP_PARTICLES.MAX_SPEED),
+				PlayerData.JUMP_PARTICLES.SETTINGS,
+			);
+			world.particles.add(particle, world, canvasIO);
 		}
 	}
 
