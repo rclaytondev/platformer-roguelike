@@ -22,6 +22,25 @@ import { DeathScreen } from "./user-interface/DeathScreen.mjs";
 import { Renderable } from "./world/Renderer.mjs";
 import { World } from "./world/World.mjs";
 
+type Input = { [key: string]: boolean };
+
+class DefaultState {
+	checkInputs(self: Player, world: World, canvasIO: CanvasIO) {
+		const input = Debug.getInput(canvasIO);
+		self.checkMoveInputs(world, input);
+		self.checkJumpInputs(world, input, canvasIO);
+		self.checkThrowInputs(world, input, canvasIO);
+		self.checkCrouchInputs(world, input, canvasIO);
+		self.checkPickUpInputs(world, input);
+	}
+}
+
+class ClimbingState {
+	checkInputs() {
+		// TODO
+	}
+}
+
 export class Player extends RectangularCollideable {
 	velocity: Vector = new Vector(0, 0);
 	hasDoubleJump: boolean = false;
@@ -31,6 +50,7 @@ export class Player extends RectangularCollideable {
 	health: number = PlayerData.INITIAL_HEALTH;
 	invulnerabilityTime: number = 0;
 	squishFactor: number = 1;
+	state: DefaultState | ClimbingState = new DefaultState();
 
 	equippedItems: [ThrowableTile | null, ThrowableTile | null] = [null, null];
 
@@ -96,7 +116,9 @@ export class Player extends RectangularCollideable {
 
 	update(world: World, canvasIO: CanvasIO) {
 		if(Main.screen instanceof RoomEditor) { return; }
-		this.checkInputs(world, canvasIO);
+		this.state.checkInputs(this, world, canvasIO);
+		this.updateCoyoteTime(world, canvasIO);
+		this.updateCrouching(world);
 		this.coyoteTime --;
 		this.invulnerabilityTime --;
 		this.squishFactor = GeomUtils.moveTowards(this.squishFactor, 1, PlayerData.SQUISH_RETURN_SPEED);
@@ -112,6 +134,17 @@ export class Player extends RectangularCollideable {
 		this.move(new Vector(this.velocity.x, 0), world, canvasIO, { });
 		this.move(new Vector(0, this.velocity.y), world, canvasIO, {});
 	}
+	updateCoyoteTime(world: World, canvasIO: CanvasIO) {
+		const onGround = this.onGround(world, canvasIO);
+		if(onGround) {
+			this.coyoteTime = PlayerData.COYOTE_FRAMES;
+		}
+	}
+	updateCrouching(world: World) {
+		if(this.velocity.y > 0) {
+			this.uncrouch(world);
+		}
+	}
 	onCollision(collision: CollisionEvent): void {
 		if(collision.movingObject === this) {
 			if(Directions.isVertical(collision.direction)) {
@@ -125,8 +158,7 @@ export class Player extends RectangularCollideable {
 			}
 		}
 	}
-	checkInputs(world: World, canvasIO: CanvasIO) {
-		const input = Debug.getInput(canvasIO);
+	checkMoveInputs(world: World, input: Input) {
 		if(input.ArrowRight && !input.ArrowLeft && !Debug.freeCameraMode) {
 			this.velocity.x += PlayerData.HORIZONTAL_ACCELERATION;
 			this.facing = "right";
@@ -142,14 +174,13 @@ export class Player extends RectangularCollideable {
 		) {
 			this.velocity.x *= PlayerData.FRICTION_X;
 		}
-		const onGround = this.onGround(world, canvasIO);
-		if(onGround) {
-			this.coyoteTime = PlayerData.COYOTE_FRAMES;
-		}
+	}
+	checkJumpInputs(world: World, input: Input, canvasIO: CanvasIO) {
 		if(input.KeyZ && !InputUtils.pastKeys.KeyZ && (this.coyoteTime > 0 || this.hasDoubleJump)) {
 			this.jump(world, canvasIO);
 		}
-
+	}
+	checkThrowInputs(world: World, input: Input, canvasIO: CanvasIO) {
 		if(input.KeyX && !InputUtils.pastKeys.KeyX) {
 			const used = this.equippedItems[0]?.use(world, canvasIO);
 			if(used) { this.equippedItems[0] = null; }
@@ -158,13 +189,16 @@ export class Player extends RectangularCollideable {
 			const used = this.equippedItems[1]?.use(world, canvasIO);
 			if(used) { this.equippedItems[1] = null; }
 		}
+	}
+	checkCrouchInputs(world: World, input: Input, canvasIO: CanvasIO) {
 		if(input.ArrowDown && this.onGround(world, canvasIO)) {
 			this.crouch();
 		}
-		if(
-			(!input.ArrowDown && this.onGround(world, canvasIO)) ||
-			(this.velocity.y > 0)
-		) { this.uncrouch(world); }
+		if(!input.ArrowDown && this.onGround(world, canvasIO)) {
+			this.uncrouch(world);
+		}
+	}
+	checkPickUpInputs(world: World, input: Input) {
 		if(input.Space && !InputUtils.pastKeys.Space) {
 			this.collectNearestItem(world);
 		}
