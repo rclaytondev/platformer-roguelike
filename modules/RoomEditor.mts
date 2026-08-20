@@ -303,7 +303,7 @@ export class RoomEditor {
 		const ids: number[][] = [];
 		for(let y = 0; y < RoomData.SIZE; y ++) {
 			ids.push([]);
-			for(let x = 0; x < 24; x ++) { // TEMPORARY
+			for(let x = 0; x < RoomData.SIZE; x ++) {
 				const id = (TILE_TYPES as Tile[]).indexOf(this.room.worldPart.tiles.get(x, y));
 				ids[ids.length - 1].push(id);
 			}
