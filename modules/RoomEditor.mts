@@ -9,7 +9,6 @@ import { BackgroundData, PortalData, RoomData, WorldData } from "./constants/Gam
 import { ROOMS } from "./constants/Rooms.mjs";
 import { InputUtils } from "./game-utilities/InputUtils.mjs";
 import { Portal } from "./entities/Portal.mjs";
-import { BasicTile } from "./tiles/BasicTile.mjs";
 import { EmptyTile } from "./tiles/EmptyTile.mjs";
 import { Platform } from "./tiles/Platform.mjs";
 import { Tile } from "./tiles/Tile.mjs";
@@ -18,7 +17,6 @@ import { Tiles } from "./world/Tiles.mjs";
 import { HealthPickup } from "./entities/HealthPickup.mjs";
 import { SpawnPoint } from "./entities/SpawnPoint.mjs";
 import { Camera } from "./world/Camera.mjs";
-import { SlopeTile } from "./tiles/SlopeTile.mjs";
 import { Renderable, Renderer } from "./world/Renderer.mjs";
 import { Entities } from "./world/Entities.mjs";
 import { TowerSlope } from "./tiles/TowerSlope.mjs";
@@ -333,23 +331,6 @@ export class RoomEditor {
 		canvasIO.ctx.fillText(this.direction, canvasIO.canvas.width, 30);
 	}
 
-	getTileString(tile: Tile) {
-		if(tile instanceof EmptyTile){
-			return "\"empty\"";
-		}
-		else if(tile instanceof Platform){
-			return "\"platform\"";
-		}
-		else if(tile instanceof BasicTile) {
-			return "\"solid\"";
-		}
-		else if(tile instanceof SlopeTile) {
-			return `"${tile.normal}"`;
-		}
-		else {
-			throw new Error("Found unexpected tile in level editor.");
-		}
-	}
 	getTileIDs() {
 		const ids: number[][] = [];
 		for(let y = 0; y < RoomData.SIZE; y ++) {
