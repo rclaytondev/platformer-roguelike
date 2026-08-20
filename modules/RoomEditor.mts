@@ -24,15 +24,125 @@ import { Entities } from "./world/Entities.mjs";
 import { TowerSlope } from "./tiles/TowerSlope.mjs";
 import { TILE_TYPES } from "./tiles/TileIDs.mjs";
 
+abstract class EditorMode {
+	abstract onLeftClick(tilePos: Vector, editor: RoomEditor): void;
+	abstract onRightClick(tilePos: Vector, editor: RoomEditor): void;
+
+	abstract uiLabel: string;
+}
+
+class SolidMode extends EditorMode {
+	uiLabel: string = "solid";
+
+	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
+		editor.setTile(tilePos, TowerTile.TOWER_TILE);
+	}
+	onRightClick(tilePos: Vector, editor: RoomEditor): void {
+		editor.setTile(tilePos, EmptyTile.EMPTY);
+	}
+}
+
+class PlatformMode extends EditorMode {
+	uiLabel: string = "platform";
+
+	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
+		editor.setTile(tilePos, Platform.PLATFORM);
+	}
+	onRightClick(tilePos: Vector, editor: RoomEditor): void {
+		editor.setTile(tilePos, EmptyTile.EMPTY);
+	}
+}
+
+class ExitTileMode extends EditorMode {
+	uiLabel: string = "exit";
+
+	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
+		if(Directions.isDirection(editor.direction)) {
+			editor.room.exitTiles.set(tilePos, editor.direction);
+		}
+	}
+	onRightClick(tilePos: Vector, editor: RoomEditor): void {
+		editor.room.exitTiles.set(tilePos, "none");
+	}
+}
+
+class GateMode extends EditorMode {
+	open: boolean;
+	uiLabel: "gate-open" | "gate-closed";
+	constructor(open: boolean) {
+		super();
+		this.open = open;
+		this.uiLabel = (open ? "gate-open" : "gate-closed");
+	}
+
+	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
+		if(Directions.isDirection(editor.direction)) {
+			const gateExists = Gate.isGateAt(tilePos, editor.world);
+			if(!gateExists) {
+				const gate = Gate.atTile(tilePos, editor.direction, this.open);
+				editor.addEntity(gate);
+				editor.setTile(tilePos, EmptyTile.EMPTY);
+			}
+		}
+	}
+	onRightClick(tilePos: Vector, editor: RoomEditor): void {
+		editor.filterEntities(e => !(e instanceof Gate && e.tilePosition().equals(tilePos)));
+	}
+}
+
+class PortalMode extends EditorMode {
+	uiLabel: string = "portal";
+
+	static getPortalPosition(tilePosition: Vector) {
+		return Tiles.getTileCoordinates(tilePosition.multiply(WorldData.TILE_SIZE).add(PortalData.WIDTH / 2, 0))
+			.add(0, 1).multiply(WorldData.TILE_SIZE);
+	}
+
+	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
+		const portalPosition = PortalMode.getPortalPosition(tilePos);
+		if(![...editor.room.worldPart.entities].some(p => p instanceof Portal && p.position.equals(portalPosition))) {
+			editor.addEntity(new Portal(portalPosition));
+		}
+	}
+	onRightClick(tilePos: Vector, editor: RoomEditor): void {
+		const portalPosition = PortalMode.getPortalPosition(tilePos);
+		editor.filterEntities(e => !(e instanceof Portal && e.position.equals(portalPosition)));
+	}
+}
+
+class SlopeMode extends EditorMode {
+	uiLabel: string = "slope";
+
+	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
+		if(Directions.isDiagonal(editor.direction)) {
+			const normal = Directions.opposite[editor.direction];
+			editor.setTile(tilePos, TowerSlope.fromNormal(normal));
+		}
+	}
+	onRightClick(tilePos: Vector, editor: RoomEditor): void {
+		editor.setTile(tilePos, EmptyTile.EMPTY);
+	}
+}
+
+
 export class RoomEditor {
 	room: Room;
 	world: World = new World(false);
-	mode: "solid" | "platform" | "exit" | "gate-open" | "gate-closed" | "portal" | "slope" = "solid";
+	mode: EditorMode;
 	direction: Direction | Diagonal = "right";
-	static readonly MODES = ["solid", "platform", "exit", "gate-open", "gate-closed", "portal", "slope"] as const;
+	static readonly MODES = [
+		new SolidMode(),
+		new PlatformMode(),
+		new ExitTileMode(),
+		new GateMode(true),
+		new GateMode(false),
+		new PortalMode(),
+		new SlopeMode(),
+	] as const;
 
 	constructor(room: Room) {
 		this.room = room;
+		this.mode = RoomEditor.MODES[0];
 		this.world = new World(false);
 		for(const [tile, position] of this.room.worldPart.tiles.entries()) {
 			this.world.tiles.set(position, tile);
@@ -58,53 +168,15 @@ export class RoomEditor {
 		}
 	}
 	checkForClicks(canvasIO: CanvasIO) {
-		if(!canvasIO.mouse.pressed) { return; }
-		const position = Tiles.getTileCoordinates(canvasIO.mouse.position);
-		if(canvasIO.mouse.button === "left") {
-			if(this.mode === "solid") {
-				this.setTile(position, canvasIO.mouse.button === "left" ? TowerTile.TOWER_TILE : EmptyTile.EMPTY);
-			}
-			else if(this.mode === "platform") {
-				this.setTile(position, canvasIO.mouse.button === "left" ? Platform.PLATFORM : EmptyTile.EMPTY);
-			}
-			else if(this.mode === "exit" && Directions.isDirection(this.direction)) {
-				this.room.exitTiles.set(position, this.direction);
-			}
-			else if((this.mode === "gate-open" || this.mode === "gate-closed") && Directions.isDirection(this.direction)) {
-				const gateExists = Gate.isGateAt(position, this.world);
-				if(!gateExists) {
-					const gate = Gate.atTile(position, this.direction, (this.mode === "gate-open"));
-					this.addEntity(gate);
-				}
-			}
-			else if(this.mode === "portal") {
-				const portalPosition = this.getPortalPosition(position);
-				if(![...this.room.worldPart.entities].some(p => p instanceof Portal && p.position.equals(portalPosition))) {
-					this.addEntity(new Portal(portalPosition));
-				}
-			}
-			else if(this.mode === "slope" && Directions.isDiagonal(this.direction)) {
-				const normal = Directions.opposite[this.direction];
-				this.setTile(position, TowerSlope.fromNormal(normal));
-			}
-		}
-		else {
-			if(this.mode === "exit") {
-				this.room.exitTiles.set(position, "none");
-			}
-			else if(this.mode !== "portal") {
-				this.setTile(position, EmptyTile.EMPTY);
+		if(canvasIO.mouse.pressed) {
+			const tilePosition = Tiles.getTileCoordinates(canvasIO.mouse.position);
+			if(canvasIO.mouse.button === "left") {
+				this.mode.onLeftClick(tilePosition, this);
 			}
 			else {
-				const portalPosition = this.getPortalPosition(position);
-				this.filterEntities(e => !(e instanceof Portal && e.position.equals(portalPosition)));
+				this.mode.onRightClick(tilePosition, this);
 			}
-			this.filterEntities(e => !(e instanceof Gate && e.tilePosition().equals(position)));
 		}
-	}
-	getPortalPosition(tilePosition: Vector) {
-		return Tiles.getTileCoordinates(tilePosition.multiply(WorldData.TILE_SIZE).add(PortalData.WIDTH / 2, 0))
-			.add(0, 1).multiply(WorldData.TILE_SIZE);
 	}
 	setTile(position: Vector, tile: RoomTile) {
 		this.world.tiles.set(position, tile);
@@ -206,7 +278,7 @@ export class RoomEditor {
 		canvasIO.ctx.textAlign = "right";
 		canvasIO.ctx.textBaseline = "top";
 		canvasIO.ctx.font = "30px monospace";
-		canvasIO.ctx.fillText(this.mode, canvasIO.canvas.width, 0);
+		canvasIO.ctx.fillText(this.mode.uiLabel, canvasIO.canvas.width, 0);
 		canvasIO.ctx.fillText(this.direction, canvasIO.canvas.width, 30);
 	}
 
