@@ -1,7 +1,7 @@
 import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
-import { ChainData, WorldData } from "../constants/GameData.mjs";
+import { ChainData, RoomData, WorldData } from "../constants/GameData.mjs";
 import { Entity } from "../game-utilities/Entity.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
@@ -16,6 +16,16 @@ export class Chain extends Entity {
 		super();
 		this.tilePosition = tilePosition;
 		this.height = height;
+	}
+
+	static getChainAt(tilePosition: Vector, world: World) {
+		const tileSquare = Tiles.getTileSquare(tilePosition);
+		const chain = [...world.entities.possiblyIntersecting(tileSquare)]
+			.find(c => c instanceof Chain && c.climbRegion().interiorIntersects(tileSquare)) as Chain | undefined;
+		return chain ?? null;
+	}
+	static isChainAt(tilePosition: Vector, world: World) {
+		return Chain.getChainAt(tilePosition, world) !== null;
 	}
 
 	render() {
@@ -79,6 +89,22 @@ export class Chain extends Entity {
 			this.tilePosition.y * WorldData.TILE_SIZE,
 			ChainData.CLIMB_WIDTH,
 			this.height * WorldData.TILE_SIZE,
+		);
+	}
+
+	copy() {
+		return new Chain(this.tilePosition.clone(), this.height);
+	}
+	reflect() {
+		return new Chain(
+			new Vector(RoomData.SIZE - this.tilePosition.x, this.tilePosition.y),
+			this.height,
+		);
+	}
+	copyAndTranslate(amount: Vector) {
+		return new Chain(
+			this.tilePosition.add(amount.divide(WorldData.TILE_SIZE)),
+			this.height,
 		);
 	}
 }

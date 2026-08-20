@@ -1,7 +1,7 @@
 import { CanvasIO } from "../utils-ts/modules/CanvasIO.mjs";
 import { Diagonal, Direction, Directions } from "../utils-ts/modules/geometry/Direction.mjs";
 import { Vector } from "../utils-ts/modules/geometry/Vector.mjs";
-import { Room, RoomTile } from "./level-generator/Room.mjs";
+import { Room, RoomEntity, RoomTile } from "./level-generator/Room.mjs";
 import { DEBUG_SETTINGS } from "./constants/DebugSettings.mjs";
 import { Gate } from "./entities/Gate.mjs";
 import { World } from "./world/World.mjs";
@@ -23,6 +23,7 @@ import { Renderable, Renderer } from "./world/Renderer.mjs";
 import { Entities } from "./world/Entities.mjs";
 import { TowerSlope } from "./tiles/TowerSlope.mjs";
 import { TILE_TYPES } from "./tiles/TileIDs.mjs";
+import { Chain } from "./entities/Chain.mjs";
 
 abstract class EditorMode {
 	abstract onLeftClick(tilePos: Vector, editor: RoomEditor): void;
@@ -124,6 +125,51 @@ class SlopeMode extends EditorMode {
 	}
 }
 
+class ChainMode extends EditorMode {
+	uiLabel: string = "chain";
+
+	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
+		if(Chain.isChainAt(tilePos, editor.world)) { return; }
+
+		const chainAbove = Chain.getChainAt(tilePos.add(0, -1), editor.world);
+		const chainBelow = Chain.getChainAt(tilePos.add(0, 1), editor.world);
+		if(chainAbove && chainBelow) {
+			editor.deleteEntity(chainBelow);
+			chainAbove.height += chainBelow.height + 1;
+		}
+		else if(chainAbove) {
+			chainAbove.height ++;
+		}
+		else if(chainBelow) {
+			chainBelow.tilePosition.y --;
+			chainBelow.height ++;
+		}
+		else {
+			editor.addEntity(new Chain(tilePos, 1));
+		}
+	}
+	onRightClick(tilePos: Vector, editor: RoomEditor): void {
+		const chain = Chain.getChainAt(tilePos, editor.world);
+		if(!chain) { return; }
+		if(chain.height === 1) {
+			editor.deleteEntity(chain);
+			return;
+		}
+		else if(chain.tilePosition.y === tilePos.y) {
+			chain.height --;
+			chain.tilePosition.y ++;
+		}
+		else if(chain.tilePosition.y === tilePos.y - chain.height + 1) {
+			chain.height --;
+		}
+		else {
+			const originalHeight = chain.height;
+			chain.height = tilePos.y - chain.tilePosition.y;
+			editor.addEntity(new Chain(tilePos, originalHeight - chain.height));
+		}
+	}
+}
+
 
 export class RoomEditor {
 	room: Room;
@@ -138,6 +184,7 @@ export class RoomEditor {
 		new GateMode(false),
 		new PortalMode(),
 		new SlopeMode(),
+		new ChainMode(),
 	] as const;
 
 	constructor(room: Room) {
@@ -240,11 +287,15 @@ export class RoomEditor {
 		);
 	}
 
-	addEntity(entity: Portal | HealthPickup | SpawnPoint | Gate) {
+	addEntity(entity: RoomEntity) {
 		this.room.worldPart.entities.add(entity);
 		this.world.entities.add(entity);
 	}
-	filterEntities(callback: (entity: Portal | HealthPickup | SpawnPoint | Gate) => boolean) {
+	deleteEntity(entity: RoomEntity) {
+		this.room.worldPart.entities.delete(entity);
+		this.world.entities.delete(entity);
+	}
+	filterEntities(callback: (entity: RoomEntity) => boolean) {
 		this.room.worldPart.entities = new Entities([...this.room.worldPart.entities].filter(callback));
 		for(const entity of this.world.entities) {
 			const valid = (entity instanceof Portal || entity instanceof HealthPickup || entity instanceof SpawnPoint || entity instanceof Gate);
@@ -325,6 +376,9 @@ export class RoomEditor {
 			else if(entity instanceof Gate) {
 				const position = entity.tilePosition();
 				result += `\tGate.atTile(new Vector(${position.x}, ${position.y}), "${entity.direction}", ${entity.toggled}),\n`;
+			}
+			else if(entity instanceof Chain) {
+				result += `\tnew Chain(new Vector(${entity.tilePosition.x}, ${entity.tilePosition.y}), ${entity.height}),\n`;
 			}
 		}
 		result += "],";

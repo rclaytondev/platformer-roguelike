@@ -20,10 +20,11 @@ import { WorldPart } from "../world-generator/WorldPart.mjs";
 import { Tiles } from "../world/Tiles.mjs";
 import { Entities } from "../world/Entities.mjs";
 import { SpawnableID } from "./Spawnable.mjs";
+import { Chain } from "../entities/Chain.mjs";
 
 export type Traversability = { start: GateState, end: GateState }[];
 export type RoomTile = EmptyTile | Platform | BasicTile | SlopeTile;
-export type RoomEntity = Portal | SpawnPoint | HealthPickup | Gate;
+export type RoomEntity = Portal | SpawnPoint | HealthPickup | Gate | Chain;
 
 export class Room {
 	originalName: string;
