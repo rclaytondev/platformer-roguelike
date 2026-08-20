@@ -3,6 +3,7 @@ import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { ChainData, RoomData, WorldData } from "../constants/GameData.mjs";
 import { Entity } from "../game-utilities/Entity.mjs";
+import { EmptyTile } from "../tiles/EmptyTile.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
 import { World } from "../world/World.mjs";
@@ -70,6 +71,11 @@ export class Chain extends Entity {
 	update(world: World) {
 		if(this.isClimbed && !world.player.hitbox.intersects(this.climbRegion())) {
 			this.isClimbed = false;
+		}
+
+		const tileAbove = world.tiles.get(this.tilePosition.add(0, -1));
+		if(tileAbove === EmptyTile.EMPTY) {
+			world.entities.delete(this);
 		}
 	}
 
