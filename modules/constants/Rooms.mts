@@ -7,6 +7,7 @@ import { Portal } from "../entities/Portal.mjs";
 import { SpawnPoint } from "../entities/SpawnPoint.mjs";
 import { HealthPickup } from "../entities/HealthPickup.mjs";
 import { SetUtils } from "../../utils-ts/modules/core-extensions/SetUtils.mjs";
+import { Chain } from "../entities/Chain.mjs";
 
 export let ROOMS: Room[] = [];
 
@@ -16,15 +17,15 @@ export class Rooms {
 			Room.parse(
 				"two-wide-platforms",
 				[
-					[1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+					[1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
 					[1, 5, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1],
 					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-					[0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+					[0, 0, 0, 1, 5, 6, 6, 4, 1, 0, 0, 0],
 					[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 					[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 					[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 					[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-					[0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+					[0, 0, 0, 1, 5, 6, 6, 4, 1, 0, 0, 0],
 					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 					[1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
 					[1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
@@ -32,10 +33,8 @@ export class Rooms {
 				[
 					{ x: 6, y: 0, direction: "up" },
 					{ x: 4, y: 0, direction: "up" },
-					{ x: 3, y: 0, direction: "up" },
 					{ x: 5, y: 0, direction: "up" },
 					{ x: 7, y: 0, direction: "up" },
-					{ x: 8, y: 0, direction: "up" },
 					{ x: 11, y: 3, direction: "right" },
 					{ x: 11, y: 4, direction: "right" },
 					{ x: 11, y: 5, direction: "right" },
@@ -56,6 +55,10 @@ export class Rooms {
 					{ x: 0, y: 3, direction: "left" },
 				],
 				[
+					new Chain(new Vector(8, 1), 2),
+					new Chain(new Vector(8, 4), 4),
+					new Chain(new Vector(3, 1), 2),
+					new Chain(new Vector(3, 4), 4),
 				],
 				() => true,
 			),
@@ -144,7 +147,10 @@ export class Rooms {
 					{ x: 7, y: 3, direction: "up" },
 					{ x: 8, y: 3, direction: "up" },
 				],
-				[],
+				[
+					new Chain(new Vector(9, 4), 2),
+					new Chain(new Vector(2, 4), 2),
+				],
 				(exits) => exits.has("down") && !exits.has("up"),
 			),
 			Room.parse(
@@ -271,7 +277,13 @@ export class Rooms {
 					{ x: 6, y: 0, direction: "up" },
 					{ x: 7, y: 0, direction: "up" },
 				],
-				[],
+				[
+					new Chain(new Vector(8, 1), 2),
+					new Chain(new Vector(3, 1), 2),
+					new Chain(new Vector(4, 6), 2),
+					new Chain(new Vector(8, 9), 2),
+					new Chain(new Vector(3, 9), 2),
+				],
 				(exits) => !exits.has("up") && !exits.has("down"),
 			),
 			Room.parse(
@@ -569,6 +581,8 @@ export class Rooms {
 					Gate.atTile(new Vector(4, 6), "up", true),
 					Gate.atTile(new Vector(7, 6), "up", false),
 					Gate.atTile(new Vector(7, 5), "down", false),
+					new Chain(new Vector(8, 2), 2),
+					new Chain(new Vector(3, 2), 2),
 				],
 				() => true,
 				RoomData.ALL_TRAVERSABILITY,
@@ -661,6 +675,8 @@ export class Rooms {
 				[
 					Gate.atTile(new Vector(5, 6), "down", false),
 					Gate.atTile(new Vector(6, 6), "down", false),
+					new Chain(new Vector(3, 3), 7),
+					new Chain(new Vector(8, 3), 7),
 				],
 				(exits) => [...exits].some(e => e !== "up"),
 				Room.getTraversability([
@@ -1627,6 +1643,9 @@ export class Rooms {
 					{ x: 0, y: 5, direction: "left" },
 				],
 				[
+					new Chain(new Vector(8, 1), 5),
+					new Chain(new Vector(4, 4), 7),
+					new Chain(new Vector(2, 1), 2),
 				],
 				(exits) => exits.has("up"),
 				RoomData.NO_GATE_TRAVERSABILITY,
@@ -1670,6 +1689,10 @@ export class Rooms {
 					Gate.atTile(new Vector(4, 6), "up", true),
 					Gate.atTile(new Vector(5, 4), "right", false),
 					Gate.atTile(new Vector(6, 4), "left", false),
+					new Chain(new Vector(8, 1), 3),
+					new Chain(new Vector(3, 1), 3),
+					new Chain(new Vector(3, 5), 2),
+					new Chain(new Vector(8, 5), 2),
 				],
 				() => true,
 				RoomData.ALL_TRAVERSABILITY,
@@ -1752,6 +1775,8 @@ export class Rooms {
 					{ x: 1, y: 8, direction: "left" },
 				],
 				[
+					new Chain(new Vector(3, 1), 2),
+					new Chain(new Vector(8, 1), 2),
 				],
 				(exits) => exits.has("up") && exits.has("down"),
 			),
@@ -1836,7 +1861,10 @@ export class Rooms {
 					{ x: 4, y: 11, direction: "down" },
 					{ x: 7, y: 11, direction: "down" },
 				],
-				[],
+				[
+					new Chain(new Vector(3, 1), 4),
+					new Chain(new Vector(8, 1), 4),
+				],
 				(exits) => !exits.has("up"),
 			),
 			Room.parse(
@@ -1868,6 +1896,9 @@ export class Rooms {
 					{ x: 10, y: 6, direction: "right" },
 				],
 				[
+					new Chain(new Vector(7, 1), 2),
+					new Chain(new Vector(7, 5), 6),
+					new Chain(new Vector(4, 1), 6),
 				],
 				(exits) => !exits.has("left"),
 			),
@@ -1910,7 +1941,10 @@ export class Rooms {
 					{ x: 0, y: 8, direction: "left" },
 					{ x: 9, y: 7, direction: "right" },
 				],
-				[],
+				[
+					new Chain(new Vector(3, 1), 8),
+					new Chain(new Vector(8, 1), 5),
+				],
 				(exits) => exits.has("up") && exits.has("left") && !exits.has("down"),
 				Room.getTraversability([
 					...Room.gatelessPath("left", "up"),
@@ -1955,6 +1989,8 @@ export class Rooms {
 				],
 				[
 					new Portal(new Vector(300,350)),
+					new Chain(new Vector(4, 4), 3),
+					new Chain(new Vector(7, 4), 3),
 				],
 				(exits) => !exits.has("up"),
 				RoomData.NO_GATE_TRAVERSABILITY,
@@ -1990,7 +2026,12 @@ export class Rooms {
 					{ x: 5, y: 11, direction: "down" },
 					{ x: 6, y: 11, direction: "down" },
 				],
-				[],
+				[
+					new Chain(new Vector(3, 1), 4),
+					new Chain(new Vector(8, 3), 4),
+					new Chain(new Vector(3, 6), 5),
+					new Chain(new Vector(8, 8), 3),
+				],
 				(exits) => (exits.has("left") || exits.has("right")) && !exits.has("up"),
 			),
 			Room.parse(
@@ -2067,6 +2108,9 @@ export class Rooms {
 				[
 					Gate.atTile(new Vector(2, 6), "right", true),
 					Gate.atTile(new Vector(3, 6), "left", true),
+					new Chain(new Vector(4, 1), 4),
+					new Chain(new Vector(4, 8), 3),
+					new Chain(new Vector(9, 5), 5),
 				],
 				(exits) => exits.has("up") && !exits.has("left"),
 				Room.getTraversability([
@@ -2245,6 +2289,10 @@ export class Rooms {
 				[
 					Gate.atTile(new Vector(5, 9), "down", false),
 					Gate.atTile(new Vector(6, 9), "up", false),
+					new Chain(new Vector(8, 1), 4),
+					new Chain(new Vector(8, 6), 4),
+					new Chain(new Vector(3, 1), 2),
+					new Chain(new Vector(3, 4), 6),
 				],
 				(exits) => !exits.has("down"),
 				Room.getTraversability([
@@ -2391,10 +2439,10 @@ export class Rooms {
 			Room.parse(
 				"gate-arch",
 				[
-					[1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+					[1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1],
 					[1, 1, 5, 0, 0, 0, 0, 0, 0, 4, 1, 1],
 					[1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-					[1, 1, 1, 1, 1, 6, 6, 6, 0, 0, 1, 1],
+					[1, 1, 1, 1, 1, 6, 6, 0, 0, 0, 1, 1],
 					[1, 1, 1, 5, 0, 0, 0, 0, 0, 0, 1, 1],
 					[1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 4, 1],
 					[1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -2411,7 +2459,6 @@ export class Rooms {
 					{ x: 4, y: 0, direction: "up" },
 					{ x: 5, y: 0, direction: "up" },
 					{ x: 6, y: 0, direction: "up" },
-					{ x: 7, y: 0, direction: "up" },
 					{ x: 4, y: 11, direction: "down" },
 					{ x: 5, y: 11, direction: "down" },
 					{ x: 6, y: 11, direction: "down" },
@@ -2420,6 +2467,7 @@ export class Rooms {
 				[
 					Gate.atTile(new Vector(5, 8), "right", false),
 					Gate.atTile(new Vector(6, 8), "left", false),
+					new Chain(new Vector(7, 1), 6),
 				],
 				(exits) => !exits.has("left") && exits.has("down") && exits.size >= 2,
 				Room.getTraversability([
@@ -2500,6 +2548,8 @@ export class Rooms {
 				],
 				[
 					new SpawnPoint(new Vector(5 * WorldData.TILE_SIZE, 9 * WorldData.TILE_SIZE)),
+					new Chain(new Vector(7, 1), 2),
+					new Chain(new Vector(4, 1), 2),
 				],
 				() => false,
 			),
