@@ -97,7 +97,7 @@ export class Chain extends Entity {
 	}
 	reflect() {
 		return new Chain(
-			new Vector(RoomData.SIZE - this.tilePosition.x, this.tilePosition.y),
+			new Vector(RoomData.SIZE - this.tilePosition.x - 1, this.tilePosition.y),
 			this.height,
 		);
 	}
