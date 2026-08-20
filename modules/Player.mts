@@ -119,7 +119,10 @@ export class Player extends RectangularCollideable {
 	}
 
 	render() {
-		return [new Renderable(this.display.bind(this), "player")];
+		return [
+			new Renderable(this.display.bind(this), "player"),
+			new Renderable(this.displayGlowEffect.bind(this), "glow"),
+		];
 	}
 	display(canvasIO: CanvasIO) {
 		canvasIO.ctx.save();
@@ -128,7 +131,9 @@ export class Player extends RectangularCollideable {
 		this.displayBody(canvasIO);
 		this.displayFace(canvasIO);
 		canvasIO.ctx.restore();
-
+	}
+	displayGlowEffect(canvasIO: CanvasIO) {
+		const center = this.hitbox.center();
 		GraphicsUtils.glowCircle(center.x, center.y, PlayerData.GLOW_SIZE, PlayerData.GLOW_INTENSITY, canvasIO);
 	}
 

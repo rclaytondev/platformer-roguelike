@@ -6,6 +6,7 @@ export const RENDERING_ORDER = [
 	"camera-translation",
 
 	"glow",
+	"background-entity",
 	"player",
 	"particle",
 

@@ -20,7 +20,7 @@ export class Chain extends Entity {
 
 	render() {
 		return [
-			new Renderable(c => this.display(c), "entity"),
+			new Renderable(c => this.display(c), "background-entity"),
 		];
 	}
 	display(canvasIO: CanvasIO) {
