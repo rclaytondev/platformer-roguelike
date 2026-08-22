@@ -38,7 +38,7 @@ Features to add to improve game feel:
 	- [ ] Teeth on the lizards (low priority - lizards already look great)
 	- [ ] Improved background (idea: blurred and parallaxed rectangles, with multiple background layers)
 	- [ ] Improve health pickup graphics (make them into a throwable tile with a "+1 HP" effect when you stand on it)
-- [ ] **Better rooms** - a lot of the older rooms are very boring.
+- [x] **Better rooms** - a lot of the older rooms are very boring.
 - [ ] **Movement and input tweaks**
 	- [ ] Jumping gives a small amount of horizontal speed
 	- [ ] Jumping while holding the opposite of the direction of motion sets horizontal velocity to 0
