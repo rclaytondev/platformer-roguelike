@@ -56,6 +56,7 @@ class ClimbingState {
 		this.checkClimbingInputs(self, world, input);
 		self.checkFriction(input);
 		this.checkJumpInputs(self, world, input, canvasIO);
+		this.checkChainEnd(self);
 	}
 	checkClimbingInputs(self: Player, world: World, input: Input) {
 		if(input.ArrowUp) {
@@ -79,6 +80,11 @@ class ClimbingState {
 			if(jumped) {
 				self.hasDoubleJump = true;
 			}
+		}
+	}
+	checkChainEnd(self: Player) {
+		if(!self.hitbox.intersects(this.chain.climbRegion())) {
+			self.state = new DefaultState();
 		}
 	}
 

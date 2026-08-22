@@ -34,7 +34,7 @@ Features to add to improve game feel:
 	- [ ] Improved enemy death animations - make them fall out of the world while shrinking out of existence
 	- [ ] Improved tile destruction animations
 	- [ ] Improved telegraph and increased delay on teleporting creature's attack
-	- [ ] Chains
+	- [x] Chains
 	- [ ] Teeth on the lizards (low priority - lizards already look great)
 	- [ ] Improved background (idea: blurred and parallaxed rectangles, with multiple background layers)
 	- [ ] Improve health pickup graphics (make them into a throwable tile with a "+1 HP" effect when you stand on it)
