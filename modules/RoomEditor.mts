@@ -14,8 +14,6 @@ import { Platform } from "./tiles/Platform.mjs";
 import { Tile } from "./tiles/Tile.mjs";
 import { TowerTile } from "./tiles/TowerTile.mjs";
 import { Tiles } from "./world/Tiles.mjs";
-import { HealthPickup } from "./entities/HealthPickup.mjs";
-import { SpawnPoint } from "./entities/SpawnPoint.mjs";
 import { Camera } from "./world/Camera.mjs";
 import { Renderable, Renderer } from "./world/Renderer.mjs";
 import { Entities } from "./world/Entities.mjs";
@@ -76,7 +74,7 @@ class GateMode extends EditorMode {
 
 	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
 		if(Directions.isDirection(editor.direction)) {
-			const gateExists = Gate.isGateAt(tilePos, editor.world);
+			const gateExists = Gate.isGateAt(tilePos, editor.room.worldPart.entities);
 			if(!gateExists) {
 				const gate = Gate.atTile(tilePos, editor.direction, this.open);
 				editor.addEntity(gate);
@@ -127,10 +125,10 @@ class ChainMode extends EditorMode {
 	uiLabel: string = "chain";
 
 	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
-		if(Chain.isChainAt(tilePos, editor.world)) { return; }
+		if(Chain.isChainAt(tilePos, editor.room.worldPart.entities)) { return; }
 
-		const chainAbove = Chain.getChainAt(tilePos.add(0, -1), editor.world);
-		const chainBelow = Chain.getChainAt(tilePos.add(0, 1), editor.world);
+		const chainAbove = Chain.getChainAt(tilePos.add(0, -1), editor.room.worldPart.entities);
+		const chainBelow = Chain.getChainAt(tilePos.add(0, 1), editor.room.worldPart.entities);
 		if(chainAbove && chainBelow) {
 			editor.deleteEntity(chainBelow);
 			chainAbove.height += chainBelow.height + 1;
@@ -147,7 +145,7 @@ class ChainMode extends EditorMode {
 		}
 	}
 	onRightClick(tilePos: Vector, editor: RoomEditor): void {
-		const chain = Chain.getChainAt(tilePos, editor.world);
+		const chain = Chain.getChainAt(tilePos, editor.room.worldPart.entities);
 		if(!chain) { return; }
 		if(chain.height === 1) {
 			editor.deleteEntity(chain);
@@ -171,7 +169,6 @@ class ChainMode extends EditorMode {
 
 export class RoomEditor {
 	room: Room;
-	world: World = new World(false);
 	mode: EditorMode;
 	direction: Direction | Diagonal = "right";
 	static readonly MODES = [
@@ -188,21 +185,23 @@ export class RoomEditor {
 	constructor(room: Room) {
 		this.room = room;
 		this.mode = RoomEditor.MODES[0];
-		this.world = new World(false);
+	}
+	getWorld() {
+		const world = new World(false);
 		for(const [tile, position] of this.room.worldPart.tiles.entries()) {
-			this.world.tiles.set(position, tile);
+			world.tiles.set(position, tile);
+			world.originalTiles.set(position, tile);
 		}
 		for(const entity of this.room.worldPart.entities) {
-			this.world.entities.add(entity);
+			world.entities.add(entity);
 		}
+		return world;
 	}
 
 
 	update(canvasIO: CanvasIO) {
-		this.world.update(canvasIO);
 		this.checkForClicks(canvasIO);
 		this.checkForKeyPresses(canvasIO);
-		this.world.originalTiles = this.world.tiles;
 
 		const numberKeys = canvasIO.numberKeys();
 		if(numberKeys.length !== 0) {
@@ -224,7 +223,6 @@ export class RoomEditor {
 		}
 	}
 	setTile(position: Vector, tile: RoomTile) {
-		this.world.tiles.set(position, tile);
 		this.room.worldPart.tiles.set(position, tile);
 	}
 	checkForKeyPresses(canvasIO: CanvasIO) {
@@ -247,8 +245,6 @@ export class RoomEditor {
 	}
 	loadRoom(room: Room) {
 		this.room = room;
-		this.world = new World(false);
-		room.add(new Vector(0, 0), this.world, new Set<Direction>(["left", "right", "up", "down"]));
 	}
 	loadNextRoom() {
 		const index = ROOMS.indexOf(this.room);
@@ -268,7 +264,8 @@ export class RoomEditor {
 	}
 
 	render(canvasIO: CanvasIO, renderer: Renderer) {
-		this.world.render(canvasIO, new Camera(canvasIO.boundingBox().center()), renderer);
+		const world = this.getWorld();
+		world.render(canvasIO, new Camera(canvasIO.boundingBox().center()), renderer);
 		renderer.renderables.push(
 			new Renderable(
 				() => canvasIO.fillCanvas(BackgroundData.BACKGROUND_COLOR),
@@ -287,20 +284,12 @@ export class RoomEditor {
 
 	addEntity(entity: RoomEntity) {
 		this.room.worldPart.entities.add(entity);
-		this.world.entities.add(entity);
 	}
 	deleteEntity(entity: RoomEntity) {
 		this.room.worldPart.entities.delete(entity);
-		this.world.entities.delete(entity);
 	}
 	filterEntities(callback: (entity: RoomEntity) => boolean) {
 		this.room.worldPart.entities = new Entities([...this.room.worldPart.entities].filter(callback));
-		for(const entity of this.world.entities) {
-			const valid = (entity instanceof Portal || entity instanceof HealthPickup || entity instanceof SpawnPoint || entity instanceof Gate);
-			if(valid && !callback(entity)) {
-				this.world.entities.delete(entity);
-			}
-		}
 	}
 
 

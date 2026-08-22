@@ -4,14 +4,14 @@ import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { Grid } from "../../utils-ts/modules/Grid.mjs";
 import { HashSet } from "../../utils-ts/modules/HashSet.mjs";
 
-export class BoundingBoxStructure<T> {
-	boundingBox: (entity: T) => Rectangle;
+export class BoundingBoxStructure<BoundingBoxType, ValueType extends BoundingBoxType = BoundingBoxType> {
+	boundingBox: (entity: BoundingBoxType) => Rectangle;
 	chunkSize: number;
-	private positions = new Map<T, Vector[]>();
-	private entities = new Grid<Set<T> | null>(null);
-	private infiniteEntities = new Set<T>();
+	private positions = new Map<ValueType, Vector[]>();
+	private entities = new Grid<Set<ValueType> | null>(null);
+	private infiniteEntities = new Set<ValueType>();
 
-	constructor(chunkSize: number, boundingBox: (entity: T) => Rectangle) {
+	constructor(chunkSize: number, boundingBox: (entity: BoundingBoxType) => Rectangle) {
 		this.chunkSize = chunkSize;
 		this.boundingBox = boundingBox;
 	}
@@ -26,7 +26,7 @@ export class BoundingBoxStructure<T> {
 			Math.ceil((rectangle.bottom + 1) / this.chunkSize),
 		);
 	}
-	add(entity: T) {
+	add(entity: ValueType) {
 		const gridRect = this.entityGridPositions(this.boundingBox(entity));
 		if(gridRect.isInfinite()) {
 			this.infiniteEntities.add(entity);
@@ -39,7 +39,7 @@ export class BoundingBoxStructure<T> {
 			this.positions.set(entity, positions);
 		}
 	}
-	updatePosition(entity: T) {
+	updatePosition(entity: ValueType) {
 		if(!this.has(entity)) {
 			return;
 		}
@@ -62,10 +62,10 @@ export class BoundingBoxStructure<T> {
 			this.positions.set(entity, positions);
 		}
 	}
-	has(entity: T) {
+	has(entity: ValueType) {
 		return this.infiniteEntities.has(entity) || this.positions.has(entity);
 	}
-	delete(entity: T) {
+	delete(entity: ValueType) {
 		this.deleteFromGrid(entity);
 		this.infiniteEntities.delete(entity);
 	}
@@ -86,7 +86,7 @@ export class BoundingBoxStructure<T> {
 		]);
 	}
 
-	private addEntityToGrid(entity: T, gridSquare: Vector) {
+	private addEntityToGrid(entity: ValueType, gridSquare: Vector) {
 		const entities = this.entities.get(gridSquare);
 		if(entities) {
 			entities.add(entity);
@@ -95,7 +95,7 @@ export class BoundingBoxStructure<T> {
 			this.entities.set(gridSquare, new Set([entity]));
 		}
 	}
-	private removeEntityFromGrid(entity: T, gridSquare: Vector) {
+	private removeEntityFromGrid(entity: ValueType, gridSquare: Vector) {
 		const entities = this.entities.get(gridSquare);
 		if(entities) {
 			entities.delete(entity);
@@ -104,14 +104,14 @@ export class BoundingBoxStructure<T> {
 			}
 		}
 	}
-	private deleteFromGrid(entity: T) {
+	private deleteFromGrid(entity: ValueType) {
 		for(const position of this.positions.get(entity) ?? []) {
 			this.removeEntityFromGrid(entity, position);
 		}
 		this.positions.delete(entity);
 	}
 
-	isValid(entity: T) {
+	isValid(entity: ValueType) {
 		const gridRect = this.entityGridPositions(this.boundingBox(entity));
 		if(gridRect.isInfinite()) {
 			return !this.positions.has(entity) && ![...this.entities.values()].some(s => s && s.has(entity));

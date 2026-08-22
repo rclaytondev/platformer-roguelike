@@ -15,6 +15,7 @@ import { StaticEntity } from "../game-utilities/StaticEntity.mjs";
 import { BasicTile } from "../tiles/BasicTile.mjs";
 import { RoomEditor } from "../RoomEditor.mjs";
 import { Main } from "../Main.mjs";
+import { Entities } from "../world/Entities.mjs";
 
 export class GateController extends StaticEntity {
 	cooldown: number = 0;
@@ -157,7 +158,7 @@ export class Gate extends RectangularCollideable {
 		if(Main.screen instanceof RoomEditor) { return; }
 		const tilePosition = this.tilePosition();
 		const isGateOrSolid = (position: Vector) => (
-			world.tiles.get(position) instanceof BasicTile || Gate.isGateAt(position, world)
+			world.tiles.get(position) instanceof BasicTile || Gate.isGateAt(position, world.entities)
 		);
 		const solidBefore = isGateOrSolid(tilePosition.add(Vector.unit(this.direction)));
 		const solidAfter = isGateOrSolid(tilePosition.add(Vector.unit(Directions.opposite[this.direction])));
@@ -168,7 +169,7 @@ export class Gate extends RectangularCollideable {
 	adjacentGates(world: World, x: number, y: number, direction: Direction) {
 		let position = Vector.unit(direction).add(x, y);
 		let count = 0;
-		while(Gate.isGateAt(position, world)) {
+		while(Gate.isGateAt(position, world.entities)) {
 			count ++;
 			position = position.add(Vector.unit(direction));
 		}
@@ -231,7 +232,7 @@ export class Gate extends RectangularCollideable {
 			? (newSide === "negative" ? "left" : "right")
 			: (newSide === "negative" ? "up" : "down"),
 		));
-		const adjacentGate = Gate.isGateAt(adjacentTile, world);
+		const adjacentGate = Gate.isGateAt(adjacentTile, world.entities);
 		const gateController = GateController.getOrInitialize(world);
 		if(newSide !== this.playerSide && sameRowOrColumn && gateController.cooldown <= 0 && !adjacentGate) {
 			gateController.toggleAll();
@@ -273,26 +274,26 @@ export class Gate extends RectangularCollideable {
 		const center = this.fullHitbox().center();
 		return Tiles.getTileCoordinates(center);
 	}
-	static getGateAt(tilePosition: Vector, world: World) {
+	static getGateAt(tilePosition: Vector, entities: Entities) {
 		const tileRect = Rectangle.square(tilePosition.x, tilePosition.y, 1).scale(WorldData.TILE_SIZE);
-		return [...world.entities.possiblyIntersecting(tileRect)].find(
+		return [...entities.possiblyIntersecting(tileRect)].find(
 			e => e instanceof Gate && e.tilePosition().equals(tilePosition),
 		);
 	}
-	static deleteGateAt(tilePosition: Vector, world: World) {
-		const gate = Gate.getGateAt(tilePosition, world);
+	static deleteGateAt(tilePosition: Vector, entities: Entities) {
+		const gate = Gate.getGateAt(tilePosition, entities);
 		if(gate) {
-			world.entities.delete(gate);
+			entities.delete(gate);
 		}
 	}
-	static isGateAt(tilePosition: Vector, world: World) {
-		return Gate.getGateAt(tilePosition, world) != undefined;
+	static isGateAt(tilePosition: Vector, entities: Entities) {
+		return Gate.getGateAt(tilePosition, entities) != undefined;
 	}
 	static attachedGates(tilePosition: Vector, world: World) {
 		const attached: Gate[] = [];
 		for(const direction of Directions.DIRECTIONS) {
 			const adjacentPosition = tilePosition.add(Vector.unit(direction));
-			const gate = Gate.getGateAt(adjacentPosition, world);
+			const gate = Gate.getGateAt(adjacentPosition, world.entities);
 			if(gate instanceof Gate && gate.direction === direction) {
 				attached.push(gate);
 			}

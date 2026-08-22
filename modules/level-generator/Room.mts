@@ -79,7 +79,7 @@ export class Room {
 		for(const [direction, position] of this.exitTiles.entries()) {
 			if(direction !== "none" && !exits.has(direction)) {
 				world.addOriginalTile(position.add(tileOffset), TowerTile.TOWER_TILE);
-				Gate.deleteGateAt(position.add(tileOffset), world);
+				Gate.deleteGateAt(position.add(tileOffset), world.entities);
 			}
 		}
 	}

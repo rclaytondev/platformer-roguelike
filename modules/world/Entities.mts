@@ -12,7 +12,7 @@ import { World } from "./World.mjs";
 import { Renderable, Renderer } from "./Renderer.mjs";
 import { GeomUtils } from "../game-utilities/GeomUtils.mjs";
 
-export class Entities<EntityType extends Entity = Entity> extends BoundingBoxStructure<EntityType> {
+export class Entities<EntityType extends Entity = Entity> extends BoundingBoxStructure<Entity, EntityType> {
 	constructor(entities: Iterable<EntityType> = []) {
 		super(WorldData.ENTITY_CHUNK_SIZE, (e) => e.boundingBox());
 

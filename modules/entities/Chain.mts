@@ -4,6 +4,7 @@ import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { ChainData, RoomData, WorldData } from "../constants/GameData.mjs";
 import { Entity } from "../game-utilities/Entity.mjs";
 import { EmptyTile } from "../tiles/EmptyTile.mjs";
+import { Entities } from "../world/Entities.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
 import { World } from "../world/World.mjs";
@@ -19,14 +20,14 @@ export class Chain extends Entity {
 		this.height = height;
 	}
 
-	static getChainAt(tilePosition: Vector, world: World) {
+	static getChainAt(tilePosition: Vector, entities: Entities) {
 		const tileSquare = Tiles.getTileSquare(tilePosition);
-		const chain = [...world.entities.possiblyIntersecting(tileSquare)]
+		const chain = [...entities.possiblyIntersecting(tileSquare)]
 			.find(c => c instanceof Chain && c.climbRegion().interiorIntersects(tileSquare)) as Chain | undefined;
 		return chain ?? null;
 	}
-	static isChainAt(tilePosition: Vector, world: World) {
-		return Chain.getChainAt(tilePosition, world) !== null;
+	static isChainAt(tilePosition: Vector, entities: Entities) {
+		return Chain.getChainAt(tilePosition, entities) !== null;
 	}
 
 	render() {
