@@ -84,6 +84,7 @@ class ClimbingState {
 
 	update(self: Player, world: World, canvasIO: CanvasIO) {
 		self.hasDoubleJump = true;
+		self.uncrouch(world);
 		this.snapToCenter(self, world, canvasIO);
 		this.checkOnGround(self, world, canvasIO);
 	}
