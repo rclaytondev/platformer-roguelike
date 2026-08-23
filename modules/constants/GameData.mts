@@ -495,6 +495,8 @@ export class SpiderData {
 	static LEG_UPDATE_SPEED = 2 * SpiderData.LEG_SPEED;
 	static MAX_BASEPOINT_DISTANCE = 60;
 	static MAX_DISTANCE_PER_MOVE = 3;
+	static SKITTER_START_DISTANCE = 100;
+	static SKITTER_END_DISTANCE = 200;
 
 	static LEG_1 = {
 		LENGTH: 30,

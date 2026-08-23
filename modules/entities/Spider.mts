@@ -15,6 +15,7 @@ import { CollisionEvent } from "../game-utilities/physics-engine/CollisionEvent.
 import { RectangularCollideable } from "../game-utilities/physics-engine/RectangularCollideable.mjs";
 import { EntitySpawner } from "../level-generator/EntitySpawner.mjs";
 import { Spawnable } from "../level-generator/Spawnable.mjs";
+import { Player } from "../Player.mjs";
 import { BasicTile } from "../tiles/BasicTile.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
@@ -369,7 +370,11 @@ class TelegraphState extends ProjectileState {
 	update(spider: Spider, world: World) {
 		if(spider.seesPlayer(world)) {
 			this.timerProgress ++;
-			if(this.timerProgress > SpiderData.SHOT_DELAY) {
+			if(spider.movement instanceof CrawlingState && SkitterState.shouldSkitter(spider, world.player, true)) {
+				spider.projectileState = new SkitterState();
+				spider.movement.runAway(world.player.hitbox.center());
+			}
+			else if(this.timerProgress > SpiderData.SHOT_DELAY) {
 				spider.shootProjectile(world);
 				spider.projectileState = new RechargingState();
 			}
@@ -401,12 +406,39 @@ class TelegraphState extends ProjectileState {
 	}
 }
 
+class SkitterState extends ProjectileState {
+	speed = SpiderData.FAST_SPEED;
+
+	update(spider: Spider, world: World): void {
+		const distance = Vector.dist(spider.hitbox.center(), world.player.hitbox.center());
+		if(distance > SpiderData.SKITTER_END_DISTANCE || !spider.seesPlayer(world)) {
+			spider.projectileState = new DefaultState();
+		}
+	}
+
+	static shouldSkitter(spider: Spider, player: Player, seesPlayer: boolean) {
+		const distance = Vector.dist(spider.hitbox.center(), player.hitbox.center());
+		return seesPlayer && distance < SpiderData.SKITTER_START_DISTANCE;
+	}
+
+	numGlowingEyes(): number {
+		return 3;
+	}
+}
+
 class DefaultState extends ProjectileState {
 	speed = SpiderData.SPEED;
 
 	update(spider: Spider, world: World) {
-		if(spider.seesPlayer(world)) {
-			spider.projectileState = new TelegraphState();
+		if(spider.seesPlayer(world) && spider.movement instanceof CrawlingState) {
+			if(SkitterState.shouldSkitter(spider, world.player, true)) {
+				const playerPos = world.player.hitbox.center();
+				spider.movement.runAway(playerPos);
+				spider.projectileState = new SkitterState();
+			}
+			else if(spider.movement instanceof CrawlingState) {
+				spider.projectileState = new TelegraphState();
+			}
 		}
 	}
 

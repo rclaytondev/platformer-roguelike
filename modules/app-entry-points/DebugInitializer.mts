@@ -5,9 +5,9 @@ import { DEBUG_SETTINGS } from "../constants/DebugSettings.mjs";
 import { LevelGenerator } from "../level-generator/LevelGenerator.mjs";
 import { Main } from "../Main.mjs";
 import { WorldScreen } from "../world/WorldScreen.mjs";
-import { chainScenario } from "../debug-scenarios/chain-test.mjs";
+import { spiderProjectileScenario } from "../debug-scenarios/spider-projectile-test.mjs";
 
-const [world] = chainScenario.setupWorld();
+const [world] = spiderProjectileScenario.setupWorld();
 Main.screen = new WorldScreen(world);
 
 
