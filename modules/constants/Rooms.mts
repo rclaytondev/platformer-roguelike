@@ -2171,7 +2171,7 @@ export class Rooms {
 				() => false,
 			),
 			Room.parse(
-				"health-pickup-hallway",
+				"health-pickup-box",
 				[
 					[1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1],
 					[1, 1, 5, 0, 0, 0, 0, 0, 0, 0, 1, 1],
@@ -2268,6 +2268,39 @@ export class Rooms {
 				],
 				(exits) => SetUtils.equals(exits, ["up", "down"]),
 				Room.getTraversability(Room.onewayGatelessPath("down", "up")),
+			),
+			Room.parse(
+				"health-pickup-hallway",
+				[
+					[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+					[1, 5, 0, 0, 0, 0, 0, 0, 0, 4, 1, 1],
+					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1],
+					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+					[1, 6, 6, 1, 1, 1, 1, 1, 6, 6, 6, 1],
+					[0, 0, 0, 4, 1, 1, 1, 5, 0, 0, 0, 0],
+					[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					[1, 1, 1, 1, 3, 0, 0, 2, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+					[1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+				],
+				[
+					{ x: 11, y: 6, direction: "right" },
+					{ x: 11, y: 7, direction: "right" },
+					{ x: 11, y: 8, direction: "right" },
+					{ x: 0, y: 6, direction: "left" },
+					{ x: 0, y: 7, direction: "left" },
+					{ x: 0, y: 8, direction: "left" },
+					{ x: 5, y: 11, direction: "down" },
+					{ x: 6, y: 11, direction: "down" },
+				],
+				[
+					new Chain(new Vector(6, 1), 4),
+					new Chain(new Vector(5, 7), 4),
+					new HealthPickup(new Vector(3.5, 4)),
+				],
+				exits => exits.has("down") && !exits.has("up") && (exits.has("left") || exits.has("right")),
 			),
 		];
 	}
