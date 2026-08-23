@@ -2234,6 +2234,41 @@ export class Rooms {
 				(exits) => SetUtils.equals(exits, ["left", "right"]),
 				[],
 			),
+			Room.parse(
+				"hanging-chains",
+				[
+					[1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1],
+					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+					[1, 6, 6, 1, 1, 6, 6, 1, 1, 6, 6, 1],
+					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+					[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+					[1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+					[1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+					[1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+					[1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1],
+					[1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+				],
+				[
+					{ x: 6, y: 0, direction: "up" },
+					{ x: 5, y: 0, direction: "up" },
+					{ x: 3, y: 11, direction: "down" },
+					{ x: 4, y: 11, direction: "down" },
+					{ x: 5, y: 11, direction: "down" },
+					{ x: 6, y: 11, direction: "down" },
+					{ x: 7, y: 11, direction: "down" },
+					{ x: 8, y: 11, direction: "down" },
+				],
+				[
+					new Chain(new Vector(4, 4), 5),
+					new Chain(new Vector(7, 4), 4),
+					new Chain(new Vector(9, 1), 6),
+					new Chain(new Vector(2, 1), 7),
+				],
+				(exits) => SetUtils.equals(exits, ["up", "down"]),
+				Room.getTraversability(Room.onewayGatelessPath("down", "up")),
+			),
 		];
 	}
 }
