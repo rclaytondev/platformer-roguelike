@@ -18,6 +18,9 @@ Features to add to improve game feel:
 	- [x] Some enemies have undesirable behavior in certain specific rooms. To fix this, designate some rooms as being unable to spawn in the presence of certain enemy types.
 	- [x] Spikeball spawners only shoot one spikeball at a time, despite the particles indicating they should shoot two.
 	- [ ] Spiders that fall while telegraphing an attack continue to telegraph while falling.
+	- [ ] Lizards can get stuck if there is an obstacle exactly at the edge of their hitbox.
+	- [ ] Sometimes the fading animation plays twice if the player presses multiple keys while the death UI is open.
+	- [ ] Portal particles are visible below the portal if the block underneath it is destroyed.
 - [ ] **Graphical improvements**
 	- [ ] Activated lasers should have a crackly lightning appearance
 	- [x] Remove grey particles from unactivated lasers
@@ -35,9 +38,11 @@ Features to add to improve game feel:
 	- [ ] Improved tile destruction animations
 	- [ ] Improved telegraph and increased delay on teleporting creature's attack
 	- [x] Chains
+	- [ ] Glowing lights on the tiles next to chains and gates
 	- [ ] Teeth on the lizards (low priority - lizards already look great)
 	- [ ] Improved background (idea: blurred and parallaxed rectangles, with multiple background layers)
 	- [ ] Improve health pickup graphics (make them into a throwable tile with a "+1 HP" effect when you stand on it)
+	- [ ] Lizards become unaligned from the grid when they encounter a slope and turn.
 - [x] **Better rooms** - a lot of the older rooms are very boring.
 - [ ] **Movement and input tweaks**
 	- [ ] Jumping gives a small amount of horizontal speed
@@ -64,6 +69,7 @@ Features to add to improve game feel:
 	- [x] **Spikeball overhaul** - replace them with a small triangular spaceship-like projectile that indicates the direction of motion with an arrow. When the player gets near, it pauses and then zaps electricity in a small circle around itself, damaging the player.
 	- [ ] **Tiles** - add more custom throwable tiles (see [[items]]), and make them spawn in the world. (I think this will significantly increase the quality of the game, by giving the player interesting choices about when to use their limited resources).
 	- [ ] **Enemy item drops** - to reward the player for destroying enemies, I could make them drop an item on death. I have considered making them drop a small item that can be combined with others to make an explosive box.
+- [ ] When the player gets close to a spider, it should stop attacking and skitter away before restarting its attack.
 
 More drastic measures to improve game feel (to be implemented if the above are insufficient):
 - [ ] **More inherent movement abilities** - the movement system is now rather basic; often there is essentially one way to approach each room (usually by double-jumping a lot). This means the player just does this approach and it either works or it doesn't, resulting in the game feeling random. To fix this, I could make the movement system more expressive by adding new moves that let the player traverse the world in more ways.
