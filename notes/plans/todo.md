@@ -46,7 +46,7 @@ Features to add to improve game feel:
 - [x] **Better rooms** - a lot of the older rooms are very boring.
 - [ ] **Movement and input tweaks**
 	- [x] Jumping gives a small amount of horizontal speed
-	- [ ] Jumping while holding the opposite of the direction of motion sets horizontal velocity to 0
+	- [x] Jumping while holding the opposite of the direction of motion sets horizontal velocity to 0
 	- [ ] Buffer inputs (so far only jump inputs make sense to buffer)
 	- [ ] Slip past corners and preserve velocity
 	- [ ] Improve controllable jump height (make it more controllable)

@@ -86,6 +86,7 @@ export class PlayerData {
 	static HORIZONTAL_ACCELERATION = 0.7;
 	static JUMP_VELOCITY = 14;
 	static JUMP_X_VELOCITY = 1;
+	static REVERSE_JUMP_X_VELOCITY = 0;
 	static MAX_X_VELOCITY = 8;
 	static NOKEY_FRICTION_X = 0.7;
 	static OVERLIMIT_FRICTION_X = 0.95;

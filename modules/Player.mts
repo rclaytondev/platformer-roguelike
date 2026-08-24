@@ -336,10 +336,19 @@ export class Player extends RectangularCollideable {
 		this.coyoteTime = -1;
 		this.squishFactor = PlayerData.JUMP_SQUISH_AMOUNT;
 		this.state = new DefaultState();
+		this.resetVelocityToDirection();
 		if(this.keyDirection !== null) {
 			this.velocity = this.velocity.add(Vector.unit(this.keyDirection).multiply(PlayerData.JUMP_X_VELOCITY));
 		}
 		this.addJumpParticles(world, canvasIO);
+	}
+	resetVelocityToDirection() {
+		if(this.keyDirection === "left") {
+			this.velocity.x = Math.min(this.velocity.x, -PlayerData.REVERSE_JUMP_X_VELOCITY);
+		}
+		else if(this.keyDirection === "right") {
+			this.velocity.x = Math.max(this.velocity.x, PlayerData.REVERSE_JUMP_X_VELOCITY);
+		}
 	}
 	addJumpParticles(world: World, canvasIO: CanvasIO) {
 		const hitboxBottom = this.hitbox.edgeCenter("down");
