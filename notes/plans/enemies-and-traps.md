@@ -12,7 +12,7 @@
 	- The movement would be like this: it would jump straight up and then glide at a shallow angle (rapid-firing projectiles straight down if you are below it). When it hits a wall it would fall straight down (possibly swapping directions if it's next to a wall) and then the pattern repeats.
 	- The projectiles could break tiles because enemies that break tiles allow for exploitation, which is good.
 	- Graphics: originally I imagined it being bird-themed, but I couldn't think of a way to make that work. So instead perhaps it could be a crab-like or insect-like creature (to match the other enemies' themes) that is not based off of any real-world creature. It could have a mouth-like or barrel-like shape at the bottom that the projectiles come out of.
-- [ ] Teleporting enemy
+- [x] Teleporting enemy
 	- Possible mechanics idea:
 		- When the enemy gains line-of-sight, it goes into "watching mode" (e.g. indicated by it's eye lighting up).
 		- While in "watching mode", when the enemy loses line-of-sight, it teleports behind you and enters "preparing-to-fire mode" (e.g. indicated by it extending blaster barrels in each firing direction).
@@ -61,3 +61,19 @@
 - [ ] Portals? (They're cool)
 - [ ] Ladders? (not sure... too much like Spelunky) (ok, that's dumb, ladders are just a basic concept in games)
 - [ ] Blocks such that when you step on one of them, all others extend/retract (kind of similar to gates so they should go in an area without gates)
+
+# Pairings of Enemies
+In the following notes, "scale" refers to how much movement is needed to avoid an enemy's attack. For example, I consider lizards to be "large-scale" because their explosion is quite large, whereas I consider the teleporting creatures to be "small-scale" because their attack can be dodged by just stepping to the side. Note that large-scale does not just mean more dangerous - it has to do with the way in which you dodge the attack, not how hard it is to do so. I think it is good to pair large-scale enemies and small-scale enemies together, though I think multiple small-scale enemies works too. The important thing is to avoid having multiple large-scale enemies together.
+
+| Combination                        | Pros                                                                                                                | Cons                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Lizards + spiders                  | Both medium-scale                                                                                                   | -                                                                                   |
+| Lizards + lasers                   | -                                                                                                                   | -                                                                                   |
+| Lizards + spikeballs               | -                                                                                                                   | Spikeballs cause chaotic lizard behavior and tile destruction                       |
+| Lizards + teleporting creatures    | -                                                                                                                   | -                                                                                   |
+| Spiders + lasers                   | -                                                                                                                   | -                                                                                   |
+| Spiders + spikeballs               | -                                                                                                                   | Spikeballs cut off line of sight, leading to unpredictable spider attack timing     |
+| Spiders + teleporting creatures    | Spiders large-scale and teleporting creatures small-scale                                                           | Spiders can easily blow up teleporting creatures after they teleport underneath you |
+| Lasers + spikeballs                | -                                                                                                                   | No way to destroy tiles                                                             |
+| Lasers + teleporting creatures     | Lasers medium-scale and teleporting creatures small-scale                                                           | -                                                                                   |
+| Spikeballs + teleporting creatures | Spikeballs can sometimes stall progress, which is problematic with time-based obstacles (not teleporting creatures) |                                                                                     |

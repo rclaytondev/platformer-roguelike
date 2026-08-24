@@ -21,6 +21,7 @@ Features to add to improve game feel:
 	- [ ] Lizards can get stuck if there is an obstacle exactly at the edge of their hitbox.
 	- [ ] Sometimes the fading animation plays twice if the player presses multiple keys while the death UI is open.
 	- [ ] Portal particles are visible below the portal if the block underneath it is destroyed.
+	- [ ] The player cannot throw an item when there is a solid tile 1 block above their head.
 - [ ] **Graphical improvements**
 	- [ ] Activated lasers should have a crackly lightning appearance
 	- [x] Remove grey particles from unactivated lasers
@@ -49,8 +50,10 @@ Features to add to improve game feel:
 	- [x] Jumping while holding the opposite of the direction of motion sets horizontal velocity to 0
 	- [x] Buffer inputs
 	- [ ] Slip past corners and preserve velocity
+	- [ ] Prevent the player from being crushed by gates (nudge them out of the way slightly)
 	- [ ] Improve controllable jump height (make it more controllable)
 	- [ ] Throwing tiles push the player in the opposite direction when thrown
+	- [ ] Improve throw correction: try nudging the player backwards a bit if they're too close to a wall
 	- [x] When pressing left and right simultaneously, prioritize whichever was pressed most recently
 - [ ] **Movement tech**
 	- [ ] **Downward smash attack**
@@ -70,6 +73,11 @@ Features to add to improve game feel:
 	- [ ] **Tiles** - add more custom throwable tiles (see [[items]]), and make them spawn in the world. (I think this will significantly increase the quality of the game, by giving the player interesting choices about when to use their limited resources).
 	- [ ] **Enemy item drops** - to reward the player for destroying enemies, I could make them drop an item on death. I have considered making them drop a small item that can be combined with others to make an explosive box.
 - [x] When the player gets close to a spider, it should stop attacking and skitter away before restarting its attack.
+- [ ] Spikeballs shoud disappear (except for their attack) upon collision with the player, to prevent the player from being trapped
+- [ ] Reduce variability in the density of enemies/traps across levels (some levels have too many)
+- [ ] Change throwable tile spawning:
+	- [ ] Throwable tiles should spawn in pre-set positions in each room, not randomly
+	- [ ] Throwable tiles should sometimes spawn blocking the path so that the player doesn't just pick up 2 blocks at the beginning and never use them.
 
 More drastic measures to improve game feel (to be implemented if the above are insufficient):
 - [ ] **More inherent movement abilities** - the movement system is now rather basic; often there is essentially one way to approach each room (usually by double-jumping a lot). This means the player just does this approach and it either works or it doesn't, resulting in the game feeling random. To fix this, I could make the movement system more expressive by adding new moves that let the player traverse the world in more ways.
