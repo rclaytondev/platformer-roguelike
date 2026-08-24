@@ -39,7 +39,7 @@ class DefaultState {
 		self.checkJumpInputs(world, input, canvasIO);
 		self.checkThrowInputs(world, input, canvasIO);
 		self.checkCrouchInputs(world, input, canvasIO);
-		self.checkPickUpInputs(world, input);
+		self.checkPickUpInputs(world);
 		self.checkClimbStartInputs(world, input, canvasIO);
 	}
 }
@@ -108,6 +108,28 @@ class ClimbingState {
 	}
 }
 
+class Buffer {
+	private key: string;
+	private timeSincePress: number = Infinity;
+
+	constructor(key: string) {
+		this.key = key;
+	}
+
+	update(input: Input) {
+		this.timeSincePress ++;
+		if(input[this.key] && !InputUtils.pastKeys[this.key]) {
+			this.timeSincePress = 0;
+		}
+	}
+	isActive() {
+		return this.timeSincePress < PlayerData.BUFFER_FRAMES;
+	}
+	reset() {
+		this.timeSincePress = Infinity;
+	}
+}
+
 export class Player extends RectangularCollideable {
 	velocity: Vector = new Vector(0, 0);
 	hasDoubleJump: boolean = false;
@@ -119,6 +141,11 @@ export class Player extends RectangularCollideable {
 	invulnerabilityTime: number = 0;
 	squishFactor: number = 1;
 	state: DefaultState | ClimbingState = new DefaultState();
+
+	readonly jumpBuffer: Buffer = new Buffer("KeyZ");
+	readonly pickupBuffer: Buffer = new Buffer("Space");
+	readonly throwBuffer1: Buffer = new Buffer("KeyX");
+	readonly throwBuffer2: Buffer = new Buffer("KeyC");
 
 	equippedItems: [ThrowableTile | null, ThrowableTile | null] = [null, null];
 
@@ -189,6 +216,9 @@ export class Player extends RectangularCollideable {
 
 	update(world: World, canvasIO: CanvasIO) {
 		if(Main.screen instanceof RoomEditor) { return; }
+		const input = Debug.getInput(canvasIO);
+		this.updateBuffers(input);
+
 		this.state.checkInputs(this, world, canvasIO);
 		this.updateCrouching(world);
 		this.state.update(this, world, canvasIO);
@@ -229,6 +259,12 @@ export class Player extends RectangularCollideable {
 			}
 		}
 	}
+	updateBuffers(input: Input) {
+		this.jumpBuffer.update(input);
+		this.pickupBuffer.update(input);
+		this.throwBuffer1.update(input);
+		this.throwBuffer2.update(input);
+	}
 	checkDirectionInputs(input: Input) {
 		if(input.ArrowLeft && (!input.ArrowRight || !InputUtils.pastKeys.ArrowLeft)) {
 			this.keyDirection = "left";
@@ -262,20 +298,27 @@ export class Player extends RectangularCollideable {
 		}
 	}
 	checkJumpInputs(world: World, input: Input, canvasIO: CanvasIO) {
-		if(input.KeyZ && !InputUtils.pastKeys.KeyZ && (this.coyoteTime > 0 || this.hasDoubleJump)) {
+		if(this.jumpBuffer.isActive() && (this.coyoteTime > 0 || this.hasDoubleJump)) {
+			this.jumpBuffer.reset();
 			this.jump(world, canvasIO);
 			return true;
 		}
 		return false;
 	}
 	checkThrowInputs(world: World, input: Input, canvasIO: CanvasIO) {
-		if(input.KeyX && !InputUtils.pastKeys.KeyX) {
+		if(this.throwBuffer1.isActive()) {
 			const used = this.equippedItems[0]?.use(world, canvasIO);
-			if(used) { this.equippedItems[0] = null; }
+			if(used) {
+				this.throwBuffer1.reset();
+				this.equippedItems[0] = null;
+			}
 		}
-		if(input.KeyC && !InputUtils.pastKeys.KeyC) {
+		if(this.throwBuffer2.isActive()) {
 			const used = this.equippedItems[1]?.use(world, canvasIO);
-			if(used) { this.equippedItems[1] = null; }
+			if(used) {
+				this.throwBuffer2.reset();
+				this.equippedItems[1] = null;
+			}
 		}
 	}
 	checkCrouchInputs(world: World, input: Input, canvasIO: CanvasIO) {
@@ -286,9 +329,12 @@ export class Player extends RectangularCollideable {
 			this.uncrouch(world);
 		}
 	}
-	checkPickUpInputs(world: World, input: Input) {
-		if(input.Space && !InputUtils.pastKeys.Space) {
-			this.collectNearestItem(world);
+	checkPickUpInputs(world: World) {
+		if(this.pickupBuffer.isActive()) {
+			const collected = this.collectNearestItem(world);
+			if(collected) {
+				this.pickupBuffer.reset();
+			}
 		}
 	}
 	checkClimbStartInputs(world: World, input: Input, canvasIO: CanvasIO) {
@@ -443,8 +489,10 @@ export class Player extends RectangularCollideable {
 		const allItems = [...world.entities.collideablesIntersecting(rect)].filter(i => i instanceof ThrowableTileEntity);
 		if(allItems.length !== 0) {
 			const closest = ArrayUtils.minValue(allItems, item => item.hitbox.distanceToRect(this.hitbox));
-			this.collect(closest, world);
+			const collected = this.collect(closest, world);
+			return collected;
 		}
+		return false;
 	}
 	collect(itemEntity: ThrowableTileEntity, world: World) {
 		const firstEmptySlot = this.equippedItems.indexOf(null);
@@ -454,6 +502,8 @@ export class Player extends RectangularCollideable {
 				modifier.reset();
 			}
 			world.entities.delete(itemEntity);
+			return true;
 		}
+		return false;
 	}
 }

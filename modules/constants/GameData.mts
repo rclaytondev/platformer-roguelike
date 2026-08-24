@@ -89,6 +89,7 @@ export class PlayerData {
 	static REVERSE_JUMP_X_VELOCITY = 0;
 	static MAX_X_VELOCITY = 8;
 	static NOKEY_FRICTION_X = 0.7;
+	static BUFFER_FRAMES = 5;
 	static OVERLIMIT_FRICTION_X = 0.95;
 	static COYOTE_FRAMES = 4;
 	static INITIAL_HEALTH = 3;
