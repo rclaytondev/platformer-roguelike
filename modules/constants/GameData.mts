@@ -85,6 +85,7 @@ export class PlayerData {
 	static GRAVITY_WHILE_JUMPING = 0.7;
 	static HORIZONTAL_ACCELERATION = 0.7;
 	static JUMP_VELOCITY = 14;
+	static JUMP_X_VELOCITY = 1;
 	static MAX_X_VELOCITY = 8;
 	static FRICTION_X = 0.7;
 	static COYOTE_FRAMES = 4;

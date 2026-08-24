@@ -253,8 +253,8 @@ export class Player extends RectangularCollideable {
 	checkFriction() {
 		if(
 			(this.keyDirection === null) ||
-			(this.keyDirection === "left" && this.velocity.x > 0) ||
-			(this.keyDirection === "right" && this.velocity.x < 0)
+			(this.keyDirection === "left" && (this.velocity.x > 0 || this.velocity.x < -PlayerData.MAX_X_VELOCITY)) ||
+			(this.keyDirection === "right" && (this.velocity.x < 0 || this.velocity.x > PlayerData.MAX_X_VELOCITY))
 		) {
 			this.velocity.x *= PlayerData.FRICTION_X;
 		}
@@ -334,6 +334,9 @@ export class Player extends RectangularCollideable {
 		this.coyoteTime = -1;
 		this.squishFactor = PlayerData.JUMP_SQUISH_AMOUNT;
 		this.state = new DefaultState();
+		if(this.keyDirection !== null) {
+			this.velocity = this.velocity.add(Vector.unit(this.keyDirection).multiply(PlayerData.JUMP_X_VELOCITY));
+		}
 		this.addJumpParticles(world, canvasIO);
 	}
 	addJumpParticles(world: World, canvasIO: CanvasIO) {

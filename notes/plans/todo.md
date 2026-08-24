@@ -45,7 +45,7 @@ Features to add to improve game feel:
 	- [ ] Lizards become unaligned from the grid when they encounter a slope and turn.
 - [x] **Better rooms** - a lot of the older rooms are very boring.
 - [ ] **Movement and input tweaks**
-	- [ ] Jumping gives a small amount of horizontal speed
+	- [x] Jumping gives a small amount of horizontal speed
 	- [ ] Jumping while holding the opposite of the direction of motion sets horizontal velocity to 0
 	- [ ] Buffer inputs (so far only jump inputs make sense to buffer)
 	- [ ] Slip past corners and preserve velocity
