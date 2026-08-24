@@ -30,12 +30,13 @@ class DefaultState {
 		const input = Debug.getInput(canvasIO);
 		self.velocity.y += input.KeyZ && self.velocity.y <= 0 ? PlayerData.GRAVITY_WHILE_JUMPING : PlayerData.GRAVITY;
 		self.velocity.x = MathUtils.constrain(self.velocity.x, -PlayerData.MAX_X_VELOCITY, PlayerData.MAX_X_VELOCITY);
-		self.checkFriction(input);
+		self.checkFriction();
 	}
 
 	checkInputs(self: Player, world: World, canvasIO: CanvasIO) {
 		const input = Debug.getInput(canvasIO);
-		self.checkMoveInputs(world, input);
+		self.checkDirectionInputs(input);
+		self.checkMoveInputs();
 		self.checkJumpInputs(world, input, canvasIO);
 		self.checkThrowInputs(world, input, canvasIO);
 		self.checkCrouchInputs(world, input, canvasIO);
@@ -54,7 +55,7 @@ class ClimbingState {
 	checkInputs(self: Player, world: World, canvasIO: CanvasIO) {
 		const input = Debug.getInput(canvasIO);
 		this.checkClimbingInputs(self, world, input);
-		self.checkFriction(input);
+		self.checkFriction();
 		this.checkJumpInputs(self, world, input, canvasIO);
 		this.checkChainEnd(self);
 	}
@@ -113,6 +114,7 @@ export class Player extends RectangularCollideable {
 	hasDoubleJump: boolean = false;
 	dead: boolean = false;
 	facing: "left" | "right" = "left";
+	keyDirection: "left" | "right" | null = null;
 	coyoteTime: number = 0;
 	health: number = PlayerData.INITIAL_HEALTH;
 	invulnerabilityTime: number = 0;
@@ -228,21 +230,32 @@ export class Player extends RectangularCollideable {
 			}
 		}
 	}
-	checkMoveInputs(world: World, input: Input) {
-		if(input.ArrowRight && !input.ArrowLeft && !Debug.freeCameraMode) {
+	checkDirectionInputs(input: Input) {
+		if(input.ArrowLeft && (!input.ArrowRight || !InputUtils.pastKeys.ArrowLeft)) {
+			this.keyDirection = "left";
+		}
+		if(input.ArrowRight && (!input.ArrowLeft || !InputUtils.pastKeys.ArrowRight)) {
+			this.keyDirection = "right";
+		}
+		if(!input.ArrowLeft && !input.ArrowRight) {
+			this.keyDirection = null;
+		}
+	}
+	checkMoveInputs() {
+		if(this.keyDirection === "right" && !Debug.freeCameraMode) {
 			this.velocity.x += PlayerData.HORIZONTAL_ACCELERATION;
 			this.facing = "right";
 		}
-		if(input.ArrowLeft && !input.ArrowRight && !Debug.freeCameraMode) {
+		if(this.keyDirection === "left" && !Debug.freeCameraMode) {
 			this.velocity.x -= PlayerData.HORIZONTAL_ACCELERATION;
 			this.facing = "left";
 		}
 	}
-	checkFriction(input: Input) {
+	checkFriction() {
 		if(
-			(!input.ArrowLeft && !input.ArrowRight) ||
-			(input.ArrowLeft && this.velocity.x > 0) ||
-			(input.ArrowRight && this.velocity.x < 0)
+			(this.keyDirection === null) ||
+			(this.keyDirection === "left" && this.velocity.x > 0) ||
+			(this.keyDirection === "right" && this.velocity.x < 0)
 		) {
 			this.velocity.x *= PlayerData.FRICTION_X;
 		}

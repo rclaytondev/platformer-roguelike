@@ -51,7 +51,7 @@ Features to add to improve game feel:
 	- [ ] Slip past corners and preserve velocity
 	- [ ] Improve controllable jump height (make it more controllable)
 	- [ ] Throwing tiles push the player in the opposite direction when thrown
-	- [ ] When pressing left and right simultaneously, prioritize whichever was pressed most recently
+	- [x] When pressing left and right simultaneously, prioritize whichever was pressed most recently
 - [ ] **Movement tech**
 	- [ ] **Downward smash attack**
 		- [ ] Add a brief pause before doing it (maybe)
