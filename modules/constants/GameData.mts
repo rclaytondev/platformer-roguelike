@@ -87,7 +87,8 @@ export class PlayerData {
 	static JUMP_VELOCITY = 14;
 	static JUMP_X_VELOCITY = 1;
 	static MAX_X_VELOCITY = 8;
-	static FRICTION_X = 0.7;
+	static NOKEY_FRICTION_X = 0.7;
+	static OVERLIMIT_FRICTION_X = 0.95;
 	static COYOTE_FRAMES = 4;
 	static INITIAL_HEALTH = 3;
 	static INVULNERABIlITY_TIME = 30;

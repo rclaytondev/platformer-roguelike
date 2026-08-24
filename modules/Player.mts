@@ -251,12 +251,14 @@ export class Player extends RectangularCollideable {
 		}
 	}
 	checkFriction() {
-		if(
-			(this.keyDirection === null) ||
+		if(this.keyDirection === null) {
+			this.velocity.x *= PlayerData.NOKEY_FRICTION_X;
+		}
+		else if(
 			(this.keyDirection === "left" && (this.velocity.x > 0 || this.velocity.x < -PlayerData.MAX_X_VELOCITY)) ||
 			(this.keyDirection === "right" && (this.velocity.x < 0 || this.velocity.x > PlayerData.MAX_X_VELOCITY))
 		) {
-			this.velocity.x *= PlayerData.FRICTION_X;
+			this.velocity.x *= PlayerData.OVERLIMIT_FRICTION_X;
 		}
 	}
 	checkJumpInputs(world: World, input: Input, canvasIO: CanvasIO) {
