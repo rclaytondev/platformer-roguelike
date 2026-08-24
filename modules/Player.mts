@@ -29,7 +29,6 @@ class DefaultState {
 	update(self: Player, world: World, canvasIO: CanvasIO) {
 		const input = Debug.getInput(canvasIO);
 		self.velocity.y += input.KeyZ && self.velocity.y <= 0 ? PlayerData.GRAVITY_WHILE_JUMPING : PlayerData.GRAVITY;
-		self.velocity.x = MathUtils.constrain(self.velocity.x, -PlayerData.MAX_X_VELOCITY, PlayerData.MAX_X_VELOCITY);
 		self.checkFriction();
 	}
 
@@ -242,12 +241,12 @@ export class Player extends RectangularCollideable {
 		}
 	}
 	checkMoveInputs() {
-		if(this.keyDirection === "right" && !Debug.freeCameraMode) {
-			this.velocity.x += PlayerData.HORIZONTAL_ACCELERATION;
+		if(this.keyDirection === "right" && !Debug.freeCameraMode && this.velocity.x < PlayerData.MAX_X_VELOCITY) {
+			this.velocity.x = GeomUtils.moveTowards(this.velocity.x, PlayerData.MAX_X_VELOCITY, PlayerData.HORIZONTAL_ACCELERATION);
 			this.facing = "right";
 		}
-		if(this.keyDirection === "left" && !Debug.freeCameraMode) {
-			this.velocity.x -= PlayerData.HORIZONTAL_ACCELERATION;
+		if(this.keyDirection === "left" && !Debug.freeCameraMode && this.velocity.x > -PlayerData.MAX_X_VELOCITY) {
+			this.velocity.x = GeomUtils.moveTowards(this.velocity.x, -PlayerData.MAX_X_VELOCITY, PlayerData.HORIZONTAL_ACCELERATION);
 			this.facing = "left";
 		}
 	}
