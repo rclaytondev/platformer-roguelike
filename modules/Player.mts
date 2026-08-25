@@ -141,6 +141,9 @@ export class Player extends RectangularCollideable {
 	invulnerabilityTime: number = 0;
 	squishFactor: number = 1;
 	state: DefaultState | ClimbingState = new DefaultState();
+	storedVelocity: Vector = new Vector(0, 0);
+	storedVelocityTime: number = -1;
+	storedVelocityPos: Vector = new Vector(0, 0);
 
 	readonly jumpBuffer: Buffer = new Buffer("KeyZ");
 	readonly pickupBuffer: Buffer = new Buffer("Space");
@@ -232,6 +235,7 @@ export class Player extends RectangularCollideable {
 				this.velocity.x *= PlayerData.CROUCHED_FRICTION;
 			}
 		}
+		this.updateStoredVelocity(world, canvasIO);
 		this.move(new Vector(this.velocity.x, 0), world, canvasIO, { });
 		this.move(new Vector(0, this.velocity.y), world, canvasIO, {});
 	}
@@ -252,9 +256,19 @@ export class Player extends RectangularCollideable {
 				if(collision.directionOf(this) === "down" && this.velocity.y > PlayerData.GRAVITY) {
 					this.squishFactor = PlayerData.GROUND_SQUISH_AMOUNT;
 				}
+				if(this.velocity.y !== 0) {
+					this.storedVelocity.y = this.velocity.y;
+					this.storedVelocityTime = PlayerData.STORED_VELOCITY_FRAMES;
+					this.storedVelocityPos.y = this.hitbox.y;
+				}
 				this.velocity.y = 0;
 			}
 			else {
+				if(this.velocity.x !== 0) {
+					this.storedVelocity.x = this.velocity.x;
+					this.storedVelocityTime = PlayerData.STORED_VELOCITY_FRAMES;
+					this.storedVelocityPos.x = this.hitbox.x;
+				}
 				this.velocity.x = 0;
 			}
 		}
@@ -264,6 +278,27 @@ export class Player extends RectangularCollideable {
 		this.pickupBuffer.update(input);
 		this.throwBuffer1.update(input);
 		this.throwBuffer2.update(input);
+	}
+	updateStoredVelocity(world: World, canvasIO: CanvasIO) {
+		this.storedVelocityTime --;
+		if(this.storedVelocityTime < 0) { return; }
+
+		const canApplyX = (Math.sign(this.hitbox.x - this.storedVelocityPos.x) !== -Math.sign(this.storedVelocity.x)) && (
+			(this.storedVelocity.x > 0 && this.canMove("right", world, canvasIO))
+			|| (this.storedVelocity.x < 0 && this.canMove("left", world, canvasIO))
+		);
+		if(canApplyX) {
+			this.velocity.x = this.storedVelocity.x;
+			this.storedVelocity.x = 0;
+		}
+		const canApplyY = (Math.sign(this.hitbox.y - this.storedVelocityPos.y) !== -Math.sign(this.storedVelocity.y)) && (
+			(this.storedVelocity.y > 0 && this.canMove("down", world, canvasIO))
+			|| (this.storedVelocity.y < 0 && this.canMove("up", world, canvasIO))
+		);
+		if(canApplyY) {
+			this.velocity.y = this.storedVelocity.y;
+			this.storedVelocity.y = 0;
+		}
 	}
 	checkDirectionInputs(input: Input) {
 		if(input.ArrowLeft && (!input.ArrowRight || !InputUtils.pastKeys.ArrowLeft)) {
