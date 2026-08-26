@@ -14,6 +14,7 @@ export const basicCollisionScenario = new TestScenario(() => {
 	world.tiles.set(-1, -2, TowerSlope.SLOPE_UP_RIGHT);
 	world.tiles.set(-2, -3, TowerSlope.SLOPE_UP_RIGHT);
 	world.tiles.set(-3, -3, TowerTile.TOWER_TILE);
+	world.tiles.set(-4, -6, TowerTile.TOWER_TILE);
 	world.tiles.fillRect(Rectangle.fromDimensions(-6, -2, 5, 1), TowerTile.TOWER_TILE);
 
 	world.tiles.set(6, -1, TowerSlope.SLOPE_UP_LEFT);

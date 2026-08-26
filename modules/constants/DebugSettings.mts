@@ -16,7 +16,7 @@ export const DEBUG_SETTINGS = {
 		OVERRIDE_VALUES: [],
 	},
 	INPUT_RECORD: [
-
+		{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true,"KeyZ":true}, {"ArrowLeft":true,"KeyZ":true}, {"ArrowLeft":true,"KeyZ":true}, {"ArrowLeft":true,"KeyZ":true}, {"ArrowLeft":true,"KeyZ":true}, {"ArrowLeft":true,"KeyZ":true}, {"ArrowLeft":true,"KeyZ":true}, {"ArrowLeft":true,"KeyZ":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {"ArrowLeft":true}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {"KeyR":true}, {"KeyR":true}, {"KeyR":true}, {"KeyR":true}, {"KeyR":true}, {"KeyR":true}, {"KeyR":true}, {"KeyR":true},
 	] as { [key: string]: boolean }[],
 
 	SPIDERS: {
