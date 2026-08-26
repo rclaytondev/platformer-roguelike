@@ -49,7 +49,7 @@ Features to add to improve game feel:
 	- [x] Jumping gives a small amount of horizontal speed
 	- [x] Jumping while holding the opposite of the direction of motion sets horizontal velocity to 0
 	- [x] Buffer inputs
-	- [ ] Slip past corners and preserve velocity
+	- [x] Slip past corners and preserve velocity
 	- [ ] Prevent the player from being crushed by gates (nudge them out of the way slightly)
 	- [ ] Improve controllable jump height (make it more controllable)
 	- [ ] Throwing tiles push the player in the opposite direction when thrown

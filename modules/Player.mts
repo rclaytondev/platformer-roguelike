@@ -11,6 +11,7 @@ import { GeomUtils } from "./game-utilities/GeomUtils.mjs";
 import { GraphicsUtils } from "./game-utilities/GraphicsUtils.mjs";
 import { InputUtils } from "./game-utilities/InputUtils.mjs";
 import { Particle } from "./game-utilities/Particle.mjs";
+import { Collideable } from "./game-utilities/physics-engine/Collideable.mjs";
 import { CollisionEvent } from "./game-utilities/physics-engine/CollisionEvent.mjs";
 import { RectangularCollideable } from "./game-utilities/physics-engine/RectangularCollideable.mjs";
 import { RandomUtils } from "./game-utilities/RandomUtils.mjs";
@@ -19,6 +20,7 @@ import { ThrowableTile } from "./items/ThrowableTile.mjs";
 import { ThrowableTileEntity } from "./items/ThrowableTileEntity.mjs";
 import { Main } from "./Main.mjs";
 import { RoomEditor } from "./RoomEditor.mjs";
+import { SlopeTile } from "./tiles/SlopeTile.mjs";
 import { DeathScreen } from "./user-interface/DeathScreen.mjs";
 import { Renderable } from "./world/Renderer.mjs";
 import { World } from "./world/World.mjs";
@@ -299,20 +301,42 @@ export class Player extends RectangularCollideable {
 			this.uncrouch(world);
 		}
 	}
-	onCollision(collision: CollisionEvent): void {
+	onCollision(collision: CollisionEvent, world: World): void {
 		if(collision.movingObject === this) {
+			const corrected = this.applyCornerCorrection(collision, world);
 			if(Directions.isVertical(collision.direction)) {
 				if(collision.directionOf(this) === "down" && this.velocity.y > PlayerData.GRAVITY) {
 					this.squishFactor = PlayerData.GROUND_SQUISH_AMOUNT;
 				}
-				this.storedVelocityY.store(this);
-				this.velocity.y = 0;
+				if(!corrected) {
+					this.storedVelocityY.store(this);
+					this.velocity.y = 0;
+				}
 			}
-			else {
+			else if(!corrected) {
 				this.storedVelocityX.store(this);
 				this.velocity.x = 0;
 			}
 		}
+	}
+	applyCornerCorrection(collision: CollisionEvent, world: World) {
+		const collider = collision.collidingObject(this);
+		const isSlope = !(collider instanceof Collideable) && collider.tile instanceof SlopeTile;
+		const direction = collision.directionOf(this);
+		if(direction === "down" || isSlope) { return false; }
+		const perpendicular = Directions.rotateClockwise[collision.direction];
+		const originalHitbox = this.hitbox;
+		for(let amount = 1; amount < PlayerData.CORNER_CORRECTION_DIST; amount ++) {
+			for(const sign of [1, -1]) {
+				this.hitbox = originalHitbox.translate(Vector.unit(perpendicular).multiply(amount * sign));
+				const moved = this.translateIfUnobstructed(direction, _ => true, world);
+				if(moved) {
+					return true;
+				}
+			}
+		}
+		this.hitbox = originalHitbox;
+		return false;
 	}
 	updateBuffers(input: Input) {
 		this.jumpBuffer.update(input);

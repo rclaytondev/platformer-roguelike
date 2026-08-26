@@ -91,6 +91,7 @@ export class PlayerData {
 	static NOKEY_FRICTION_X = 0.7;
 	static BUFFER_FRAMES = 5;
 	static STORED_VELOCITY_FRAMES = 6;
+	static CORNER_CORRECTION_DIST = 12;
 	static OVERLIMIT_FRICTION_X = 0.95;
 	static COYOTE_FRAMES = 4;
 	static INITIAL_HEALTH = 3;
