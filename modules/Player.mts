@@ -1,6 +1,6 @@
 import { CanvasIO } from "../utils-ts/modules/CanvasIO.mjs";
 import { ArrayUtils } from "../utils-ts/modules/core-extensions/ArrayUtils.mjs";
-import { Directions } from "../utils-ts/modules/geometry/Direction.mjs";
+import { Direction, Directions } from "../utils-ts/modules/geometry/Direction.mjs";
 import { Rectangle } from "../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../utils-ts/modules/geometry/Vector.mjs";
 import { MathUtils } from "../utils-ts/modules/math/MathUtils.mjs";
@@ -133,10 +133,10 @@ class Buffer {
 }
 
 class StoredVelocity {
-	private readonly axis: "x" | "y";
-	private amount: number = 0;
-	private position: number = 0;
-	private timeLeft: number = 0;
+	readonly axis: "x" | "y";
+	amount: number = 0;
+	position: number = 0;
+	timeLeft: number = 0;
 
 	constructor(axis: "x" | "y") {
 		this.axis = axis;
@@ -319,16 +319,34 @@ export class Player extends RectangularCollideable {
 			}
 		}
 	}
-	applyCornerCorrection(collision: CollisionEvent, world: World) {
+	shouldCornerCorrect(collision: CollisionEvent) {
 		const collider = collision.collidingObject(this);
 		const isSlope = !(collider instanceof Collideable) && collider.tile instanceof SlopeTile;
 		const direction = collision.directionOf(this);
-		if(direction === "down" || isSlope) { return false; }
-		const perpendicular = Directions.rotateClockwise[collision.direction];
+		return direction !== "down" && !isSlope;
+	}
+	cornerCorrectionDirections(direction: Direction): Direction[] {
+		if(Directions.isHorizontal(direction)) {
+			return ["up", "down"];
+		}
+		const result: Direction[] = [];
+		const storedX = this.storedVelocityX.timeLeft > 0 ? this.storedVelocityX.amount : 0;
+		if(this.velocity.x >= 0 && storedX >= 0) {
+			result.push("right");
+		}
+		if(this.velocity.x <= 0 && storedX <= 0) {
+			result.push("left");
+		}
+		return result;
+	}
+	applyCornerCorrection(collision: CollisionEvent, world: World) {
+		if(!this.shouldCornerCorrect(collision)) { return false; }
+		const direction = collision.directionOf(this);
 		const originalHitbox = this.hitbox;
+		const directions = this.cornerCorrectionDirections(direction);
 		for(let amount = 1; amount < PlayerData.CORNER_CORRECTION_DIST; amount ++) {
-			for(const sign of [1, -1]) {
-				this.hitbox = originalHitbox.translate(Vector.unit(perpendicular).multiply(amount * sign));
+			for(const correctionDirection of directions) {
+				this.hitbox = originalHitbox.translate(Vector.unit(correctionDirection).multiply(amount));
 				const moved = this.translateIfUnobstructed(direction, _ => true, world);
 				if(moved) {
 					return true;
