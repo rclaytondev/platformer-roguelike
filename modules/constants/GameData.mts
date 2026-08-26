@@ -576,6 +576,7 @@ export class ItemData {
 	static FRICTION_X = 0.95;
 	static GROUNDED_FRICTION_X = 0.75;
 	static THROW_OFFSET = 5;
+	static THROW_RECOIL = 4;
 	static PICKUP_DISTANCE = 10;
 	static THROW_CORRECTION = 20;
 	static THROW_OFFSET_Y = -6;

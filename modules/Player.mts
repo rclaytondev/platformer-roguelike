@@ -574,6 +574,10 @@ export class Player extends RectangularCollideable {
 					const correctionDirection = Directions.rotate[angularDirection][direction];
 					const threw = this.attemptThrow(item, throwStartCenter.add(Vector.unit(correctionDirection).multiply(correctionAmount)), world, canvasIO);
 					if(threw) {
+						if(Directions.isHorizontal(direction)) {
+							const opposite = Directions.opposite[direction];
+							this.velocity = this.velocity.add(Vector.unit(opposite).multiply(ItemData.THROW_RECOIL));
+						}
 						return true;
 					}
 				}

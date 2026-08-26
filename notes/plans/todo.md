@@ -52,7 +52,7 @@ Features to add to improve game feel:
 	- [x] Slip past corners and preserve velocity
 	- [ ] Prevent the player from being crushed by gates (nudge them out of the way slightly)
 	- [ ] Improve controllable jump height (make it more controllable)
-	- [ ] Throwing tiles push the player in the opposite direction when thrown
+	- [x] Throwing tiles push the player in the opposite direction when thrown
 	- [ ] Improve throw correction: try nudging the player backwards a bit if they're too close to a wall
 	- [x] When pressing left and right simultaneously, prioritize whichever was pressed most recently
 - [ ] **Movement tech**
