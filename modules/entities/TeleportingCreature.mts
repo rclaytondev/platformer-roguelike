@@ -16,9 +16,9 @@ import { World } from "../world/World.mjs";
 
 
 class ReadyMode {
-	update(self: TeleportingCreature, world: World) {
-		if(self.seesPlayer(world) && self.isClosestToPlayer(world)) {
-			const teleported = self.teleport(world);
+	update(self: TeleportingCreature) {
+		if(self.seesPlayer() && self.isClosestToPlayer()) {
+			const teleported = self.teleport();
 			if(teleported) {
 				self.mode = new PauseMode();
 			}
@@ -56,24 +56,27 @@ class CooldownMode {
 }
 
 export class TeleportingCreature extends RectangularCollideable {
+	world: World;
 	velocity: Vector = new Vector(0, 0);
 
 	mode: ReadyMode | PauseMode | CooldownMode = new ReadyMode();
 	fireSpawner: FireSpawner = new FireSpawner(new Vector(0, 0), "up", TeleportingCreatureData.FIRE);
 
-	private constructor(position: Vector) {
+	private constructor(position: Vector, world: World) {
 		super(Rectangle.fromDimensions(position.x, position.y, TeleportingCreatureData.HITBOX_WIDTH, TeleportingCreatureData.HITBOX_HEIGHT));
+		this.world = world;
 	}
-	static atTile(tilePosition: Vector) {
+	static atTile(tilePosition: Vector, world: World) {
 		return new TeleportingCreature(
 			tilePosition
 			.add(0.5, 0.5)
 			.multiply(WorldData.TILE_SIZE)
 			.subtract(TeleportingCreatureData.HITBOX_WIDTH / 2, TeleportingCreatureData.HITBOX_HEIGHT / 2),
+			world,
 		);
 	}
 	static spawn(tilePosition: Vector, world: World) {
-		return world.addEntityIfEmpty(TeleportingCreature.atTile(tilePosition));
+		return world.addEntityIfEmpty(TeleportingCreature.atTile(tilePosition, world));
 	}
 
 	render() {
@@ -133,57 +136,58 @@ export class TeleportingCreature extends RectangularCollideable {
 		);
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
-		this.mode.update(this, world);
+	update(_world: World, canvasIO: CanvasIO) {
+		this.mode.update(this);
 		this.fireSpawner.position = this.hitbox.center();
-		this.fireSpawner.update(world, canvasIO);
-		this.fireSpawner.updateHurtbox(world, canvasIO);
-		this.move(this.velocity, world, canvasIO, {});
+		this.fireSpawner.update(this.world, canvasIO);
+		this.fireSpawner.updateHurtbox(this.world, canvasIO);
+		this.move(this.velocity, this.world, canvasIO, {});
 		this.velocity.y += PlayerData.GRAVITY;
 	}
-	hasLineOfSight(world: World) {
-		return world.hasLineOfSight(this.hitbox.center(), world.player.hitbox, (e) => e !== this);
+	hasLineOfSight() {
+		return this.world.hasLineOfSight(this.hitbox.center(), this.world.player.hitbox, (e) => e !== this);
 	}
-	isInRangeOfPlayer(playerCenter: Vector) {
+	isInRangeOfPlayer() {
+		const playerCenter = this.world.player.hitbox.center();
 		return Vector.dist(this.hitbox.center(), playerCenter) < TeleportingCreatureData.MAX_TELEPORT_RANGE;
 	}
-	seesPlayer(world: World) {
-		return this.isInRangeOfPlayer(world.player.hitbox.center()) && this.hasLineOfSight(world);
+	seesPlayer() {
+		return this.isInRangeOfPlayer() && this.hasLineOfSight();
 	}
-	isClosestToPlayer(world: World) {
-		const player = world.player.hitbox.center();
+	isClosestToPlayer() {
+		const player = this.world.player.hitbox.center();
 		const distance = Vector.dist(this.hitbox.center(), player);
 		const region = Rectangle.fromCenter(player.x, player.y, TeleportingCreatureData.MAX_TELEPORT_RANGE, TeleportingCreatureData.MAX_TELEPORT_RANGE);
-		const others = [...world.entities.collideablesIntersecting(region)].filter(
-			c => c instanceof TeleportingCreature && c !== this && c.mode instanceof ReadyMode && c.seesPlayer(world),
+		const others = [...this.world.entities.collideablesIntersecting(region)].filter(
+			c => c instanceof TeleportingCreature && c !== this && c.mode instanceof ReadyMode && c.seesPlayer(),
 		) as TeleportingCreature[];
 		const distances = others.map(c => Vector.dist(c.hitbox.center(), player));
 		return distances.every(d => d >= distance);
 	}
-	getTeleportDestination(world: World) {
-		const playerTile = Tiles.getTileCoordinates(world.player.hitbox.center());
+	getTeleportDestination() {
+		const playerTile = Tiles.getTileCoordinates(this.world.player.hitbox.center());
 		for(let yDistance = 0; yDistance < TeleportingCreatureData.MAX_TELEPORT_DISTANCE_Y; yDistance ++) {
 			const targetTile = playerTile.add(0, yDistance);
 			const targetTileCenter = Tiles.getTileSquare(targetTile).center();
 			const targetHitbox = Rectangle.fromCenter(targetTileCenter.x, targetTileCenter.y, TeleportingCreatureData.HITBOX_WIDTH, TeleportingCreatureData.HITBOX_HEIGHT);
 			const searchRegion = Rectangle.fromDimensions(targetHitbox.x, targetHitbox.bottom, targetHitbox.width, TeleportingCreatureData.TELEPORT_LOOKBELOW_DISTANCE);
-			const collideables = world.entities.collideablesIntersecting(searchRegion);
-			if(!world.isInSolid(targetHitbox, e => e !== this) && ![...collideables].some(c => c instanceof TeleportingCreature && c !== this)) {
+			const collideables = this.world.entities.collideablesIntersecting(searchRegion);
+			if(!this.world.isInSolid(targetHitbox, e => e !== this) && ![...collideables].some(c => c instanceof TeleportingCreature && c !== this)) {
 				return targetHitbox.getCorner("top-left");
 			}
 		}
 		return null;
 	}
-	teleport(world: World) {
-		const destination = this.getTeleportDestination(world);
+	teleport() {
+		const destination = this.getTeleportDestination();
 		if(destination) {
 			const initialPosition = this.hitbox.center();
 			this.hitbox.x = destination.x;
 			this.hitbox.y = destination.y;
-			world.entities.updatePosition(this);
+			this.world.entities.updatePosition(this);
 
 			const newPosition = this.hitbox.center();
-			world.entities.add(new TeleportParticle(initialPosition, newPosition));
+			this.world.entities.add(new TeleportParticle(initialPosition, newPosition, this.world));
 
 			return true;
 		}
@@ -196,28 +200,30 @@ export class TeleportingCreature extends RectangularCollideable {
 		}
 	}
 
-	translate(amount: Vector, world: World): void {
-		super.translate(amount, world);
+	translate(amount: Vector): void {
+		super.translate(amount, this.world);
 		this.fireSpawner.translate(amount);
 	}
 }
 
 class TeleportParticle extends Entity {
+	world: World;
 	endpoint1: Vector;
 	endpoint2: Vector;
 	lineWidth: number;
 
-	constructor(endpoint1: Vector, endpoint2: Vector) {
+	constructor(endpoint1: Vector, endpoint2: Vector, world: World) {
 		super();
+		this.world = world;
 		this.endpoint1 = endpoint1;
 		this.endpoint2 = endpoint2;
 		this.lineWidth = TeleportingCreatureData.ZAP_WIDTH;
 	}
 
-	update(world: World) {
+	update() {
 		this.lineWidth -= TeleportingCreatureData.ZAP_WIDTH_DECAY;
 		if(this.lineWidth <= 0) {
-			world.entities.delete(this);
+			this.world.entities.delete(this);
 		}
 	}
 	render() {

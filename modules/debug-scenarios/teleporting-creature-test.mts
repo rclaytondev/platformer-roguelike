@@ -8,10 +8,10 @@ import { World } from "../world/World.mjs";
 export const teleportingCreatureScenario = new TestScenario(() => {
 	const world = new World(false);
 
-	world.addEntityIfEmpty(TeleportingCreature.atTile(new Vector(4, -1)));
-	world.addEntityIfEmpty(TeleportingCreature.atTile(new Vector(5, -1)));
-	world.addEntityIfEmpty(TeleportingCreature.atTile(new Vector(6, -1)));
-	world.addEntityIfEmpty(TeleportingCreature.atTile(new Vector(7, -1)));
+	world.addEntityIfEmpty(TeleportingCreature.atTile(new Vector(4, -1), world));
+	world.addEntityIfEmpty(TeleportingCreature.atTile(new Vector(5, -1), world));
+	world.addEntityIfEmpty(TeleportingCreature.atTile(new Vector(6, -1), world));
+	world.addEntityIfEmpty(TeleportingCreature.atTile(new Vector(7, -1), world));
 
 
 
