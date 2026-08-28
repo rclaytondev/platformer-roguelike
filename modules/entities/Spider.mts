@@ -15,7 +15,6 @@ import { CollisionEvent } from "../game-utilities/physics-engine/CollisionEvent.
 import { RectangularCollideable } from "../game-utilities/physics-engine/RectangularCollideable.mjs";
 import { EntitySpawner } from "../level-generator/EntitySpawner.mjs";
 import { Spawnable } from "../level-generator/Spawnable.mjs";
-import { Player } from "../Player.mjs";
 import { BasicTile } from "../tiles/BasicTile.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
@@ -202,30 +201,30 @@ export class CrawlingState {
 		this.direction = direction;
 	}
 
-	update(spider: Spider, world: World, canvasIO: CanvasIO) {
-		if(this.isFloating(spider, world) || this.isBasepointDetached(spider)) {
+	update(spider: Spider, canvasIO: CanvasIO) {
+		if(this.isFloating(spider) || this.isBasepointDetached(spider)) {
 			spider.beginFalling();
 			return;
 		}
-		this.move(spider, world, canvasIO);
-		spider.projectileState.update(spider, world);
+		this.move(spider, canvasIO);
+		spider.projectileState.update(spider);
 	}
-	move(spider: Spider, world: World, canvasIO: CanvasIO) {
+	move(spider: Spider, canvasIO: CanvasIO) {
 		this.subpixel += spider.projectileState.speed;
 		let amountMoved = 0;
 		while(this.subpixel >= 1) {
 			amountMoved ++;
-			const moved = this.move1Pixel(spider, world);
+			const moved = this.move1Pixel(spider);
 			if(moved && amountMoved % SpiderData.MAX_DISTANCE_PER_MOVE === 0 && this.subpixel >= 1) {
-				this.updateHitbox(spider, world, canvasIO);
+				this.updateHitbox(spider, canvasIO);
 			}
 		}
-		const [normal, angle] = this.getNormalAndAngle(spider, world);
-		this.updateHitbox(spider, world, canvasIO, normal);
+		const [normal, angle] = this.getNormalAndAngle(spider);
+		this.updateHitbox(spider, canvasIO, normal);
 		spider.angle = GeomUtils.moveAngleTowards(spider.angle, angle, SpiderData.ANGULAR_SPEED);
 	}
-	move1Pixel(spider: Spider, world: World) {
-		const nextPoint = this.pointOnSurface.move1Pixel(spider, world, this.direction);
+	move1Pixel(spider: Spider) {
+		const nextPoint = this.pointOnSurface.move1Pixel(spider, spider.world, this.direction);
 		this.subpixel --;
 		if(nextPoint === "on-platform-end" || nextPoint === "floating") {
 			this.direction = (this.direction === "clockwise" ? "counterclockwise" : "clockwise");
@@ -234,33 +233,33 @@ export class CrawlingState {
 		this.pointOnSurface = nextPoint;
 		return true;
 	}
-	hitboxCalculator(spider: Spider, world: World) {
+	hitboxCalculator(spider: Spider) {
 		const opposite = (this.direction === "clockwise" ? "counterclockwise" : "clockwise");
-		const [nextTurnDistance, nextTurn] = this.pointOnSurface.move(spider, world, this.direction, 2 * SpiderData.TURN_WALL_DURATION);
-		const [previousTurnDistance, previousTurn] = this.pointOnSurface.move(spider, world, opposite, 2 * SpiderData.TURN_WALL_DURATION);
+		const [nextTurnDistance, nextTurn] = this.pointOnSurface.move(spider, spider.world, this.direction, 2 * SpiderData.TURN_WALL_DURATION);
+		const [previousTurnDistance, previousTurn] = this.pointOnSurface.move(spider, spider.world, opposite, 2 * SpiderData.TURN_WALL_DURATION);
 		return new SpiderHitboxCalculator(
 			this.pointOnSurface.normal,
 			new Turn(previousTurnDistance, previousTurn),
 			new Turn(nextTurnDistance, nextTurn),
 		);
 	}
-	getNormalAndAngle(spider: Spider, world: World): [Vector, number] {
-		const hitboxCalculator = this.hitboxCalculator(spider, world);
+	getNormalAndAngle(spider: Spider): [Vector, number] {
+		const hitboxCalculator = this.hitboxCalculator(spider);
 		const angle = hitboxCalculator.smoothedNormalAngle();
 		const normal = hitboxCalculator.scaledSmoothedNormal(angle);
 		return [normal, angle];
 	}
-	updateHitbox(spider: Spider, world: World, canvasIO: CanvasIO, normal?: Vector) {
-		normal ??= this.getNormalAndAngle(spider, world)[0];
+	updateHitbox(spider: Spider, canvasIO: CanvasIO, normal?: Vector) {
+		normal ??= this.getNormalAndAngle(spider)[0];
 		const preferredCenter = this.pointOnSurface.position.add(normal);
 		const offset = preferredCenter.subtract(spider.hitbox.center().add(spider.subpixel));
 		const collides = (obj: Collideable | TileWithPosition) => !(obj instanceof Fireball && obj.ignoredEntities.includes(spider));
-		spider.move(offset, world, canvasIO, { collides });
+		spider.move(offset, spider.world, canvasIO, { collides });
 	}
-	isFloating(spider: Spider, world: World) {
+	isFloating(spider: Spider) {
 		const opposite = this.direction === "clockwise" ? "counterclockwise" : "clockwise";
-		const blockers1 = world.angularMotionBlockers(this.pointOnSurface.position, this.direction, (o) => o !== spider);
-		const blockers2 = world.angularMotionBlockers(this.pointOnSurface.position, opposite, (o) => o !== spider);
+		const blockers1 = spider.world.angularMotionBlockers(this.pointOnSurface.position, this.direction, (o) => o !== spider);
+		const blockers2 = spider.world.angularMotionBlockers(this.pointOnSurface.position, opposite, (o) => o !== spider);
 		return blockers1.length === 0 && blockers2.length === 0;
 	}
 	isBasepointDetached(spider: Spider) {
@@ -296,7 +295,7 @@ export class SpiderLeg {
 		this.maxDistance = maxDistance;
 	}
 
-	update(spider: Spider, world: World) {
+	update(spider: Spider) {
 		if(Math.abs(this.distance) <= this.minDistance || Math.sign(this.distance) !== Math.sign(this.attachmentOffset.x)) {
 			this.destinationDistance = this.maxDistance * Math.sign(this.attachmentOffset.x);
 		}
@@ -308,16 +307,16 @@ export class SpiderLeg {
 			this.distance = GeomUtils.moveTowards(this.distance, this.destinationDistance, SpiderData.LEG_SPEED);
 		}
 
-		const destination = this.destination(spider, world);
+		const destination = this.destination(spider);
 		const updateSpeed = spider.projectileState.speed + SpiderData.LEG_UPDATE_SPEED;
 		this.position = GeomUtils.moveVectorTowards(this.position, destination, updateSpeed);
 	}
-	destination(spider: Spider, world: World) {
-		if(spider.movement instanceof FallingState || spider.movement.isFloating(spider, world)) {
+	destination(spider: Spider) {
+		if(spider.movement instanceof FallingState || spider.movement.isFloating(spider)) {
 			return this.position;
 		}
 		const direction = this.distance > 0 ? "clockwise" : "counterclockwise";
-		const [distance, point] = spider.movement.pointOnSurface.move(spider, world, direction, Math.abs(this.distance), false);
+		const [distance, point] = spider.movement.pointOnSurface.move(spider, spider.world, direction, Math.abs(this.distance), false);
 		return point.position;
 	}
 	jointPosition(spider: Spider, position: Vector) {
@@ -348,16 +347,16 @@ export class SpiderLeg {
 export class FallingState {
 	velocity: Vector = new Vector(0, 0);
 
-	update(spider: Spider, world: World, canvasIO: CanvasIO) {
-		spider.move(this.velocity, world, canvasIO, { });
+	update(spider: Spider, canvasIO: CanvasIO) {
+		spider.move(this.velocity, spider.world, canvasIO, { });
 		this.velocity = this.velocity.add(0, PlayerData.GRAVITY);
 	}
 }
 
 abstract class ProjectileState {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	render(spider: Spider, world: World): Renderable[] { return []; }
-	abstract update(spider: Spider, world: World): void;
+	render(spider: Spider): Renderable[] { return []; }
+	abstract update(spider: Spider): void;
 
 	abstract numGlowingEyes(): number;
 	abstract readonly speed: number;
@@ -367,15 +366,15 @@ class TelegraphState extends ProjectileState {
 	timerProgress: number = 0;
 	speed = 0;
 
-	update(spider: Spider, world: World) {
-		if(spider.seesPlayer(world)) {
+	update(spider: Spider) {
+		if(spider.seesPlayer()) {
 			this.timerProgress ++;
-			if(spider.movement instanceof CrawlingState && SkitterState.shouldSkitter(spider, world.player, true)) {
+			if(spider.movement instanceof CrawlingState && SkitterState.shouldSkitter(spider, true)) {
 				spider.projectileState = new SkitterState();
-				spider.movement.runAway(world.player.hitbox.center());
+				spider.movement.runAway(spider.world.player.hitbox.center());
 			}
 			else if(this.timerProgress > SpiderData.SHOT_DELAY) {
-				spider.shootProjectile(world);
+				spider.shootProjectile();
 				spider.projectileState = new RechargingState();
 			}
 		}
@@ -384,12 +383,12 @@ class TelegraphState extends ProjectileState {
 		}
 	}
 
-	render(spider: Spider, world: World) {
-		return [new Renderable(c => this.display(spider, c, world), "telegraph")];
+	render(spider: Spider) {
+		return [new Renderable(c => this.display(spider, c), "telegraph")];
 	}
-	display(spider: Spider, canvasIO: CanvasIO, world: World) {
+	display(spider: Spider, canvasIO: CanvasIO) {
 		const center = spider.hitbox.center();
-		const player = world.player.hitbox.center();
+		const player = spider.world.player.hitbox.center();
 		const timerProgress = MathUtils.constrain(this.timerProgress, 0, SpiderData.SHOT_DELAY);
 		const opacity = GeomUtils.lerp(timerProgress, 0, SpiderData.SHOT_DELAY, 0, 1);
 		const width = GeomUtils.lerp(timerProgress, 0, SpiderData.SHOT_DELAY, 30, 2);
@@ -409,15 +408,15 @@ class TelegraphState extends ProjectileState {
 class SkitterState extends ProjectileState {
 	speed = SpiderData.FAST_SPEED;
 
-	update(spider: Spider, world: World): void {
-		const distance = Vector.dist(spider.hitbox.center(), world.player.hitbox.center());
-		if(distance > SpiderData.SKITTER_END_DISTANCE || !spider.seesPlayer(world)) {
+	update(spider: Spider): void {
+		const distance = Vector.dist(spider.hitbox.center(), spider.world.player.hitbox.center());
+		if(distance > SpiderData.SKITTER_END_DISTANCE || !spider.seesPlayer()) {
 			spider.projectileState = new DefaultState();
 		}
 	}
 
-	static shouldSkitter(spider: Spider, player: Player, seesPlayer: boolean) {
-		const distance = Vector.dist(spider.hitbox.center(), player.hitbox.center());
+	static shouldSkitter(spider: Spider, seesPlayer: boolean) {
+		const distance = Vector.dist(spider.hitbox.center(), spider.world.player.hitbox.center());
 		return seesPlayer && distance < SpiderData.SKITTER_START_DISTANCE;
 	}
 
@@ -429,10 +428,10 @@ class SkitterState extends ProjectileState {
 class DefaultState extends ProjectileState {
 	speed = SpiderData.SPEED;
 
-	update(spider: Spider, world: World) {
-		if(spider.seesPlayer(world) && spider.movement instanceof CrawlingState) {
-			if(SkitterState.shouldSkitter(spider, world.player, true)) {
-				const playerPos = world.player.hitbox.center();
+	update(spider: Spider) {
+		if(spider.seesPlayer() && spider.movement instanceof CrawlingState) {
+			if(SkitterState.shouldSkitter(spider, true)) {
+				const playerPos = spider.world.player.hitbox.center();
 				spider.movement.runAway(playerPos);
 				spider.projectileState = new SkitterState();
 			}
@@ -451,11 +450,11 @@ class RechargingState extends ProjectileState {
 	speed = SpiderData.FAST_SPEED;
 	rechargeProgress: number = 0;
 
-	update(spider: Spider, world: World) {
-		if(spider.seesPlayer(world)) {
+	update(spider: Spider) {
+		if(spider.seesPlayer()) {
 			this.rechargeProgress = 0;
 			if(spider.movement instanceof CrawlingState) {
-				spider.movement.runAway(world.player.hitbox.center());
+				spider.movement.runAway(spider.world.player.hitbox.center());
 			}
 		}
 		else {
@@ -478,6 +477,7 @@ class RechargingState extends ProjectileState {
 
 
 export class Spider extends RectangularCollideable {
+	world: World;
 	movement: CrawlingState | FallingState;
 	projectileState: TelegraphState | DefaultState | RechargingState = new DefaultState();
 	angle: number = 0;
@@ -486,9 +486,10 @@ export class Spider extends RectangularCollideable {
 	constructor(position: Vector, movement: CrawlingState | FallingState, world: World) {
 		super(Rectangle.square(position.x, position.y, SpiderData.HITBOX_SIZE));
 		this.movement = movement;
-		this.legs = this.initializeLegs(world);
+		this.world = world;
+		this.legs = this.initializeLegs();
 	}
-	initializeLegs(world: World) {
+	initializeLegs() {
 		const legs = [
 			new SpiderLeg(
 				SpiderData.LEG_1.LENGTH,
@@ -517,30 +518,30 @@ export class Spider extends RectangularCollideable {
 			),
 		];
 		for(const leg of legs) {
-			leg.position = leg.destination(this, world);
+			leg.position = leg.destination(this);
 		}
 		return legs;
 	}
 
-	render(world: World) {
+	render() {
 		return [
-			new Renderable(c => this.display(c, world), "entity"),
+			new Renderable(c => this.display(c), "entity"),
 			new Renderable(c => this.displayGlowEffect(c), "glow"),
-			...this.projectileState.render(this, world),
+			...this.projectileState.render(this),
 		];
 	}
-	display(canvasIO: CanvasIO, world: World) {
-		this.displayBody(canvasIO, world);
+	display(canvasIO: CanvasIO) {
+		this.displayBody(canvasIO);
 		this.displayEyes(canvasIO);
 		this.displayLegs(canvasIO);
 	}
-	displayBody(canvasIO: CanvasIO, world: World) {
+	displayBody(canvasIO: CanvasIO) {
 		canvasIO.ctx.save();
 		const position = this.hitbox.center();
 		canvasIO.ctx.translate(position.x, position.y);
 		canvasIO.ctx.rotate(-this.angle);
 		canvasIO.ctx.fillStyle = SpiderData.COLOR;
-		if(this.seesPlayer(world) && DEBUG_SETTINGS.SPIDERS.VISUALIZE) {
+		if(this.seesPlayer() && DEBUG_SETTINGS.SPIDERS.VISUALIZE) {
 			canvasIO.ctx.fillStyle = "green";
 		}
 		canvasIO.fillRegularPoly(new Vector(0, 0), SpiderData.SIZE / 2, 6);
@@ -576,53 +577,53 @@ export class Spider extends RectangularCollideable {
 			leg.display(this, canvasIO);
 		}
 	}
-	displayDebug(canvasIO: CanvasIO, world: World): void {
-		if(this.movement instanceof FallingState || this.movement.isFloating(this, world) || !DEBUG_SETTINGS.SPIDERS.VISUALIZE) { return; }
+	displayDebug(canvasIO: CanvasIO): void {
+		if(this.movement instanceof FallingState || this.movement.isFloating(this) || !DEBUG_SETTINGS.SPIDERS.VISUALIZE) { return; }
 		const point = this.movement.pointOnSurface.position;
 		const normalEndpoint = point.add(Vector.unit(this.movement.pointOnSurface.normal).multiply(20));
 		canvasIO.ctx.strokeStyle = "red";
 		canvasIO.ctx.lineWidth = 3;
 		canvasIO.strokeLine(point.x, point.y, normalEndpoint.x, normalEndpoint.y);
 
-		const [smoothedNormal] = this.movement.getNormalAndAngle(this, world);
+		const [smoothedNormal] = this.movement.getNormalAndAngle(this);
 		const smoothedEndpoint = point.add(smoothedNormal);
 		canvasIO.ctx.strokeStyle = "green";
 		canvasIO.ctx.lineWidth = 3;
 		canvasIO.strokeLine(point.x, point.y, smoothedEndpoint.x, smoothedEndpoint.y);
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
-		this.movement.update(this, world, canvasIO);
+	update(_world: World, canvasIO: CanvasIO) {
+		this.movement.update(this, canvasIO);
 		for(const leg of this.legs) {
-			leg.update(this, world);
+			leg.update(this);
 		}
 	}
-	seesPlayer(world: World) {
+	seesPlayer() {
 		const center = this.hitbox.center();
-		const player = world.player.hitbox;
+		const player = this.world.player.hitbox;
 		const up = new Vector(0, -1).rotate(MathUtils.toDegrees(-this.angle)).multiply(15);
-		const collides = (obj: Entity) => obj !== this && obj !== world.player;
-		return world.hasLineOfSight(center.add(up), player, collides) && world.hasLineOfSight(center.subtract(up), player, collides);
+		const collides = (obj: Entity) => obj !== this && obj !== this.world.player;
+		return this.world.hasLineOfSight(center.add(up), player, collides) && this.world.hasLineOfSight(center.subtract(up), player, collides);
 
 	}
-	shootProjectile(world: World) {
+	shootProjectile() {
 		const center = this.hitbox.center();
-		const player = world.player.hitbox.center();
+		const player = this.world.player.hitbox.center();
 		const direction = player.subtract(center).normalize();
 		const velocity = direction.multiply(SpiderData.PROJECTILE_SPEED);
 		const acceleration = direction.multiply(SpiderData.PROJECTILE_ACCELERATION);
-		const projectile = new Fireball(center, velocity, acceleration, [this], world);
-		world.entities.add(projectile);
+		const projectile = new Fireball(center, velocity, acceleration, [this], this.world);
+		this.world.entities.add(projectile);
 	}
 
 
-	beginCrawling(world: World) {
+	beginCrawling() {
 		const centerBottom = this.hitbox.edgeCenter("down");
 		for(let distance = 0; distance <= SpiderData.HITBOX_SIZE / 2; distance ++) {
 			for(const sign of [-1, 1]) {
 				const collides = (o: Entity) => o !== this;
 				const possibleBasepoint = new Vector(centerBottom.x + sign * distance, centerBottom.y);
-				const motionBlockers = world.angularMotionBlockers(possibleBasepoint, "clockwise", collides);
+				const motionBlockers = this.world.angularMotionBlockers(possibleBasepoint, "clockwise", collides);
 				if(motionBlockers.some(d => ["up-left", "left", "down-left", "down-right", "right", "up-right"].includes(d))) {
 					this.movement = new CrawlingState(
 						new PointOnSurface(possibleBasepoint, "up"),
@@ -655,9 +656,9 @@ export class Spider extends RectangularCollideable {
 		return world.addEntityIfEmpty(spider);
 	}
 
-	onCollision(collision: CollisionEvent, world: World): void {
+	onCollision(collision: CollisionEvent): void {
 		if(collision.directionOf(this) === "down" && this.movement instanceof FallingState) {
-			this.beginCrawling(world);
+			this.beginCrawling();
 		}
 		else if(this.movement instanceof CrawlingState) {
 			const collisionDirection = Vector.unit(collision.directionOf(this));
@@ -670,8 +671,8 @@ export class Spider extends RectangularCollideable {
 		}
 	}
 
-	translate(amount: Vector, world: World): void {
-		super.translate(amount, world);
+	translate(amount: Vector): void {
+		super.translate(amount, this.world);
 		if(this.movement instanceof FallingState) {
 			for(const leg of this.legs) {
 				leg.position = leg.position.add(amount);
