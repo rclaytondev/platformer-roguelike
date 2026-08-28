@@ -19,9 +19,9 @@ export const createGateHallway = (gateWidth: number, gateHeight: 1 | 2) => {
 	const world = new World(false);
 	world.tiles.fillRect(Rectangle.fromDimensions(0, 0, gateWidth + 2, 1), TowerTile.TOWER_TILE);
 	for(let x = 1; x <= gateWidth; x ++) {
-		world.entities.add(Gate.atTile(new Vector(x, 1), "down", true));
+		world.entities.add(Gate.atTile(new Vector(x, 1), "down", true, world));
 		if(gateHeight === 2) {
-			world.entities.add(Gate.atTile(new Vector(x, 2), "up", true));
+			world.entities.add(Gate.atTile(new Vector(x, 2), "up", true, world));
 		}
 	}
 	world.tiles.fillRect(Rectangle.fromDimensions(0, gateHeight + 1, gateWidth + 2, 1), TowerTile.TOWER_TILE);

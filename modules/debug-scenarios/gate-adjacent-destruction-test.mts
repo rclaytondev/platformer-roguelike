@@ -11,7 +11,7 @@ export const gateAdjacentDestructionScenario = new TestScenario(() => {
 	world.tiles.set(5, -3, TowerTile.TOWER_TILE);
 	world.tiles.set(7, -3, TowerTile.TOWER_TILE);
 	world.tiles.fillRect(Rectangle.fromDimensions(0, 0, 10, 1), TowerTile.TOWER_TILE);
-	const gate = Gate.atTile(new Vector(6, -3), "right", false);
+	const gate = Gate.atTile(new Vector(6, -3), "right", false, world);
 	world.addEntityIfEmpty(gate);
 
 	const creature = TeleportingCreature.atTile(new Vector(5, -2));

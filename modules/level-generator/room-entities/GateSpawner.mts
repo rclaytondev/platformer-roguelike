@@ -18,7 +18,7 @@ export class GateSpawner extends FixedEntitySpawner {
 	}
 
 	spawn(tileOffset: Vector, world: World): void {
-		world.entities.add(Gate.atTile(this.tilePos.add(tileOffset), this.direction, this.toggled));
+		world.entities.add(Gate.atTile(this.tilePos.add(tileOffset), this.direction, this.toggled, world));
 	}
 
 	reflect(): GateSpawner {

@@ -49,21 +49,23 @@ export class GateController extends StaticEntity {
 }
 
 export class Gate extends RectangularCollideable {
+	world: World;
 	direction: Direction; // which way the gate moves when closing
 	playerSide: "positive" | "negative" = "positive";
 	toggled: boolean = false;
 	lastFrameUpdated: number = -Infinity;
 	openness: number;
 
-	private constructor(hitbox: Rectangle, direction: Direction, toggled: boolean) {
+	private constructor(hitbox: Rectangle, direction: Direction, toggled: boolean, world: World) {
 		super(hitbox);
 		this.direction = direction;
 		this.toggled = toggled;
 		this.openness = toggled ? 0 : 1;
+		this.world = world;
 	}
-	static atTile(tilePosition: Vector, direction: Direction, toggled: boolean) {
+	static atTile(tilePosition: Vector, direction: Direction, toggled: boolean, world: World) {
 		const hitbox = Gate.getPhysicsBox(tilePosition, direction, toggled ? 0 : 1);
-		return new Gate(hitbox, direction, toggled);
+		return new Gate(hitbox, direction, toggled, world);
 	}
 
 	open(gateController: GateController) {
@@ -135,105 +137,105 @@ export class Gate extends RectangularCollideable {
 		}
 		canvasIO.ctx.restore();
 	}
-	update(world: World, canvasIO: CanvasIO) {
-		if(this.lastFrameUpdated !== world.frameCount - 1) {
-			this.initialize(world.player);
+	update(_world: World, canvasIO: CanvasIO) {
+		if(this.lastFrameUpdated !== this.world.frameCount - 1) {
+			this.initialize(this.world.player);
 		}
-		this.lastFrameUpdated = world.frameCount;
-		this.checkPlayer(world);
-		this.updateOpenness(world, canvasIO);
-		this.checkAdjacentTiles(world);
+		this.lastFrameUpdated = this.world.frameCount;
+		this.checkPlayer();
+		this.updateOpenness(canvasIO);
+		this.checkAdjacentTiles();
 	}
-	updateOpenness(world: World, canvasIO: CanvasIO) {
-		const target = this.opennessTarget(GateController.getOrInitialize(world));
+	updateOpenness(canvasIO: CanvasIO) {
+		const target = this.opennessTarget(GateController.getOrInitialize(this.world));
 		const length = Directions.isHorizontal(this.direction) ? this.hitbox.width : this.hitbox.height;
 		const targetLength = (1 - target) * WorldData.TILE_SIZE;
-		this.extend(targetLength - length, this.direction, world, canvasIO, {});
+		this.extend(targetLength - length, this.direction, this.world, canvasIO, {});
 	}
 	fullHitbox() {
 		const length = Directions.isHorizontal(this.direction) ? this.hitbox.width : this.hitbox.height;
 		return this.hitbox.extend(this.direction, WorldData.TILE_SIZE - length);
 	}
-	checkAdjacentTiles(world: World) {
+	checkAdjacentTiles() {
 		if(Main.screen instanceof RoomEditor) { return; }
 		const tilePosition = this.tilePosition();
 		const isGateOrSolid = (position: Vector) => (
-			world.tiles.get(position) instanceof BasicTile || Gate.isGateAt(position, world.entities)
+			this.world.tiles.get(position) instanceof BasicTile || Gate.isGateAt(position, this.world.entities)
 		);
 		const solidBefore = isGateOrSolid(tilePosition.add(Vector.unit(this.direction)));
 		const solidAfter = isGateOrSolid(tilePosition.add(Vector.unit(Directions.opposite[this.direction])));
 		if(!solidBefore || !solidAfter) {
-			world.entities.delete(this);
+			this.world.entities.delete(this);
 		}
 	}
-	adjacentGates(world: World, x: number, y: number, direction: Direction) {
+	adjacentGates(x: number, y: number, direction: Direction) {
 		let position = Vector.unit(direction).add(x, y);
 		let count = 0;
-		while(Gate.isGateAt(position, world.entities)) {
+		while(Gate.isGateAt(position, this.world.entities)) {
 			count ++;
 			position = position.add(Vector.unit(direction));
 		}
 		return count;
 	}
-	playerInRowOrColumn(playerHitbox: Rectangle, world: World) {
+	playerInRowOrColumn(playerHitbox: Rectangle) {
 		const { x, y } = this.tilePosition();
 		const tile = Tiles.getTileSquare(new Vector(x, y));
 		if(Directions.isVertical(this.direction)) {
-			const gatesAbove = this.adjacentGates(world, x, y, "up");
-			const gatesBelow = this.adjacentGates(world, x, y, "down");
+			const gatesAbove = this.adjacentGates(x, y, "up");
+			const gatesBelow = this.adjacentGates(x, y, "down");
 			const groupTop = tile.top - gatesAbove * WorldData.TILE_SIZE;
 			const groupBottom = tile.bottom + gatesBelow * WorldData.TILE_SIZE;
 			return (playerHitbox.bottom >= groupTop && playerHitbox.top <= groupBottom);
 		}
 		else {
-			const gatesLeft = this.adjacentGates(world, x, y, "left");
-			const gatesRight = this.adjacentGates(world, x, y, "right");
+			const gatesLeft = this.adjacentGates(x, y, "left");
+			const gatesRight = this.adjacentGates(x, y, "right");
 			const groupLeft = tile.left - gatesLeft * WorldData.TILE_SIZE;
 			const groupRight = tile.right + gatesRight * WorldData.TILE_SIZE;
 			return (playerHitbox.right >= groupLeft && playerHitbox.left <= groupRight);
 		}
 	}
-	getPlayerSide(world: World, x: number, y: number) {
-		const sameRowOrColumn = this.playerInRowOrColumn(world.player.hitbox, world);
-		const hitbox = world.player.hitbox;
+	getPlayerSide(x: number, y: number) {
+		const sameRowOrColumn = this.playerInRowOrColumn(this.world.player.hitbox);
+		const hitbox = this.world.player.hitbox;
 		if(Directions.isVertical(this.direction)) {
-			const gatesLeft = this.adjacentGates(world, x, y, "left");
-			const gatesRight = this.adjacentGates(world, x, y, "right");
+			const gatesLeft = this.adjacentGates(x, y, "left");
+			const gatesRight = this.adjacentGates(x, y, "right");
 			const onLeft = (hitbox.right <= (x - gatesLeft) * WorldData.TILE_SIZE - GateData.TOGGLE_DISTANCE);
 			const onRight = (hitbox.x >= (x + gatesRight + 1) * WorldData.TILE_SIZE + GateData.TOGGLE_DISTANCE);
 			if(sameRowOrColumn) {
 				return onLeft ? "negative" : (onRight ? "positive" : this.playerSide);
 			}
 			else {
-				return world.player.hitbox.center().x < this.hitbox.center().x ? "negative" : "positive";
+				return this.world.player.hitbox.center().x < this.hitbox.center().x ? "negative" : "positive";
 			}
 		}
 		else {
-			const gatesAbove = this.adjacentGates(world, x, y, "up");
-			const gatesBelow = this.adjacentGates(world, x, y, "down");
+			const gatesAbove = this.adjacentGates(x, y, "up");
+			const gatesBelow = this.adjacentGates(x, y, "down");
 			const above = hitbox.bottom <= (y - gatesAbove) * WorldData.TILE_SIZE - GateData.TOGGLE_DISTANCE;
 			const below = hitbox.y >= (y + gatesBelow + 1) * WorldData.TILE_SIZE + GateData.TOGGLE_DISTANCE;
 			if(sameRowOrColumn) {
 				return above ? "negative" : (below ? "positive" : this.playerSide);
 			}
 			else {
-				return world.player.hitbox.center().y < this.hitbox.center().y ? "negative" : "positive";
+				return this.world.player.hitbox.center().y < this.hitbox.center().y ? "negative" : "positive";
 			}
 		}
 	}
-	checkPlayer(world: World) {
+	checkPlayer() {
 		const tilePosition = this.tilePosition();
-		const sameRowOrColumn = this.playerInRowOrColumn(world.player.hitbox, world);
+		const sameRowOrColumn = this.playerInRowOrColumn(this.world.player.hitbox);
 		const { x, y } = tilePosition;
 
-		const newSide = this.getPlayerSide(world, x, y);
+		const newSide = this.getPlayerSide(x, y);
 		const adjacentTile = tilePosition.add(Vector.unit(
 			(Directions.isVertical(this.direction))
 			? (newSide === "negative" ? "left" : "right")
 			: (newSide === "negative" ? "up" : "down"),
 		));
-		const adjacentGate = Gate.isGateAt(adjacentTile, world.entities);
-		const gateController = GateController.getOrInitialize(world);
+		const adjacentGate = Gate.isGateAt(adjacentTile, this.world.entities);
+		const gateController = GateController.getOrInitialize(this.world);
 		if(newSide !== this.playerSide && sameRowOrColumn && gateController.cooldown <= 0 && !adjacentGate) {
 			gateController.toggleAll();
 			gateController.cooldown = 1 / GateData.SPEED;
