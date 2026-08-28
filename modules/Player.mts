@@ -28,21 +28,21 @@ import { World } from "./world/World.mjs";
 type Input = { [key: string]: boolean };
 
 class DefaultState {
-	update(self: Player, world: World, canvasIO: CanvasIO) {
+	update(self: Player, canvasIO: CanvasIO) {
 		const input = Debug.getInput(canvasIO);
 		self.velocity.y += input.KeyZ && self.velocity.y <= 0 ? PlayerData.GRAVITY_WHILE_JUMPING : PlayerData.GRAVITY;
 		self.checkFriction();
 	}
 
-	checkInputs(self: Player, world: World, canvasIO: CanvasIO) {
+	checkInputs(self: Player, canvasIO: CanvasIO) {
 		const input = Debug.getInput(canvasIO);
 		self.checkDirectionInputs(input);
 		self.checkMoveInputs();
-		self.checkJumpInputs(world, input, canvasIO);
-		self.checkThrowInputs(world, input, canvasIO);
-		self.checkCrouchInputs(world, input, canvasIO);
-		self.checkPickUpInputs(world);
-		self.checkClimbStartInputs(world, input, canvasIO);
+		self.checkJumpInputs(canvasIO);
+		self.checkThrowInputs(canvasIO);
+		self.checkCrouchInputs(input, canvasIO);
+		self.checkPickUpInputs();
+		self.checkClimbStartInputs(input, canvasIO);
 	}
 }
 
@@ -53,14 +53,14 @@ class ClimbingState {
 		this.chain = chain;
 	}
 
-	checkInputs(self: Player, world: World, canvasIO: CanvasIO) {
+	checkInputs(self: Player, canvasIO: CanvasIO) {
 		const input = Debug.getInput(canvasIO);
-		this.checkClimbingInputs(self, world, input);
+		this.checkClimbingInputs(self, input);
 		self.checkFriction();
-		this.checkJumpInputs(self, world, input, canvasIO);
+		this.checkJumpInputs(self, input, canvasIO);
 		this.checkChainEnd(self);
 	}
-	checkClimbingInputs(self: Player, world: World, input: Input) {
+	checkClimbingInputs(self: Player, input: Input) {
 		if(input.ArrowUp) {
 			self.velocity = new Vector(0, -ChainData.CLIMB_SPEED);
 		}
@@ -71,14 +71,14 @@ class ClimbingState {
 			self.velocity = new Vector(0, 0);
 		}
 	}
-	checkJumpInputs(self: Player, world: World, input: Input, canvasIO: CanvasIO) {
+	checkJumpInputs(self: Player, input: Input, canvasIO: CanvasIO) {
 		if(input.ArrowDown) {
 			if(canvasIO.keys.KeyZ) {
 				self.state = new DefaultState();
 			}
 		}
 		else {
-			const jumped = self.checkJumpInputs(world, input, canvasIO);
+			const jumped = self.checkJumpInputs(canvasIO);
 			if(jumped) {
 				self.hasDoubleJump = true;
 			}
@@ -90,23 +90,23 @@ class ClimbingState {
 		}
 	}
 
-	update(self: Player, world: World, canvasIO: CanvasIO) {
+	update(self: Player, canvasIO: CanvasIO) {
 		self.hasDoubleJump = true;
-		self.uncrouch(world);
-		this.snapToCenter(self, world, canvasIO);
-		this.checkOnGround(self, world, canvasIO);
+		self.uncrouch();
+		this.snapToCenter(self, canvasIO);
+		this.checkOnGround(self, canvasIO);
 	}
-	checkOnGround(self: Player, world: World, canvasIO: CanvasIO) {
-		const onGround = !self.canMove("down", world, canvasIO);
+	checkOnGround(self: Player, canvasIO: CanvasIO) {
+		const onGround = !self.canMove("down", self.world, canvasIO);
 		const input = Debug.getInput(canvasIO);
 		if(onGround && !input.ArrowUp) {
 			self.state = new DefaultState();
 		}
 	}
-	snapToCenter(self: Player, world: World, canvasIO: CanvasIO) {
+	snapToCenter(self: Player, canvasIO: CanvasIO) {
 		const centerX = (this.chain.tilePosition.x + 1/2) * WorldData.TILE_SIZE;
 		const targetX = GeomUtils.moveTowards(self.hitbox.center().x, centerX, ChainData.SNAP_SPEED);
-		self.move(new Vector(targetX - self.hitbox.center().x, 0), world, canvasIO, { });
+		self.move(new Vector(targetX - self.hitbox.center().x, 0), self.world, canvasIO, { });
 	}
 }
 
@@ -142,11 +142,11 @@ class StoredVelocity {
 		this.axis = axis;
 	}
 
-	update(player: Player, world: World, canvasIO: CanvasIO) {
+	update(player: Player, canvasIO: CanvasIO) {
 		if(this.amount === 0 || this.timeLeft <= 0) { return; }
 		this.timeLeft --;
 
-		if(this.shouldApply(player, world, canvasIO)) {
+		if(this.shouldApply(player, canvasIO)) {
 			this.apply(player);
 		}
 	}
@@ -160,11 +160,11 @@ class StoredVelocity {
 		}
 	}
 
-	shouldApply(player: Player, world: World, canvasIO: CanvasIO) {
+	shouldApply(player: Player, canvasIO: CanvasIO) {
 		const direction = this.direction();
 		return (
 			Math.sign(player.hitbox[this.axis] - this.position) !== -Math.sign(this.amount)
-			&& player.canMove(direction, world, canvasIO)
+			&& player.canMove(direction, player.world, canvasIO)
 		);
 	}
 	apply(player: Player) {
@@ -182,6 +182,8 @@ class StoredVelocity {
 }
 
 export class Player extends RectangularCollideable {
+	world: World;
+
 	velocity: Vector = new Vector(0, 0);
 	hasDoubleJump: boolean = false;
 	dead: boolean = false;
@@ -202,8 +204,9 @@ export class Player extends RectangularCollideable {
 
 	equippedItems: [ThrowableTile | null, ThrowableTile | null] = [null, null];
 
-	constructor() {
+	constructor(world: World) {
 		super(Rectangle.fromDimensions(0, -WorldData.TILE_SIZE, PlayerData.HITBOX_WIDTH, PlayerData.HITBOX_HEIGHT));
+		this.world = world;
 	}
 
 	render() {
@@ -267,38 +270,38 @@ export class Player extends RectangularCollideable {
 		);
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
+	update(_world: World, canvasIO: CanvasIO) {
 		if(Main.screen instanceof RoomEditor) { return; }
 		const input = Debug.getInput(canvasIO);
 		this.updateBuffers(input);
 
-		this.state.checkInputs(this, world, canvasIO);
-		this.updateCrouching(world);
-		this.state.update(this, world, canvasIO);
-		this.updateCoyoteTime(world, canvasIO);
+		this.state.checkInputs(this, canvasIO);
+		this.updateCrouching();
+		this.state.update(this, canvasIO);
+		this.updateCoyoteTime(canvasIO);
 		this.coyoteTime --;
 		this.invulnerabilityTime --;
 		this.squishFactor = GeomUtils.moveTowards(this.squishFactor, 1, PlayerData.SQUISH_RETURN_SPEED);
-		if(this.onGround(world, canvasIO)) {
+		if(this.onGround(canvasIO)) {
 			this.hasDoubleJump = true;
 			if(this.isCrouched()) {
 				this.velocity.x *= PlayerData.CROUCHED_FRICTION;
 			}
 		}
-		this.storedVelocityX.update(this, world, canvasIO);
-		this.storedVelocityY.update(this, world, canvasIO);
-		this.move(new Vector(this.velocity.x, 0), world, canvasIO, { });
-		this.move(new Vector(0, this.velocity.y), world, canvasIO, {});
+		this.storedVelocityX.update(this, canvasIO);
+		this.storedVelocityY.update(this, canvasIO);
+		this.move(new Vector(this.velocity.x, 0), this.world, canvasIO, { });
+		this.move(new Vector(0, this.velocity.y), this.world, canvasIO, {});
 	}
-	updateCoyoteTime(world: World, canvasIO: CanvasIO) {
-		const onGround = this.onGround(world, canvasIO);
+	updateCoyoteTime(canvasIO: CanvasIO) {
+		const onGround = this.onGround(canvasIO);
 		if(onGround) {
 			this.coyoteTime = PlayerData.COYOTE_FRAMES;
 		}
 	}
-	updateCrouching(world: World) {
+	updateCrouching() {
 		if(this.velocity.y > 0) {
-			this.uncrouch(world);
+			this.uncrouch();
 		}
 	}
 	onCollision(collision: CollisionEvent, world: World): void {
@@ -394,51 +397,51 @@ export class Player extends RectangularCollideable {
 			this.velocity.x *= PlayerData.OVERLIMIT_FRICTION_X;
 		}
 	}
-	checkJumpInputs(world: World, input: Input, canvasIO: CanvasIO) {
+	checkJumpInputs(canvasIO: CanvasIO) {
 		if(this.jumpBuffer.isActive() && (this.coyoteTime > 0 || this.hasDoubleJump)) {
 			this.jumpBuffer.reset();
-			this.jump(world, canvasIO);
+			this.jump(canvasIO);
 			return true;
 		}
 		return false;
 	}
-	checkThrowInputs(world: World, input: Input, canvasIO: CanvasIO) {
+	checkThrowInputs(canvasIO: CanvasIO) {
 		if(this.throwBuffer1.isActive()) {
-			const used = this.equippedItems[0]?.use(world, canvasIO);
+			const used = this.equippedItems[0]?.use(this.world, canvasIO);
 			if(used) {
 				this.throwBuffer1.reset();
 				this.equippedItems[0] = null;
 			}
 		}
 		if(this.throwBuffer2.isActive()) {
-			const used = this.equippedItems[1]?.use(world, canvasIO);
+			const used = this.equippedItems[1]?.use(this.world, canvasIO);
 			if(used) {
 				this.throwBuffer2.reset();
 				this.equippedItems[1] = null;
 			}
 		}
 	}
-	checkCrouchInputs(world: World, input: Input, canvasIO: CanvasIO) {
-		if(input.ArrowDown && this.onGround(world, canvasIO)) {
+	checkCrouchInputs(input: Input, canvasIO: CanvasIO) {
+		if(input.ArrowDown && this.onGround(canvasIO)) {
 			this.crouch();
 		}
-		if(!input.ArrowDown && this.onGround(world, canvasIO)) {
-			this.uncrouch(world);
+		if(!input.ArrowDown && this.onGround(canvasIO)) {
+			this.uncrouch();
 		}
 	}
-	checkPickUpInputs(world: World) {
+	checkPickUpInputs() {
 		if(this.pickupBuffer.isActive()) {
-			const collected = this.collectNearestItem(world);
+			const collected = this.collectNearestItem();
 			if(collected) {
 				this.pickupBuffer.reset();
 			}
 		}
 	}
-	checkClimbStartInputs(world: World, input: Input, canvasIO: CanvasIO) {
+	checkClimbStartInputs(input: Input, canvasIO: CanvasIO) {
 		const up = input.ArrowUp;
-		const down = (input.ArrowDown && !this.onGround(world, canvasIO));
+		const down = (input.ArrowDown && !this.onGround(canvasIO));
 		if(up || down) {
-			const chain = ([...world.entities.possiblyIntersecting(this.hitbox)]
+			const chain = ([...this.world.entities.possiblyIntersecting(this.hitbox)]
 				.find(e => e instanceof Chain && e.climbRegion().intersects(this.hitbox))
 			) as Chain | undefined;
 			const shouldClimb = chain && (
@@ -452,8 +455,8 @@ export class Player extends RectangularCollideable {
 			}
 		}
 	}
-	onGround(world: World, canvasIO: CanvasIO) {
-		return !this.canMove("down", world, canvasIO);
+	onGround(canvasIO: CanvasIO) {
+		return !this.canMove("down", this.world, canvasIO);
 	}
 	damage(hurtbox: Rectangle, world: World) {
 		if(this.invulnerabilityTime < 0) {
@@ -473,7 +476,7 @@ export class Player extends RectangularCollideable {
 		}
 	}
 
-	jump(world: World, canvasIO: CanvasIO) {
+	jump(canvasIO: CanvasIO) {
 		this.velocity.y = -PlayerData.JUMP_VELOCITY;
 		this.hasDoubleJump = (this.coyoteTime > 0);
 		this.coyoteTime = -1;
@@ -483,7 +486,7 @@ export class Player extends RectangularCollideable {
 		if(this.keyDirection !== null) {
 			this.velocity = this.velocity.add(Vector.unit(this.keyDirection).multiply(PlayerData.JUMP_X_VELOCITY));
 		}
-		this.addJumpParticles(world, canvasIO);
+		this.addJumpParticles(canvasIO);
 	}
 	resetVelocityToDirection() {
 		if(this.keyDirection === "left") {
@@ -493,7 +496,7 @@ export class Player extends RectangularCollideable {
 			this.velocity.x = Math.max(this.velocity.x, PlayerData.REVERSE_JUMP_X_VELOCITY);
 		}
 	}
-	addJumpParticles(world: World, canvasIO: CanvasIO) {
+	addJumpParticles(canvasIO: CanvasIO) {
 		const hitboxBottom = this.hitbox.edgeCenter("down");
 		for(let i = 0; i < PlayerData.JUMP_PARTICLES.AMOUNT; i ++) {
 			const position = new Vector(
@@ -505,16 +508,16 @@ export class Player extends RectangularCollideable {
 				RandomUtils.randomInCircle(0, 0, PlayerData.JUMP_PARTICLES.MAX_SPEED),
 				PlayerData.JUMP_PARTICLES.SETTINGS,
 			);
-			world.particles.add(particle, world, canvasIO);
+			this.world.particles.add(particle, this.world, canvasIO);
 		}
 	}
 
 	crouch() {
 		this.hitbox = this.hitbox.extend("up", PlayerData.CROUCHED_HITBOX_HEIGHT - this.hitbox.height);
 	}
-	uncrouch(world: World) {
+	uncrouch() {
 		const newHitbox = this.hitbox.extend("up", PlayerData.HITBOX_HEIGHT - this.hitbox.height);
-		if(!world.isInSolid(newHitbox, o => o !== this)) {
+		if(!this.world.isInSolid(newHitbox, o => o !== this)) {
 			this.hitbox = newHitbox;
 		}
 	}
@@ -585,12 +588,12 @@ export class Player extends RectangularCollideable {
 		}
 		return false;
 	}
-	collectNearestItem(world: World) {
+	collectNearestItem() {
 		const rect = this.hitbox.extend("all", ItemData.PICKUP_DISTANCE);
-		const allItems = [...world.entities.collideablesIntersecting(rect)].filter(i => i instanceof ThrowableTileEntity);
+		const allItems = [...this.world.entities.collideablesIntersecting(rect)].filter(i => i instanceof ThrowableTileEntity);
 		if(allItems.length !== 0) {
 			const closest = ArrayUtils.minValue(allItems, item => item.hitbox.distanceToRect(this.hitbox));
-			const collected = this.collect(closest, world);
+			const collected = this.collect(closest, this.world);
 			return collected;
 		}
 		return false;

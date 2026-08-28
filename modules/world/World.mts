@@ -29,7 +29,7 @@ export class World {
 	particles: Particles = new Particles();
 	worldScreen: WorldScreen | null = null;
 	worldGenerator: WorldGenerator | null = null;
-	player: Player = new Player();
+	player: Player;
 	staticEntities: StaticEntities = new StaticEntities();
 
 	frameCount: number = 0;
@@ -39,6 +39,7 @@ export class World {
 			this.worldGenerator = new WorldGenerator();
 			this.worldGenerator.towerGenerator.initialize(this);
 		}
+		this.player = new Player(this);
 		this.entities.add(this.player);
 	}
 
