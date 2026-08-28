@@ -7,29 +7,31 @@ import { Renderable } from "../world/Renderer.mjs";
 import { World } from "../world/World.mjs";
 
 export class HealthPickup extends RectangularCollideable {
-	constructor(tilePosition: Vector) {
+	world: World;
+	constructor(tilePosition: Vector, world: World) {
 		super(Rectangle.square(
 			tilePosition.x * WorldData.TILE_SIZE,
 			tilePosition.y * WorldData.TILE_SIZE,
 			HealthPickupData.SIZE,
 		));
+		this.world = world;
 	}
 
 	display(canvasIO: CanvasIO) {
 		const image = HealthPickupData.IMAGE;
 		canvasIO.ctx.drawImage(image, this.hitbox.x, this.hitbox.y);
 	}
-	update(world: World) {
+	update() {
 		const hitbox = Rectangle.fromBounds(
 			this.hitbox.left - HealthPickupData.HITBOX_RADIUS,
 			this.hitbox.right + HealthPickupData.HITBOX_RADIUS,
 			this.hitbox.top - HealthPickupData.HITBOX_RADIUS,
 			this.hitbox.bottom + HealthPickupData.HITBOX_RADIUS,
 		);
-		const player = world.player.hitbox;
+		const player = this.world.player.hitbox;
 		if(player.intersects(hitbox)) {
-			world.player.health ++;
-			world.entities.delete(this);
+			this.world.player.health ++;
+			this.world.entities.delete(this);
 		}
 	}
 	render() {

@@ -12,7 +12,7 @@ export class HealthPickupSpawner extends FixedEntitySpawner {
 	}
 
 	spawn(tileOffset: Vector, world: World): void {
-		world.entities.add(new HealthPickup(this.tilePos.add(tileOffset)));
+		world.entities.add(new HealthPickup(this.tilePos.add(tileOffset), world));
 	}
 
 	reflect(): FixedEntitySpawner {
