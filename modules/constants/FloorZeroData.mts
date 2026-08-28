@@ -1,5 +1,5 @@
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
-import { Portal } from "../entities/Portal.mjs";
+import { PortalSpawner } from "../level-generator/room-entities/PortalSpawner.mjs";
 import { WorldPart } from "../world-generator/WorldPart.mjs";
 
 export let FLOOR_ZERO = new WorldPart();
@@ -22,7 +22,7 @@ export class FloorZeroData {
 				[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 			],
 			[
-				new Portal(new Vector(12 * 50, 8 * 50)),
+				new PortalSpawner(new Vector(12 * 50, 8 * 50)),
 			],
 		);
 	}

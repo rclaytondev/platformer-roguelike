@@ -2,7 +2,7 @@ import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Direction, Directions } from "../../utils-ts/modules/geometry/Direction.mjs";
 import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
-import { GateData, RoomData, WorldData } from "../constants/GameData.mjs";
+import { GateData, WorldData } from "../constants/GameData.mjs";
 import { GeomUtils } from "../game-utilities/GeomUtils.mjs";
 import { Player } from "../Player.mjs";
 import { TileWithPosition, World } from "../world/World.mjs";
@@ -249,25 +249,6 @@ export class Gate extends RectangularCollideable {
 		else {
 			this.playerSide = player.hitbox.center().y < gate.y ? "negative" : "positive";
 		}
-	}
-	copy() {
-		const result = new Gate(this.hitbox, this.direction, this.toggled);
-		result.playerSide = this.playerSide;
-		result.lastFrameUpdated = this.lastFrameUpdated;
-		result.openness = this.openness;
-		return result;
-	}
-	copyAndTranslate(amount: Vector) {
-		const copy = this.copy();
-		copy.hitbox = copy.hitbox.translate(amount);
-		return copy;
-	}
-	reflect(): Gate {
-		const hitbox = Rectangle.fromBounds(
-			RoomData.SIZE * WorldData.TILE_SIZE - this.hitbox.right, RoomData.SIZE * WorldData.TILE_SIZE - this.hitbox.left,
-			this.hitbox.top, this.hitbox.bottom,
-		);
-		return new Gate(hitbox, Directions.reflectX[this.direction], this.toggled);
 	}
 
 	tilePosition() {

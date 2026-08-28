@@ -35,12 +35,12 @@ export class World {
 	frameCount: number = 0;
 
 	constructor(enableGeneration: boolean) {
+		this.player = new Player(this);
+		this.entities.add(this.player);
 		if(enableGeneration) {
 			this.worldGenerator = new WorldGenerator();
 			this.worldGenerator.towerGenerator.initialize(this);
 		}
-		this.player = new Player(this);
-		this.entities.add(this.player);
 	}
 
 	render(canvasIO: CanvasIO, camera: Camera, renderer: Renderer) {

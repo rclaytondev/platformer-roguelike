@@ -18,9 +18,12 @@ import { LoadingManager } from "../app-entry-points/LoadingManager.mjs";
 import { SlopeTile } from "../tiles/SlopeTile.mjs";
 import { WorldPart } from "../world-generator/WorldPart.mjs";
 import { Tiles } from "../world/Tiles.mjs";
-import { Entities } from "../world/Entities.mjs";
 import { SpawnableID } from "./Spawnable.mjs";
 import { Chain } from "../entities/Chain.mjs";
+import { FixedEntitySpawner } from "./FixedEntitySpawner.mjs";
+import { PortalSpawner } from "./room-entities/PortalSpawner.mjs";
+import { HealthPickupSpawner } from "./room-entities/HealthPickupSpawner.mjs";
+import { SpawnPointSpawner } from "./room-entities/SpawnPointSpawner.mjs";
 
 export type Traversability = { start: GateState, end: GateState }[];
 export type RoomTile = EmptyTile | Platform | BasicTile | SlopeTile;
@@ -32,7 +35,7 @@ export class Room {
 	canSpawnWithExits: (exits: Set<Direction>) => boolean;
 	exitTiles: Grid<Direction | "none">;
 	traversability: Traversability;
-	worldPart: WorldPart<RoomEntity>;
+	worldPart: WorldPart;
 	disallowedEntities: SpawnableID[];
 
 	static parseExitTiles(exitTilesData: { x: number, y: number, direction: Direction }[]) {
@@ -46,7 +49,7 @@ export class Room {
 		}
 		return exitTiles;
 	}
-	static parse(name: string, tilesData: number[][], exitTilesData: { x: number, y: number, direction: Direction }[], entitiesData: RoomEntity[] = [], canSpawnWithExits: (exits: Set<Direction>) => boolean, traversabilityData?: Traversability, disallowedEntities: SpawnableID[] = []) {
+	static parse(name: string, tilesData: number[][], exitTilesData: { x: number, y: number, direction: Direction }[], entitiesData: FixedEntitySpawner[] = [], canSpawnWithExits: (exits: Set<Direction>) => boolean, traversabilityData?: Traversability, disallowedEntities: SpawnableID[] = []) {
 		const worldPart = WorldPart.parse(tilesData, entitiesData);
 		for(const { x, y } of worldPart.tiles.positions()) {
 			if(x < 0 || y < 0 || x >= RoomData.SIZE || y >= RoomData.SIZE) {
@@ -59,7 +62,7 @@ export class Room {
 		return new Room(name, name, worldPart, exitTiles, canSpawnWithExits, traversability, disallowedEntities);
 	}
 
-	constructor(name: string, originalName: string, worldPart: WorldPart<RoomEntity>, exitTiles: Grid<Direction | "none">, canSpawnWithExits: (exits: Set<Direction>) => boolean, traversability: Traversability, disallowedEntities: SpawnableID[]) {
+	constructor(name: string, originalName: string, worldPart: WorldPart, exitTiles: Grid<Direction | "none">, canSpawnWithExits: (exits: Set<Direction>) => boolean, traversability: Traversability, disallowedEntities: SpawnableID[]) {
 		this.name = name;
 		this.originalName = originalName;
 		this.worldPart = worldPart;
@@ -70,7 +73,7 @@ export class Room {
 	}
 
 	hasPortal() {
-		return [...this.worldPart.entities].some(e => e instanceof Portal);
+		return [...this.worldPart.entities].some(e => e instanceof PortalSpawner);
 	}
 
 	add(tileOffset: Vector, world: World, exits: Set<Direction>) {
@@ -89,7 +92,7 @@ export class Room {
 	}
 
 	reflect() {
-		const entities = new Entities([...this.worldPart.entities].map(e => e.reflect()));
+		const entities = this.worldPart.entities.map(e => e.reflect());
 		const tiles = new Tiles();
 		for(const [tile, position] of this.worldPart.tiles.entries()) {
 			const reflectedX = RoomData.SIZE - position.x - 1; // REFACTOR: extract method Grid.reflectX
@@ -116,7 +119,7 @@ export class Room {
 		return new Room(
 			this.name,
 			this.originalName,
-			new WorldPart(this.worldPart.tiles.copy(), new Entities([...this.worldPart.entities].map(e => e.copy()))),
+			new WorldPart(this.worldPart.tiles.copy(), this.worldPart.entities),
 			this.exitTiles.map(v => v),
 			this.canSpawnWithExits,
 			this.traversability.map(({ start, end }) => ({ start: start.copy(), end: end.copy() })),
@@ -142,7 +145,7 @@ export class Room {
 	}
 
 	isOrdinaryRoom() {
-		return ![...this.worldPart.entities].some(e => e instanceof Portal || e instanceof HealthPickup || e instanceof SpawnPoint);
+		return ![...this.worldPart.entities].some(e => e instanceof PortalSpawner || e instanceof HealthPickupSpawner || e instanceof SpawnPointSpawner);
 	}
 
 	static gatelessPath(exit1: Direction, exit2: Direction) {

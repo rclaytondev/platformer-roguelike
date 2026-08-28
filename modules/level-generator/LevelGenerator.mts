@@ -15,14 +15,14 @@ import { GateState } from "./GateState.mjs";
 import { Room } from "./Room.mjs";
 import { RoomSlot } from "./RoomSlot.mjs";
 import { ROOMS } from "../constants/Rooms.mjs";
-import { SpawnPoint } from "../entities/SpawnPoint.mjs";
-import { HealthPickup } from "../entities/HealthPickup.mjs";
 import { ArrayUtils } from "../../utils-ts/modules/core-extensions/ArrayUtils.mjs";
 import { MapUtils } from "../../utils-ts/modules/core-extensions/MapUtils.mjs";
 import { SetUtils } from "../../utils-ts/modules/core-extensions/SetUtils.mjs";
 import { Platform } from "../tiles/Platform.mjs";
 import { EntitySpawner } from "./EntitySpawner.mjs";
 import { Spawnable, SpawnableID } from "./Spawnable.mjs";
+import { SpawnPointSpawner } from "./room-entities/SpawnPointSpawner.mjs";
+import { HealthPickupSpawner } from "./room-entities/HealthPickupSpawner.mjs";
 
 export class LevelGenerator {
 	path: Vector[] = [];
@@ -63,7 +63,7 @@ export class LevelGenerator {
 			[x, y] = [nextPosition.x, nextPosition.y];
 		}
 		const startRoom = this.roomSlots.get(this.path[this.path.length - 1])!;
-		startRoom.setRoom(ArrayUtils.randomItem(ROOMS.filter(r => [...r.worldPart.entities].some(e => e instanceof SpawnPoint))));
+		startRoom.setRoom(ArrayUtils.randomItem(ROOMS.filter(r => [...r.worldPart.entities].some(e => e instanceof SpawnPointSpawner))));
 		startRoom.setGenerated();
 	}
 	possibleNextDirections(x: number, y: number): Direction[] {
@@ -151,7 +151,7 @@ export class LevelGenerator {
 			...RandomUtils.randomPermutation(offPath),
 			...RandomUtils.randomPermutation(this.path.slice(1, this.path.length - 1)),
 		];
-		const healthPickupRooms = ROOMS.filter(r => [...r.worldPart.entities].some(e => e instanceof HealthPickup));
+		const healthPickupRooms = ROOMS.filter(r => [...r.worldPart.entities].some(e => e instanceof HealthPickupSpawner));
 		for(const room of RandomUtils.randomPermutation(healthPickupRooms)) {
 			for(const position of positions) {
 				const roomSlot = this.roomSlots.get(position);

@@ -1,7 +1,7 @@
 import { CanvasIO } from "../utils-ts/modules/CanvasIO.mjs";
 import { Diagonal, Direction, Directions } from "../utils-ts/modules/geometry/Direction.mjs";
 import { Vector } from "../utils-ts/modules/geometry/Vector.mjs";
-import { Room, RoomEntity, RoomTile } from "./level-generator/Room.mjs";
+import { Room, RoomTile } from "./level-generator/Room.mjs";
 import { DEBUG_SETTINGS } from "./constants/DebugSettings.mjs";
 import { Gate } from "./entities/Gate.mjs";
 import { World } from "./world/World.mjs";
@@ -16,10 +16,14 @@ import { TowerTile } from "./tiles/TowerTile.mjs";
 import { Tiles } from "./world/Tiles.mjs";
 import { Camera } from "./world/Camera.mjs";
 import { Renderable, Renderer } from "./world/Renderer.mjs";
-import { Entities } from "./world/Entities.mjs";
 import { TowerSlope } from "./tiles/TowerSlope.mjs";
 import { TILE_TYPES } from "./tiles/TileIDs.mjs";
 import { Chain } from "./entities/Chain.mjs";
+import { GateSpawner } from "./level-generator/room-entities/GateSpawner.mjs";
+import { ChainSpawner } from "./level-generator/room-entities/ChainSpawner.mjs";
+import { Rectangle } from "../utils-ts/modules/geometry/Rectangle.mjs";
+import { FixedEntitySpawner } from "./level-generator/FixedEntitySpawner.mjs";
+import { PortalSpawner } from "./level-generator/room-entities/PortalSpawner.mjs";
 
 abstract class EditorMode {
 	abstract onLeftClick(tilePos: Vector, editor: RoomEditor): void;
@@ -74,9 +78,11 @@ class GateMode extends EditorMode {
 
 	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
 		if(Directions.isDirection(editor.direction)) {
-			const gateExists = Gate.isGateAt(tilePos, editor.room.worldPart.entities);
+			const gateExists = editor.room.worldPart.entities.some(e => (
+				e instanceof GateSpawner && e.tilePos.equals(tilePos)
+			));
 			if(!gateExists) {
-				const gate = Gate.atTile(tilePos, editor.direction, this.open);
+				const gate = new GateSpawner(tilePos, editor.direction, this.open);
 				editor.addEntity(gate);
 				editor.setTile(tilePos, EmptyTile.EMPTY);
 			}
@@ -97,8 +103,8 @@ class PortalMode extends EditorMode {
 
 	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
 		const portalPosition = PortalMode.getPortalPosition(tilePos);
-		if(![...editor.room.worldPart.entities].some(p => p instanceof Portal && p.position.equals(portalPosition))) {
-			editor.addEntity(new Portal(portalPosition));
+		if(![...editor.room.worldPart.entities].some(p => p instanceof PortalSpawner && p.position.equals(portalPosition))) {
+			editor.addEntity(new PortalSpawner(portalPosition));
 		}
 	}
 	onRightClick(tilePos: Vector, editor: RoomEditor): void {
@@ -124,11 +130,22 @@ class SlopeMode extends EditorMode {
 class ChainMode extends EditorMode {
 	uiLabel: string = "chain";
 
-	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
-		if(Chain.isChainAt(tilePos, editor.room.worldPart.entities)) { return; }
+	static getChainAt(tilePosition: Vector, entities: FixedEntitySpawner[]) {
+		const tileSquare = Rectangle.square(tilePosition.x, tilePosition.y, 1);
+		const chain = entities.find(e => (
+			e instanceof ChainSpawner && Rectangle.fromDimensions(e.tilePos.x, e.tilePos.y, 1, e.height).intersects(tileSquare)
+		));
+		return (chain ?? null) as ChainSpawner | null;
+	}
+	static isChainAt(tilePosition: Vector, entities: FixedEntitySpawner[]) {
+		return ChainMode.getChainAt(tilePosition, entities) !== null;
+	}
 
-		const chainAbove = Chain.getChainAt(tilePos.add(0, -1), editor.room.worldPart.entities);
-		const chainBelow = Chain.getChainAt(tilePos.add(0, 1), editor.room.worldPart.entities);
+	onLeftClick(tilePos: Vector, editor: RoomEditor): void {
+		if(ChainMode.isChainAt(tilePos, editor.room.worldPart.entities)) { return; }
+
+		const chainAbove = ChainMode.getChainAt(tilePos.add(0, -1), editor.room.worldPart.entities);
+		const chainBelow = ChainMode.getChainAt(tilePos.add(0, 1), editor.room.worldPart.entities);
 		if(chainAbove && chainBelow) {
 			editor.deleteEntity(chainBelow);
 			chainAbove.height += chainBelow.height + 1;
@@ -137,31 +154,31 @@ class ChainMode extends EditorMode {
 			chainAbove.height ++;
 		}
 		else if(chainBelow) {
-			chainBelow.tilePosition.y --;
+			chainBelow.tilePos.y --;
 			chainBelow.height ++;
 		}
 		else {
-			editor.addEntity(new Chain(tilePos, 1));
+			editor.addEntity(new ChainSpawner(tilePos, 1));
 		}
 	}
 	onRightClick(tilePos: Vector, editor: RoomEditor): void {
-		const chain = Chain.getChainAt(tilePos, editor.room.worldPart.entities);
+		const chain = ChainMode.getChainAt(tilePos, editor.room.worldPart.entities);
 		if(!chain) { return; }
 		if(chain.height === 1) {
 			editor.deleteEntity(chain);
 			return;
 		}
-		else if(chain.tilePosition.y === tilePos.y) {
+		else if(chain.tilePos.y === tilePos.y) {
 			chain.height --;
-			chain.tilePosition.y ++;
+			chain.tilePos.y ++;
 		}
-		else if(chain.tilePosition.y === tilePos.y - chain.height + 1) {
+		else if(chain.tilePos.y === tilePos.y - chain.height + 1) {
 			chain.height --;
 		}
 		else {
 			const originalHeight = chain.height;
-			chain.height = tilePos.y - chain.tilePosition.y;
-			editor.addEntity(new Chain(tilePos, originalHeight - chain.height));
+			chain.height = tilePos.y - chain.tilePos.y;
+			editor.addEntity(new ChainSpawner(tilePos, originalHeight - chain.height));
 		}
 	}
 }
@@ -193,7 +210,7 @@ export class RoomEditor {
 			world.originalTiles.set(position, tile);
 		}
 		for(const entity of this.room.worldPart.entities) {
-			world.entities.add(entity);
+			entity.spawn(new Vector(0, 0), world);
 		}
 		return world;
 	}
@@ -282,14 +299,14 @@ export class RoomEditor {
 		);
 	}
 
-	addEntity(entity: RoomEntity) {
-		this.room.worldPart.entities.add(entity);
+	addEntity(entity: FixedEntitySpawner) {
+		this.room.worldPart.entities.push(entity);
 	}
-	deleteEntity(entity: RoomEntity) {
-		this.room.worldPart.entities.delete(entity);
+	deleteEntity(entity: FixedEntitySpawner) {
+		this.room.worldPart.entities = this.room.worldPart.entities.filter(e => e !== entity);
 	}
-	filterEntities(callback: (entity: RoomEntity) => boolean) {
-		this.room.worldPart.entities = new Entities([...this.room.worldPart.entities].filter(callback));
+	filterEntities(callback: (entity: FixedEntitySpawner) => boolean) {
+		this.room.worldPart.entities = this.room.worldPart.entities.filter(callback);
 	}
 
 

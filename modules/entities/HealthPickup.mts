@@ -1,7 +1,7 @@
 import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
-import { HealthPickupData, RoomData, WorldData } from "../constants/GameData.mjs";
+import { HealthPickupData, WorldData } from "../constants/GameData.mjs";
 import { RectangularCollideable } from "../game-utilities/physics-engine/RectangularCollideable.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { World } from "../world/World.mjs";
@@ -34,20 +34,5 @@ export class HealthPickup extends RectangularCollideable {
 	}
 	render() {
 		return [new Renderable(this.display.bind(this), "entity")];
-	}
-
-	copy() {
-		return new HealthPickup(this.hitbox.getCorner("top-left").divide(WorldData.TILE_SIZE));
-	}
-	copyAndTranslate(amount: Vector) {
-		const copy = this.copy();
-		copy.hitbox = copy.hitbox.translate(amount);
-		return copy;
-	}
-	reflect() {
-		return new HealthPickup(new Vector(
-			RoomData.SIZE - this.hitbox.x / WorldData.TILE_SIZE,
-			this.hitbox.y / WorldData.TILE_SIZE,
-		));
 	}
 }

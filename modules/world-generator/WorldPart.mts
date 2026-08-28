@@ -1,20 +1,17 @@
 import { Direction, Directions } from "../../utils-ts/modules/geometry/Direction.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
-import { WorldData } from "../constants/GameData.mjs";
-import { RoomEntity } from "../level-generator/Room.mjs";
+import { FixedEntitySpawner } from "../level-generator/FixedEntitySpawner.mjs";
 import { TILE_TYPES } from "../tiles/TileIDs.mjs";
-import { Entities } from "../world/Entities.mjs";
 import { Tiles } from "../world/Tiles.mjs";
 import { World } from "../world/World.mjs";
 
-export class WorldPart<EntityType extends RoomEntity> {
+export class WorldPart {
 	tiles: Tiles;
-	entities: Entities<EntityType>;
+	entities: FixedEntitySpawner[];
 
-	static parse(tilesData: number[][], entitiesData: RoomEntity[]) {
+	static parse(tilesData: number[][], entitiesData: FixedEntitySpawner[]) {
 		const tiles = WorldPart.parseTiles(tilesData);
-		const entities = new Entities(entitiesData);
-		return new WorldPart(tiles, entities);
+		return new WorldPart(tiles, entitiesData);
 	}
 	static parseTiles(tilesData: number[][]) {
 		const tiles = new Tiles();
@@ -31,7 +28,7 @@ export class WorldPart<EntityType extends RoomEntity> {
 		return tiles;
 	}
 
-	constructor(tiles: Tiles = new Tiles(), entities: Entities<EntityType> = new Entities()) {
+	constructor(tiles: Tiles = new Tiles(), entities: FixedEntitySpawner[] = []) {
 		this.tiles = tiles;
 		this.entities = entities;
 	}
@@ -42,13 +39,13 @@ export class WorldPart<EntityType extends RoomEntity> {
 			world.addOriginalTile(position.add(tileOffset), copy);
 		}
 		for(const entity of this.entities) {
-			world.entities.add(entity.copyAndTranslate(tileOffset.multiply(WorldData.TILE_SIZE)));
+			entity.spawn(tileOffset, world);
 		}
 	}
 
 	extend(direction: Direction, amount: number) {
 		/* Copies the first/last row/column to increase the size by the specified amount. */
-		const copy = new WorldPart(this.tiles.copy(), new Entities([...this.entities].map(e => e.copy())));
+		const copy = new WorldPart(this.tiles.copy(), this.entities);
 
 		const boundingBox = this.tiles.boundingBox();
 		if(Directions.isHorizontal(direction)) {

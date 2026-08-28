@@ -17,14 +17,4 @@ export class SpawnPoint extends Entity {
 	boundingBox(): Rectangle {
 		return Rectangle.square(this.position.x, this.position.y, 1);
 	}
-
-	copy() {
-		return new SpawnPoint(this.position);
-	}
-	copyAndTranslate(amount: Vector) {
-		return new SpawnPoint(this.position.add(amount));
-	}
-	reflect() {
-		return this.copy();
-	}
 }
