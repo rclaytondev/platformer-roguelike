@@ -12,30 +12,32 @@ import { Renderable } from "../world/Renderer.mjs";
 import { World } from "../world/World.mjs";
 
 export class Fireball extends RectangularCollideable {
+	world: World;
 	velocity: Vector;
 	acceleration: Vector;
 	ignoredEntities: Collideable[];
 	slideUpSlopes: boolean = false;
 	slideDownSlopes: boolean = false;
 
-	constructor(position: Vector, velocity: Vector, acceleration: Vector, ignoredEntities: Collideable[]) {
+	constructor(position: Vector, velocity: Vector, acceleration: Vector, ignoredEntities: Collideable[], world: World) {
 		super(Rectangle.square(position.x, position.y, 1));
 		this.velocity = velocity;
 		this.acceleration = acceleration;
 		this.ignoredEntities = ignoredEntities;
+		this.world = world;
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
+	update(_world: World, canvasIO: CanvasIO) {
 		this.velocity = this.velocity.add(this.acceleration);
-		this.move(this.velocity, world, canvasIO, {
+		this.move(this.velocity, this.world, canvasIO, {
 			collides: (obj) => !(this.ignoredEntities as unknown[]).includes(obj),
 		});
 
-		world.particles.add(new Particle(
+		this.world.particles.add(new Particle(
 			this.hitbox.center(),
 			new Vector(0, 0),
 			SpiderData.PROJECTILE_PARTICLE_SETTINGS,
-		), world, canvasIO);
+		), this.world, canvasIO);
 	}
 
 	displayGlowEffect(canvasIO: CanvasIO) {
@@ -54,13 +56,13 @@ export class Fireball extends RectangularCollideable {
 	}
 
 
-	onCollision(collision: CollisionEvent, world: World, canvasIO: CanvasIO): void {
-		this.explode(world, canvasIO);
+	onCollision(collision: CollisionEvent, _world: World, canvasIO: CanvasIO): void {
+		this.explode(canvasIO);
 	}
-	explode(world: World, canvasIO: CanvasIO) {
-		world.entities.delete(this);
+	explode(canvasIO: CanvasIO) {
+		this.world.entities.delete(this);
 
 		const center = this.hitbox.center();
-		new Explosion(center).explode(world, canvasIO);
+		new Explosion(center).explode(this.world, canvasIO);
 	}
 }

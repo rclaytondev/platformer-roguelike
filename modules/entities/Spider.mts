@@ -611,7 +611,7 @@ export class Spider extends RectangularCollideable {
 		const direction = player.subtract(center).normalize();
 		const velocity = direction.multiply(SpiderData.PROJECTILE_SPEED);
 		const acceleration = direction.multiply(SpiderData.PROJECTILE_ACCELERATION);
-		const projectile = new Fireball(center, velocity, acceleration, [this]);
+		const projectile = new Fireball(center, velocity, acceleration, [this], world);
 		world.entities.add(projectile);
 	}
 
