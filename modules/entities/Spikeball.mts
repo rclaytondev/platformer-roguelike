@@ -16,14 +16,14 @@ import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
 import { MathUtils } from "../../utils-ts/modules/math/MathUtils.mjs";
 
 abstract class SpikeballState {
-	abstract update(self: Spikeball, world: World, canvasIO: CanvasIO): void;
+	abstract update(self: Spikeball, canvasIO: CanvasIO): void;
 
 	abstract render(self: Spikeball): Renderable[];
 }
 
 class MovingState extends SpikeballState {
-	update(self: Spikeball, world: World, canvasIO: CanvasIO): void {
-		self.moveForward(world, canvasIO);
+	update(self: Spikeball, canvasIO: CanvasIO): void {
+		self.moveForward(canvasIO);
 	}
 
 	render() {
@@ -34,21 +34,21 @@ class MovingState extends SpikeballState {
 class AttackState extends SpikeballState {
 	timeInState: number = 0;
 
-	update(self: Spikeball, world: World): void {
+	update(self: Spikeball): void {
 		this.timeInState ++;
 
 		if(this.timeInState > SpikeballData.TELEGRAPH_DELAY) {
-			this.attack(self, world);
+			this.attack(self);
 			if(this.timeInState > SpikeballData.TELEGRAPH_DELAY + SpikeballData.ATTACK_DURATION) {
 				self.state = new MovingState();
 			}
 		}
 	}
-	attack(self: Spikeball, world: World) {
+	attack(self: Spikeball) {
 		const center = self.hitbox.center();
 		const hurtbox = Rectangle.fromCenter(center.x, center.y, SpikeballData.HURTBOX_SIZE, SpikeballData.HURTBOX_SIZE);
-		if(world.player.hitbox.intersects(hurtbox)) {
-			world.player.damage(hurtbox, world);
+		if(self.world.player.hitbox.intersects(hurtbox)) {
+			self.world.player.damage(hurtbox, self.world);
 		}
 	}
 
@@ -89,6 +89,7 @@ class AttackState extends SpikeballState {
 }
 
 export class Spikeball extends RectangularCollideable {
+	world: World;
 	state: SpikeballState = new MovingState();
 	direction: Diagonal;
 	age: number = 0;
@@ -99,14 +100,16 @@ export class Spikeball extends RectangularCollideable {
 	slideUpSlopes: boolean = false;
 	slideDownSlopes: boolean = false;
 
-	constructor(position: Vector, direction: Diagonal) {
+	constructor(position: Vector, direction: Diagonal, world: World) {
 		super(Rectangle.fromDimensions(position.x, position.y, 2 * SpikeballData.RADIUS, 2 * SpikeballData.RADIUS));
 		this.direction = direction;
+		this.world = world;
 	}
-	static fromCenter(position: Vector, direction: Diagonal) {
+	static fromCenter(position: Vector, direction: Diagonal, world: World) {
 		return new Spikeball(
 			position.subtract(SpikeballData.RADIUS, SpikeballData.RADIUS),
 			direction,
+			world,
 		);
 	}
 
@@ -162,11 +165,11 @@ export class Spikeball extends RectangularCollideable {
 		canvasIO.ctx.restore();
 	}
 
-	onCollision(collision: CollisionEvent, world: World) {
-		if(this.lastCollisionFrame === world.frameCount) {
+	onCollision(collision: CollisionEvent) {
+		if(this.lastCollisionFrame === this.world.frameCount) {
 			return;
 		}
-		this.lastCollisionFrame = world.frameCount;
+		this.lastCollisionFrame = this.world.frameCount;
 		const collidingObject = collision.collidingObject(this);
 		if(collision.movingObject === this && !(collidingObject instanceof Player)) {
 			this.bounces --;
@@ -207,11 +210,11 @@ export class Spikeball extends RectangularCollideable {
 			this.direction = Directions.reflectY[this.direction];
 		}
 	}
-	update(world: World, canvasIO: CanvasIO) {
-		this.state.update(this, world, canvasIO);
+	update(_world: World, canvasIO: CanvasIO) {
+		this.state.update(this, canvasIO);
 		if(this.bounces < 0) {
-			world.entities.delete(this);
-			this.die(world, canvasIO);
+			this.world.entities.delete(this);
+			this.die(canvasIO);
 		}
 		this.age ++;
 		if(this.age > (WorldData.TILE_SIZE - 2 * SpikeballData.RADIUS) / SpikeballData.SPEED) {
@@ -221,7 +224,7 @@ export class Spikeball extends RectangularCollideable {
 			));
 		}
 	}
-	moveForward(world: World, canvasIO: CanvasIO) {
+	moveForward(canvasIO: CanvasIO) {
 		const options = {
 			collides: this.collides.bind(this),
 			movedObjects: new Set<Collideable>(),
@@ -231,9 +234,9 @@ export class Spikeball extends RectangularCollideable {
 			const hitbox = Rectangle.fromBounds(this.hitbox.left, this.hitbox.right, this.hitbox.top, this.hitbox.bottom);
 			const xDirection = (this.direction === "up-left" || this.direction === "down-left") ? "left" : "right";
 			const yDirection = (this.direction === "up-left" || this.direction === "up-right") ? "up" : "down";
-			const canMoveX = this.canMove(xDirection, world, canvasIO);
-			const canMoveY = this.canMove(yDirection, world, canvasIO);
-			this.move(Vector.gridUnit(this.direction), world, canvasIO, options);
+			const canMoveX = this.canMove(xDirection, this.world, canvasIO);
+			const canMoveY = this.canMove(yDirection, this.world, canvasIO);
+			this.move(Vector.gridUnit(this.direction), this.world, canvasIO, options);
 			if(canMoveX === canMoveY && this.direction !== direction) {
 				/* Hit a corner perfectly or hit a slope */
 				this.direction = Directions.opposite[direction];
@@ -242,10 +245,10 @@ export class Spikeball extends RectangularCollideable {
 		}
 	}
 
-	die(world: World, canvasIO: CanvasIO) {
+	die(canvasIO: CanvasIO) {
 		GraphicsUtils.shatterParticles(
 			(canvasIO: CanvasIO) => this.display(canvasIO),
-			world,
+			this.world,
 			this.hitbox.center(),
 			SpikeballData.SHATTER_PIECES,
 			SpikeballData.SHATTER_PARTICLE_SPEED,

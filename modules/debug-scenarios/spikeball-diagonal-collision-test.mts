@@ -17,10 +17,12 @@ export const spikeballDiagonalCollisionScenario = new TestScenario(() => {
 	world.entities.add(Spikeball.fromCenter(
 		new Vector(3, 3).multiply(WorldData.TILE_SIZE),
 		"down-right",
+		world,
 	));
 	world.entities.add(Spikeball.fromCenter(
 		new Vector(-2.5, 3.5).multiply(WorldData.TILE_SIZE),
 		"down-left",
+		world,
 	));
 
 
@@ -28,10 +30,12 @@ export const spikeballDiagonalCollisionScenario = new TestScenario(() => {
 	world.entities.add(Spikeball.fromCenter(
 		new Vector(3, -3).multiply(WorldData.TILE_SIZE),
 		"down-right",
+		world,
 	));
 	world.entities.add(Spikeball.fromCenter(
 		new Vector(3 + 3, -3 + 3).multiply(WorldData.TILE_SIZE),
 		"up-left",
+		world,
 	));
 
 	return [world];

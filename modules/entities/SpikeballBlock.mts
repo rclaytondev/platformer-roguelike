@@ -227,6 +227,7 @@ export class SpikeballBlock extends RectangularCollideable {
 		const spikeball = new Spikeball(
 			this.hitbox.center().subtract(SpikeballData.RADIUS, SpikeballData.RADIUS),
 			direction,
+			world,
 		);
 		const tilePosition = this.tilePosition();
 		spikeball.overlappingObjects.push(
