@@ -29,9 +29,9 @@ export abstract class Collideable extends Entity {
 
 	subpixel: Vector = new Vector(0, 0);
 	abstract hitboxes(): Rectangle[];
-	abstract translate(amount: Vector, world: World): void;
+	abstract translate(amount: Vector): void;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	onCollision(collision: CollisionEvent, world: World, canvasIO: CanvasIO) { }
+	onCollision(collision: CollisionEvent) { }
 	slideUpSlopes: boolean = true;
 	slideDownSlopes: boolean = true;
 	tangible: boolean = true;
@@ -68,16 +68,16 @@ export abstract class Collideable extends Entity {
 			if(offsetY === 1) {
 				const moved = this.moveWithoutSlopes(direction, world, options, canvasIO);
 				if(moved) {
-					this.translateIfUnobstructed("down", options.collides ?? (() => true), world);
+					this.translateIfUnobstructed("down", options.collides ?? (() => true));
 					return true;
 				}
 			}
 			else if(offsetY === -1) {
-				const translated = this.translateIfUnobstructed("up", options.collides ?? (() => true), world);
+				const translated = this.translateIfUnobstructed("up", options.collides ?? (() => true));
 				if(!translated) { return false; }
 				const moved = this.moveWithoutSlopes(direction, world, options, canvasIO);
 				if(!moved) {
-					this.translateIfUnobstructed("down", options.collides ?? (() => true), world);
+					this.translateIfUnobstructed("down", options.collides ?? (() => true));
 					return false;
 				}
 				return true;
@@ -86,11 +86,11 @@ export abstract class Collideable extends Entity {
 		return this.moveWithoutSlopes(direction, world, options, canvasIO);
 	}
 	private moveWithoutSlopes(direction: Direction, world: World, options: MoveUnitOptions, canvasIO: CanvasIO): boolean {
-		const collidingObjects = this.collidingObjects(direction, world, options.collides ?? (() => true));
+		const collidingObjects = this.collidingObjects(direction, options.collides ?? (() => true));
 		const unpushables = collidingObjects.filter(o => !(o instanceof Collideable) || (!this.canPush(o) && o.tangible));
 		if(unpushables.length > 0) {
 			if(!options.queryOnly) {
-				this.callCollisionHandlers(direction, unpushables, false, options.onCollision ?? (() => {}), world, canvasIO);
+				this.callCollisionHandlers(direction, unpushables, false, options.onCollision ?? (() => {}));
 			}
 			return false;
 		}
@@ -98,7 +98,7 @@ export abstract class Collideable extends Entity {
 		const immovableUncrushables = (collidingObjects as Collideable[]).filter(c => !this.canCrush(c) && c.tangible && !c.canMove(direction, world, canvasIO));
 		if(immovableUncrushables.length > 0) {
 			if(!options.queryOnly) {
-				this.callCollisionHandlers(direction, immovableUncrushables, false, options.onCollision ?? (() => {}), world, canvasIO);
+				this.callCollisionHandlers(direction, immovableUncrushables, false, options.onCollision ?? (() => {}));
 			}
 			return false;
 		}
@@ -122,23 +122,23 @@ export abstract class Collideable extends Entity {
 		}
 		if(!options.queryOnly && !options.movedObjects.has(this)) {
 			options.movedObjects.add(this);
-			this.callCollisionHandlers(direction, collidingObjects, true, options.onCollision ?? (() => {}), world, canvasIO);
-			this.translate(Vector.unit(direction), world);
+			this.callCollisionHandlers(direction, collidingObjects, true, options.onCollision ?? (() => {}));
+			this.translate(Vector.unit(direction));
 			if(options.moveRiders ?? true) {
 				this.moveRiders(direction, world, canvasIO, options);
 			}
 		}
 		return true;
 	}
-	callCollisionHandlers(direction: Direction, objects: (Collideable | TileWithPosition)[], moveSuccessful: boolean, onCollision: (collision: CollisionEvent, world: World, canvasIO: CanvasIO) => void, world: World, canvasIO: CanvasIO) {
+	callCollisionHandlers(direction: Direction, objects: (Collideable | TileWithPosition)[], moveSuccessful: boolean, onCollision: (collision: CollisionEvent) => void) {
 		for(const collidingObject of objects) {
 			const collision = new CollisionEvent(this, collidingObject, direction, moveSuccessful);
 			if(!(collidingObject instanceof Collideable) || collidingObject.tangible) {
-				this.onCollision(collision, world, canvasIO);
-				onCollision(collision, world, canvasIO);
+				this.onCollision(collision);
+				onCollision(collision);
 			}
 			if(collidingObject instanceof Collideable && this.tangible) {
-				collidingObject.onCollision(collision, world, canvasIO);
+				collidingObject.onCollision(collision);
 			}
 		}
 	}
@@ -153,11 +153,11 @@ export abstract class Collideable extends Entity {
 		}
 		return 0;
 	}
-	collidingObjects(direction: Direction, world: World, collides: (object: Collideable | TileWithPosition) => boolean) {
+	collidingObjects(direction: Direction, collides: (object: Collideable | TileWithPosition) => boolean) {
 		const hitboxes = this.hitboxes();
 		const newHitboxes = hitboxes.map(h => h.translate(Vector.unit(direction)));
-		const tiles = world.tiles.blockingMovement(this, direction, hitboxes, newHitboxes).filter(collides);
-		const entities = newHitboxes.flatMap(h => [...world.entities.collideablesIntersecting(h, collides)]).filter(o => o !== this);
+		const tiles = this.world.tiles.blockingMovement(this, direction, hitboxes, newHitboxes).filter(collides);
+		const entities = newHitboxes.flatMap(h => [...this.world.entities.collideablesIntersecting(h, collides)]).filter(o => o !== this);
 		return [...tiles, ...new Set(entities)];
 	}
 	collidingHitboxes(entity: Collideable, offset: Vector) {
@@ -182,10 +182,10 @@ export abstract class Collideable extends Entity {
 	intersectsRects(rectangles: Rectangle[]) {
 		return this.hitboxes().some(h => rectangles.some(r => h.interiorIntersects(r)));
 	}
-	translateIfUnobstructed(direction: Direction, collides: (e: Collideable | TileWithPosition) => boolean, world: World) {
-		const obstructed = this.collidingObjects(direction, world, collides).length !== 0;
+	translateIfUnobstructed(direction: Direction, collides: (e: Collideable | TileWithPosition) => boolean) {
+		const obstructed = this.collidingObjects(direction, collides).length !== 0;
 		if(!obstructed) {
-			this.translate(Vector.unit(direction), world);
+			this.translate(Vector.unit(direction));
 			return true;
 		}
 		return false;

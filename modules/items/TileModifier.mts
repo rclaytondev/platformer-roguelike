@@ -11,6 +11,6 @@ export abstract class TileModifier {
 	update(tile: ThrowableTileEntity, world: World, canvasIO: CanvasIO) { }
 	abstract displayIcon(canvasIO: CanvasIO, world: World): void;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	onCollision(tile: ThrowableTileEntity, collision: CollisionEvent, world: World, canvasIO: CanvasIO) { }
+	onCollision(tile: ThrowableTileEntity, collision: CollisionEvent) { }
 	abstract reset(): void;
 }

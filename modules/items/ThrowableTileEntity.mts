@@ -53,7 +53,7 @@ export class ThrowableTileEntity extends RectangularCollideable {
 		}
 	}
 	isGrounded() {
-		return this.collidingObjects("down", this.world, () => true).length !== 0;
+		return this.collidingObjects("down", () => true).length !== 0;
 	}
 
 	render() {
@@ -75,7 +75,7 @@ export class ThrowableTileEntity extends RectangularCollideable {
 		canvasIO.strokeCircle(center.x, center.y, WorldData.TILE_ACCENT_RADIUS - (WorldData.TILE_SIZE / 2 - WorldData.TILE_ACCENT_RADIUS));
 	}
 
-	onCollision(collision: CollisionEvent, world: World, canvasIO: CanvasIO): void {
+	onCollision(collision: CollisionEvent): void {
 		if(collision.movingObject === this) {
 			if(Directions.isVertical(collision.direction)) {
 				this.velocity.y = 0;
@@ -85,7 +85,7 @@ export class ThrowableTileEntity extends RectangularCollideable {
 			}
 		}
 		for(const modifier of this.modifiers) {
-			modifier.onCollision(this, collision, world, canvasIO);
+			modifier.onCollision(this, collision);
 		}
 	}
 

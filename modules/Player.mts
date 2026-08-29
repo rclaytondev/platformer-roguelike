@@ -301,9 +301,9 @@ export class Player extends RectangularCollideable {
 			this.uncrouch();
 		}
 	}
-	onCollision(collision: CollisionEvent, world: World): void {
+	onCollision(collision: CollisionEvent): void {
 		if(collision.movingObject === this) {
-			const corrected = this.applyCornerCorrection(collision, world);
+			const corrected = this.applyCornerCorrection(collision);
 			if(Directions.isVertical(collision.direction)) {
 				if(collision.directionOf(this) === "down" && this.velocity.y > PlayerData.GRAVITY) {
 					this.squishFactor = PlayerData.GROUND_SQUISH_AMOUNT;
@@ -339,7 +339,7 @@ export class Player extends RectangularCollideable {
 		}
 		return result;
 	}
-	applyCornerCorrection(collision: CollisionEvent, world: World) {
+	applyCornerCorrection(collision: CollisionEvent) {
 		if(!this.shouldCornerCorrect(collision)) { return false; }
 		const direction = collision.directionOf(this);
 		const originalHitbox = this.hitbox;
@@ -347,7 +347,7 @@ export class Player extends RectangularCollideable {
 		for(let amount = 1; amount < PlayerData.CORNER_CORRECTION_DIST; amount ++) {
 			for(const correctionDirection of directions) {
 				this.hitbox = originalHitbox.translate(Vector.unit(correctionDirection).multiply(amount));
-				const moved = this.translateIfUnobstructed(direction, _ => true, world);
+				const moved = this.translateIfUnobstructed(direction, _ => true);
 				if(moved) {
 					return true;
 				}
@@ -539,7 +539,7 @@ export class Player extends RectangularCollideable {
 	attemptThrow(item: ThrowableTileEntity, itemCenter: Vector, world: World, canvasIO: CanvasIO) {
 		const throwStart = new Vector(itemCenter.x - item.hitbox.width / 2, itemCenter.y - item.hitbox.height / 2);
 		if(!world.isInSolid(item.hitbox.translate(throwStart))) {
-			item.translate(throwStart, world);
+			item.translate(throwStart);
 			item.velocity = this.itemThrowVelocity(canvasIO);
 			world.entities.add(item);
 			return true;

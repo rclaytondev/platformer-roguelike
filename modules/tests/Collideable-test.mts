@@ -46,8 +46,8 @@ class CollideableSpy extends RectangularCollideable {
 		this.destroyed = true;
 	}
 
-	translate(amount: Vector, world: World): void {
-		super.translate(amount, world);
+	translate(amount: Vector): void {
+		super.translate(amount);
 		this.amountTranslated = this.amountTranslated.add(amount);
 	}
 }

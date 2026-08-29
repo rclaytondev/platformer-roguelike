@@ -200,7 +200,7 @@ export class TeleportingCreature extends RectangularCollideable {
 	}
 
 	translate(amount: Vector): void {
-		super.translate(amount, this.world);
+		super.translate(amount);
 		this.fireSpawner.translate(amount);
 	}
 }

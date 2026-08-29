@@ -671,7 +671,7 @@ export class Spider extends RectangularCollideable {
 	}
 
 	translate(amount: Vector): void {
-		super.translate(amount, this.world);
+		super.translate(amount);
 		if(this.movement instanceof FallingState) {
 			for(const leg of this.legs) {
 				leg.position = leg.position.add(amount);
