@@ -119,7 +119,7 @@ export class StoneTileRenderer extends StaticEntity {
 
 	render(world: World, camera: Camera) {
 		return [
-			new Renderable(c => StoneTile.displayStoneTiles(world, c, camera.visibleTileRegion(c)), "tile"),
+			new Renderable(c => StoneTile.displayStoneTiles(world, c, camera.visibleTileRegion()), "tile"),
 		];
 	}
 }

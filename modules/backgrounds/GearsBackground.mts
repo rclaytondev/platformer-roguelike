@@ -151,7 +151,7 @@ export class GearsBackground extends Background {
 	}
 
 	display(canvasIO: CanvasIO, camera: Camera) {
-		const translation = camera.translation(canvasIO);
+		const translation = camera.translation();
 		canvasIO.ctx.save();
 		canvasIO.clipRect(
 			translation.x, 0,

@@ -1,4 +1,5 @@
 import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
+import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { Backgrounds } from "../backgrounds/Backgrounds.mjs";
 import { GearsBackground } from "../backgrounds/GearsBackground.mjs";
 import { SkyBackground } from "../backgrounds/SkyBackground.mjs";
@@ -18,18 +19,19 @@ export class WorldScreen {
 		GearsBackground.generate(),
 		new SkyBackground(),
 	]);
-	camera: Camera = new Camera();
+	camera: Camera;
 	visualEffects: VisualEffects = new VisualEffects();
 
-	constructor(world: World) {
+	constructor(world: World, canvasIO: CanvasIO) {
 		this.world = world;
 		this.world.worldScreen = this;
+		this.camera = new Camera(new Vector(0, 0), canvasIO);
 		this.initializeCamera();
 	}
 
 	update(canvasIO: CanvasIO) {
 		this.world.update(canvasIO, this.camera);
-		this.camera.update(this.world.player.hitbox.center(), this.world.entities, canvasIO);
+		this.camera.update(this.world.player.hitbox.center(), this.world.entities);
 		this.visualEffects.update();
 		this.backgrounds.update();
 		Debug.updateInputRecord(canvasIO);

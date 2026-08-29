@@ -38,15 +38,15 @@ export class StartScreen {
 			&& InputUtils.startedPressingKey(canvasIO)
 			&& !this.startedTransitioning
 		) {
-			this.beginTransition();
+			this.beginTransition(canvasIO);
 		}
 	}
 
-	beginTransition() {
+	beginTransition(canvasIO: CanvasIO) {
 		this.startedTransitioning = true;
 		const fadeOut = new ScreenFade(PlayerData.FADE_DURATION, 0, 1, "black", "transition-fade-out");
 		const pause = new ScreenFade(PlayerData.FADE_DELAY, 1, 1, "black", "transition-pause", () => {
-			const worldScreen = new WorldScreen(new World(true));
+			const worldScreen = new WorldScreen(new World(true), canvasIO);
 			Main.screen = worldScreen;
 
 			worldScreen.visualEffects.effectsList.add(new OverlayText(

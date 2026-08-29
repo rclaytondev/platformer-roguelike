@@ -8,7 +8,7 @@ import { WorldScreen } from "../world/WorldScreen.mjs";
 import { basicCollisionScenario } from "../debug-scenarios/basic-collision-test.mjs";
 
 const [world] = basicCollisionScenario.setupWorld();
-Main.screen = new WorldScreen(world);
+Main.screen = new WorldScreen(world, canvasIO);
 
 
 if(DEBUG_SETTINGS.GENERATOR_VISUALIZATION.ENABLED && Main.screen instanceof WorldScreen) {

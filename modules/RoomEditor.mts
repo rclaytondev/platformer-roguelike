@@ -282,7 +282,7 @@ export class RoomEditor {
 
 	render(canvasIO: CanvasIO, renderer: Renderer) {
 		const world = this.getWorld();
-		world.render(canvasIO, new Camera(canvasIO.boundingBox().center()), renderer);
+		world.render(canvasIO, new Camera(canvasIO.boundingBox().center(), canvasIO), renderer);
 		renderer.renderables.push(
 			new Renderable(
 				() => canvasIO.fillCanvas(BackgroundData.BACKGROUND_COLOR),

@@ -8,17 +8,19 @@ import { GeomUtils } from "../game-utilities/GeomUtils.mjs";
 import { Entities } from "./Entities.mjs";
 
 export class Camera {
+	#canvasIO: CanvasIO;
 	position: Vector;
 
-	constructor(position: Vector = new Vector(0, 0)) {
+	constructor(position: Vector, canvasIO: CanvasIO) {
 		this.position = position;
+		this.#canvasIO = canvasIO;
 	}
 
-	translation(canvasIO: CanvasIO) {
-		return new Vector(canvasIO.canvas.width / 2 - this.position.x, canvasIO.canvas.height / 2 - this.position.y);
+	translation() {
+		return new Vector(this.#canvasIO.canvas.width / 2 - this.position.x, this.#canvasIO.canvas.height / 2 - this.position.y);
 	}
 	applyTranslation(canvasIO: CanvasIO) {
-		const translation = this.translation(canvasIO);
+		const translation = this.translation();
 		canvasIO.ctx.translate(translation.x, translation.y);
 	}
 
@@ -30,16 +32,16 @@ export class Camera {
 			position.y + canvasIO.canvas.height / 2 + offscreenAmount,
 		);
 	}
-	visibleRegion(canvasIO: CanvasIO, offscreenAmount: number) {
-		return Camera.visibleRegion(canvasIO, this.position, offscreenAmount);
+	visibleRegion(offscreenAmount: number) {
+		return Camera.visibleRegion(this.#canvasIO, this.position, offscreenAmount);
 	}
-	visibleTileRegion(canvasIO: CanvasIO, offscreenTiles: number = 0) {
+	visibleTileRegion(offscreenTiles: number = 0) {
 		const center = this.position.divide(WorldData.TILE_SIZE);
 		return Rectangle.fromBounds(
-			Math.floor(center.x - (canvasIO.canvas.width / 2 / WorldData.TILE_SIZE)) - offscreenTiles,
-			Math.ceil(center.x + (canvasIO.canvas.width / 2 / WorldData.TILE_SIZE)) + offscreenTiles,
-			Math.floor(center.y - (canvasIO.canvas.height / 2 / WorldData.TILE_SIZE)) - offscreenTiles,
-			Math.ceil(center.y + (canvasIO.canvas.height / 2 / WorldData.TILE_SIZE)) + offscreenTiles,
+			Math.floor(center.x - (this.#canvasIO.canvas.width / 2 / WorldData.TILE_SIZE)) - offscreenTiles,
+			Math.ceil(center.x + (this.#canvasIO.canvas.width / 2 / WorldData.TILE_SIZE)) + offscreenTiles,
+			Math.floor(center.y - (this.#canvasIO.canvas.height / 2 / WorldData.TILE_SIZE)) - offscreenTiles,
+			Math.ceil(center.y + (this.#canvasIO.canvas.height / 2 / WorldData.TILE_SIZE)) + offscreenTiles,
 		);
 	}
 
@@ -49,20 +51,20 @@ export class Camera {
 		const worldBorders = collideables.filter(e => e instanceof WorldBorder);
 		return worldBorders.length === 0;
 	}
-	moveCameraIfValid(offset: Vector, entities: Entities, canvasIO: CanvasIO) {
-		const validBefore = Camera.isCameraPositionValid(this.position, entities, canvasIO);
-		const validAfter = Camera.isCameraPositionValid(this.position.add(offset), entities, canvasIO);
+	moveCameraIfValid(offset: Vector, entities: Entities) {
+		const validBefore = Camera.isCameraPositionValid(this.position, entities, this.#canvasIO);
+		const validAfter = Camera.isCameraPositionValid(this.position.add(offset), entities, this.#canvasIO);
 		if(!validBefore || validAfter) {
 			this.position = this.position.add(offset);
 			return true;
 		}
 		return false;
 	}
-	update(target: Vector, entities: Entities, canvasIO: CanvasIO) {
+	update(target: Vector, entities: Entities) {
 		if(!Debug.freeCameraMode) {
 			const newPosition = GeomUtils.moveVectorTowards(this.position, target, WorldData.CAMERA_SPEED);
-			this.moveCameraIfValid(new Vector(newPosition.x - this.position.x, 0), entities, canvasIO);
-			this.moveCameraIfValid(new Vector(0, newPosition.y - this.position.y), entities, canvasIO);
+			this.moveCameraIfValid(new Vector(newPosition.x - this.position.x, 0), entities);
+			this.moveCameraIfValid(new Vector(0, newPosition.y - this.position.y), entities);
 		}
 		Debug.updateFreeCameraMode(this);
 	}
