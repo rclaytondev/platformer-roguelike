@@ -54,7 +54,7 @@ export class Explosion {
 	explode(world: World, canvasIO: CanvasIO) {
 		this.applyScreenShake(world);
 		this.destroyTiles(world);
-		this.addParticles(world, canvasIO);
+		this.addParticles(world);
 		this.damage(world, canvasIO);
 	}
 	applyScreenShake(world: World) {
@@ -70,13 +70,13 @@ export class Explosion {
 			Gate.destroyNonGateTile(position, world);
 		}
 	}
-	addParticles(world: World, canvasIO: CanvasIO) {
+	addParticles(world: World) {
 		const area = Math.PI * this.visualRadius ** 2;
 		const numParticles = Math.floor(area / (WorldData.TILE_SIZE ** 2) * this.particleDensity);
 		for(let i = 0; i < numParticles; i ++) {
 			const position = RandomUtils.randomInCircle(this.position.x, this.position.y, this.visualRadius);
 			const particle = new Particle(position, new Vector(0, 0), this.particleSettings);
-			world.particles.add(particle, world, canvasIO);
+			world.particles.add(particle, world);
 		}
 	}
 	damage(world: World, canvasIO: CanvasIO) {

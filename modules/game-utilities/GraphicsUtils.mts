@@ -139,7 +139,7 @@ export class GraphicsUtils {
 				display(canvasIO);
 				canvasIO.ctx.restore();
 			};
-			world.particles.add(new Particle(position, velocity, { ...settings, shape: displaySector, rotation: 0 }), world, canvasIO);
+			world.particles.add(new Particle(position, velocity, { ...settings, shape: displaySector, rotation: 0 }), world);
 		}
 	}
 }

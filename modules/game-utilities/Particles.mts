@@ -1,4 +1,3 @@
-import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { MathUtils } from "../../utils-ts/modules/math/MathUtils.mjs";
 import { PlayerData, WorldData } from "../constants/GameData.mjs";
 import { Renderer } from "../world/Renderer.mjs";
@@ -16,17 +15,19 @@ export class Particles {
 		}
 	}
 
-	shouldAdd(particle: Particle, world: World, canvasIO: CanvasIO) {
+	shouldAdd(particle: Particle, world: World) {
 		if(!world.worldScreen) { return true; }
 		const distanceX = MathUtils.dist(particle.position.x, world.worldScreen.camera.position.x);
 		const distanceY = MathUtils.dist(particle.position.y, world.worldScreen.camera.position.y);
+		const width = world.worldScreen.camera.width();
+		const height = world.worldScreen.camera.width();
 		return (
-			distanceX < canvasIO.canvas.width / 2 + PlayerData.MAX_X_VELOCITY * particle.lifetime()
-			&& distanceY < canvasIO.canvas.height / 2 + WorldData.PARTICLE_RENDER_DISTANCE_Y * particle.lifetime()
+			distanceX < width / 2 + PlayerData.MAX_X_VELOCITY * particle.lifetime()
+			&& distanceY < height / 2 + WorldData.PARTICLE_RENDER_DISTANCE_Y * particle.lifetime()
 		);
 	}
-	add(particle: Particle, world: World, canvasIO: CanvasIO) {
-		if(this.shouldAdd(particle, world, canvasIO)) {
+	add(particle: Particle, world: World) {
+		if(this.shouldAdd(particle, world)) {
 			this.particlesList.push(particle);
 		}
 	}

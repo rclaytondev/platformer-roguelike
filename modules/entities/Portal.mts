@@ -17,9 +17,9 @@ export class Portal extends Entity {
 		this.position = position;
 	}
 
-	update(canvasIO: CanvasIO) {
+	update() {
 		if(this.world.frameCount % PortalData.FRAMES_PER_LINE === 0) {
-			this.addLine(canvasIO);
+			this.addLine();
 		}
 
 		if(this.world.player.hitbox.intersects(this.teleportHitbox())) {
@@ -32,7 +32,7 @@ export class Portal extends Entity {
 			PortalData.HITBOX_WIDTH, PortalData.HITBOX_HEIGHT,
 		);
 	}
-	addLine(canvasIO: CanvasIO) {
+	addLine() {
 		this.world.particles.add(new Particle(
 			new Vector(
 				this.position.x + RandomUtils.random(-PortalData.LINE_SPAWN_WIDTH / 2, PortalData.LINE_SPAWN_WIDTH / 2),
@@ -40,7 +40,7 @@ export class Portal extends Entity {
 			),
 			new Vector(0, -PortalData.LINE_SPEED),
 			PortalData.PARTICLE_SETTINGS,
-		), this.world, canvasIO);
+		), this.world);
 	}
 	teleportPlayer() {
 		const generator = this.world.worldGenerator;

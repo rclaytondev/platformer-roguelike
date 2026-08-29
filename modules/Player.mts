@@ -38,7 +38,7 @@ class DefaultState {
 		const input = Debug.getInput(canvasIO);
 		self.checkDirectionInputs(input);
 		self.checkMoveInputs();
-		self.checkJumpInputs(canvasIO);
+		self.checkJumpInputs();
 		self.checkThrowInputs(canvasIO);
 		self.checkCrouchInputs(input, canvasIO);
 		self.checkPickUpInputs();
@@ -78,7 +78,7 @@ class ClimbingState {
 			}
 		}
 		else {
-			const jumped = self.checkJumpInputs(canvasIO);
+			const jumped = self.checkJumpInputs();
 			if(jumped) {
 				self.hasDoubleJump = true;
 			}
@@ -394,10 +394,10 @@ export class Player extends RectangularCollideable {
 			this.velocity.x *= PlayerData.OVERLIMIT_FRICTION_X;
 		}
 	}
-	checkJumpInputs(canvasIO: CanvasIO) {
+	checkJumpInputs() {
 		if(this.jumpBuffer.isActive() && (this.coyoteTime > 0 || this.hasDoubleJump)) {
 			this.jumpBuffer.reset();
-			this.jump(canvasIO);
+			this.jump();
 			return true;
 		}
 		return false;
@@ -473,7 +473,7 @@ export class Player extends RectangularCollideable {
 		}
 	}
 
-	jump(canvasIO: CanvasIO) {
+	jump() {
 		this.velocity.y = -PlayerData.JUMP_VELOCITY;
 		this.hasDoubleJump = (this.coyoteTime > 0);
 		this.coyoteTime = -1;
@@ -483,7 +483,7 @@ export class Player extends RectangularCollideable {
 		if(this.keyDirection !== null) {
 			this.velocity = this.velocity.add(Vector.unit(this.keyDirection).multiply(PlayerData.JUMP_X_VELOCITY));
 		}
-		this.addJumpParticles(canvasIO);
+		this.addJumpParticles();
 	}
 	resetVelocityToDirection() {
 		if(this.keyDirection === "left") {
@@ -493,7 +493,7 @@ export class Player extends RectangularCollideable {
 			this.velocity.x = Math.max(this.velocity.x, PlayerData.REVERSE_JUMP_X_VELOCITY);
 		}
 	}
-	addJumpParticles(canvasIO: CanvasIO) {
+	addJumpParticles() {
 		const hitboxBottom = this.hitbox.edgeCenter("down");
 		for(let i = 0; i < PlayerData.JUMP_PARTICLES.AMOUNT; i ++) {
 			const position = new Vector(
@@ -505,7 +505,7 @@ export class Player extends RectangularCollideable {
 				RandomUtils.randomInCircle(0, 0, PlayerData.JUMP_PARTICLES.MAX_SPEED),
 				PlayerData.JUMP_PARTICLES.SETTINGS,
 			);
-			this.world.particles.add(particle, this.world, canvasIO);
+			this.world.particles.add(particle, this.world);
 		}
 	}
 

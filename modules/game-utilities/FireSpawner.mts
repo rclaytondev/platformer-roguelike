@@ -57,13 +57,13 @@ export class FireSpawner {
 		this.particleSettings = settings.particleSettings;
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
+	update(world: World) {
 		this.timeLeft --;
 		if(this.timeLeft > 0) {
 			this.particles = this.particles.filter(p => !p.isDead());
 			for(let i = 0; i < this.particlesPerFrame; i ++) {
 				const particle = this.generateFireParticle();
-				world.particles.add(particle, world, canvasIO);
+				world.particles.add(particle, world);
 				this.particles.push(particle);
 			}
 			this.hurtboxSize = Math.min(this.hurtboxSize + this.hurtboxSpeed, this.maxHurtboxSize);

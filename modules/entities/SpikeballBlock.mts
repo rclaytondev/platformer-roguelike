@@ -112,9 +112,9 @@ export class SpikeballBlock extends RectangularCollideable {
 		];
 	}
 
-	update(canvasIO: CanvasIO) {
+	update() {
 		this.updateSpikeballs();
-		this.updateDoors(canvasIO);
+		this.updateDoors();
 	}
 	updateSpikeballs() {
 		this.spikeballs = this.spikeballs.filter(
@@ -130,7 +130,7 @@ export class SpikeballBlock extends RectangularCollideable {
 			this.timeSinceSpawn = 0;
 		}
 	}
-	updateDoors(canvasIO: CanvasIO) {
+	updateDoors() {
 		for(const xDirection of ["left", "right"] as const) {
 			for(const yDirection of ["up", "down"] as const) {
 				const patternStep = this.pattern[this.patternStep];
@@ -145,12 +145,12 @@ export class SpikeballBlock extends RectangularCollideable {
 				const target = open ? SpikeballBlockData.DOOR_OPENNESS : 0;
 				this.doors[direction] = GeomUtils.moveTowards(this.doors[direction], target, SpikeballBlockData.DOOR_OPENING_SPEED);
 				if(open) {
-					this.spawnParticles(xDirection, yDirection, canvasIO);
+					this.spawnParticles(xDirection, yDirection);
 				}
 			}
 		}
 	}
-	spawnParticles(xDirection: "left" | "right", yDirection: "up" | "down", canvasIO: CanvasIO) {
+	spawnParticles(xDirection: "left" | "right", yDirection: "up" | "down") {
 		const center = this.hitbox.center();
 		const diagonal = `${yDirection}-${xDirection}` as Diagonal;
 		const perpendicular = Directions.rotateClockwise[diagonal];
@@ -162,7 +162,7 @@ export class SpikeballBlock extends RectangularCollideable {
 					center.add(Vector.unit(perpendicular).multiply(offset)),
 					Vector.unit(diagonal).multiply(velocity),
 					SpikeballBlockData.PARTICLE_SETTINGS,
-				), this.world, canvasIO);
+				), this.world);
 			}
 		}
 	}

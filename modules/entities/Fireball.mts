@@ -36,7 +36,7 @@ export class Fireball extends RectangularCollideable {
 			this.hitbox.center(),
 			new Vector(0, 0),
 			SpiderData.PROJECTILE_PARTICLE_SETTINGS,
-		), this.world, canvasIO);
+		), this.world);
 	}
 
 	displayGlowEffect(canvasIO: CanvasIO) {

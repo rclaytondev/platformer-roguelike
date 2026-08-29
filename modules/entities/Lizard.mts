@@ -208,7 +208,7 @@ export class Lizard extends Collideable {
 		this.checkForCollisions();
 		this.updateJoints();
 		this.updateHeadAngle();
-		this.updateFire(canvasIO);
+		this.updateFire();
 		this.fireSpawner.updateHurtbox(this.world, canvasIO);
 	}
 	updateMotion(canvasIO: CanvasIO) {
@@ -344,10 +344,10 @@ export class Lizard extends Collideable {
 		this.headAngle = MathUtils.generalizedModulo(this.headAngle, 2 * Math.PI);
 		this.targetHeadAngle = MathUtils.generalizedModulo(this.targetHeadAngle, 2 * Math.PI);
 	}
-	updateFire(canvasIO: CanvasIO) {
+	updateFire() {
 		this.fireSpawner.position = this.position;
 		this.fireSpawner.direction = this.direction;
-		this.fireSpawner.update(this.world, canvasIO);
+		this.fireSpawner.update(this.world);
 	}
 	checkForPlayer() {
 		this.checkForPlayerFire();
@@ -447,30 +447,30 @@ export class Lizard extends Collideable {
 		const length = this.lengthAfterDamage(rectangle);
 		return (Math.floor(length / WorldData.TILE_SIZE - 1/2) + 1/2) * WorldData.TILE_SIZE;
 	}
-	damage(rectangle: Rectangle, world: World, canvasIO: CanvasIO) {
+	damage(rectangle: Rectangle, world: World) {
 		if(!world.entities.has(this)) { return; }
 		const length = this.roundedLengthAfterDamage(rectangle);;
 		this.roundedLengthAfterDamage(rectangle);
 		if(length < (LizardData.MIN_LENGTH + 1/2) * WorldData.TILE_SIZE) {
 			world.entities.delete(this);
-			this.spawnDamageParticles(0, world, canvasIO);
+			this.spawnDamageParticles(0, world);
 		}
 		else {
-			this.spawnDamageParticles(length, world, canvasIO);
+			this.spawnDamageParticles(length, world);
 			this.length = length;
 		}
 	}
-	spawnDamageParticles(newLength: number, world: World, canvasIO: CanvasIO) {
-		this.spawnLegDamageParticles(newLength, world, canvasIO);
-		this.spawnBodyDamageParticles(newLength, world, canvasIO);
+	spawnDamageParticles(newLength: number, world: World) {
+		this.spawnLegDamageParticles(newLength, world);
+		this.spawnBodyDamageParticles(newLength, world);
 	}
-	spawnLegDamageParticles(newLength: number, world: World, canvasIO: CanvasIO) {
+	spawnLegDamageParticles(newLength: number, world: World) {
 		for(const { connection, knee, foot } of this.legDisplaySegments(newLength)) {
-			this.spawnDamageParticle(connection, knee, world, canvasIO);
-			this.spawnDamageParticle(knee, foot, world, canvasIO);
+			this.spawnDamageParticle(connection, knee, world);
+			this.spawnDamageParticle(knee, foot, world);
 		}
 	}
-	spawnBodyDamageParticles(newLength: number, world: World, canvasIO: CanvasIO) {
+	spawnBodyDamageParticles(newLength: number, world: World) {
 		const [endpoint] = this.getPointOnBody(this.length);
 		const [newEndpoint] = this.getPointOnBody(newLength);
 		let distance = 0;
@@ -483,15 +483,15 @@ export class Lizard extends Collideable {
 			const [joint, next] = [joints[i], joints[i+1]];
 			const segmentLength = Vector.dist(joint.position, next.position);
 			if(distance < newLength && distance + segmentLength >= newLength) {
-				this.spawnDamageParticle(newEndpoint, next.position, world, canvasIO);
+				this.spawnDamageParticle(newEndpoint, next.position, world);
 			}
 			else if(distance >= newLength) {
-				this.spawnDamageParticle(joint.position, next.position, world, canvasIO);
+				this.spawnDamageParticle(joint.position, next.position, world);
 			}
 			distance += segmentLength;
 		}
 	}
-	spawnDamageParticle(endpoint1: Vector, endpoint2: Vector, world: World, canvasIO: CanvasIO) {
+	spawnDamageParticle(endpoint1: Vector, endpoint2: Vector, world: World) {
 		const midpoint = endpoint1.add(endpoint2).divide(2);
 		const velocity = new Vector(
 			RandomUtils.random(-LizardData.DAMAGE_PARTICLES.VELOCITY.X, LizardData.DAMAGE_PARTICLES.VELOCITY.X),
@@ -508,7 +508,7 @@ export class Lizard extends Collideable {
 			},
 		};
 		const particle = new Particle(midpoint, velocity, settings);
-		world.particles.add(particle, world, canvasIO);
+		world.particles.add(particle, world);
 	}
 
 

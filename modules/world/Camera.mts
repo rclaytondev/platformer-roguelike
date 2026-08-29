@@ -68,4 +68,11 @@ export class Camera {
 		}
 		Debug.updateFreeCameraMode(this);
 	}
+
+	width() {
+		return this.#canvasIO.canvas.width;
+	}
+	height() {
+		return this.#canvasIO.canvas.height;
+	}
 }
