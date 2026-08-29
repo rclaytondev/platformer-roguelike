@@ -21,8 +21,8 @@ export class ThrowableTileEntity extends RectangularCollideable {
 	frictionY: number = 1;
 	groundedFrictionX: number = ItemData.GROUNDED_FRICTION_X;
 
-	constructor(position: Vector = new Vector(0, 0), modifiers: TileModifier[]) {
-		super(Rectangle.square(position.x, position.y, WorldData.TILE_SIZE));
+	constructor(position: Vector = new Vector(0, 0), modifiers: TileModifier[], world: World) {
+		super(Rectangle.square(position.x, position.y, WorldData.TILE_SIZE), world);
 		this.gravity = ThrowableTileEntity.getGravity(modifiers);
 		this.modifiers = modifiers;
 		this.frictionY = Math.min(1, ...modifiers.map(m => m.frictionY ?? Infinity));
@@ -38,22 +38,22 @@ export class ThrowableTileEntity extends RectangularCollideable {
 		return new ThrowableTile(this.modifiers);
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		if(this.velocity.x !== 0) {
-			this.velocity.x *= this.isGrounded(world) ? this.groundedFrictionX : this.frictionX;
+			this.velocity.x *= this.isGrounded() ? this.groundedFrictionX : this.frictionX;
 		}
 		this.velocity.y *= this.frictionY;
 		this.velocity.y += this.gravity;
-		this.move(this.velocity, world, canvasIO, {
+		this.move(this.velocity, this.world, canvasIO, {
 			collides: (obj) => obj !== this,
 		});
 
 		for(const modifier of this.modifiers) {
-			modifier.update(this, world, canvasIO);
+			modifier.update(this, this.world, canvasIO);
 		}
 	}
-	isGrounded(world: World) {
-		return this.collidingObjects("down", world, () => true).length !== 0;
+	isGrounded() {
+		return this.collidingObjects("down", this.world, () => true).length !== 0;
 	}
 
 	render() {

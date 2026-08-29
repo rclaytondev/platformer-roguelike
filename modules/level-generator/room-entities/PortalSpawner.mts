@@ -12,7 +12,7 @@ export class PortalSpawner extends FixedEntitySpawner {
 	}
 
 	spawn(tilePos: Vector, world: World): void {
-		world.entities.add(new Portal(this.position.add(tilePos.multiply(WorldData.TILE_SIZE))));
+		world.entities.add(new Portal(this.position.add(tilePos.multiply(WorldData.TILE_SIZE)), world));
 	}
 
 	reflect() {

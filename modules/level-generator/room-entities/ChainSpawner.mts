@@ -14,7 +14,7 @@ export class ChainSpawner extends FixedEntitySpawner {
 	}
 
 	spawn(tileOffset: Vector, world: World): void {
-		world.entities.add(new Chain(this.tilePos.add(tileOffset), this.height));
+		world.entities.add(new Chain(this.tilePos.add(tileOffset), this.height, world));
 	}
 
 	reflect() {

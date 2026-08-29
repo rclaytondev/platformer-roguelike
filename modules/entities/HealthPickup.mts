@@ -7,13 +7,12 @@ import { Renderable } from "../world/Renderer.mjs";
 import { World } from "../world/World.mjs";
 
 export class HealthPickup extends RectangularCollideable {
-	world: World;
 	constructor(tilePosition: Vector, world: World) {
 		super(Rectangle.square(
 			tilePosition.x * WorldData.TILE_SIZE,
 			tilePosition.y * WorldData.TILE_SIZE,
 			HealthPickupData.SIZE,
-		));
+		), world);
 		this.world = world;
 	}
 

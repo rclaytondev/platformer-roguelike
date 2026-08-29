@@ -17,12 +17,14 @@ export const lizardHeadOnCollisionScenario = new TestScenario(() => {
 		"right",
 		125,
 		3,
+		world,
 	));
 	world.entities.add(lizard2 = new Lizard(
 		new Vector(7.5, -0.5).multiply(WorldData.TILE_SIZE),
 		"left",
 		125,
 		3,
+		world,
 	));
 
 	return [world, lizard1, lizard2];

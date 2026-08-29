@@ -24,7 +24,7 @@ export class Entities<EntityType extends Entity = Entity> extends BoundingBoxStr
 	update(world: World, canvasIO: CanvasIO, camera?: Camera) {
 		const entities = camera ? this.possiblyIntersecting(camera.visibleRegion(canvasIO, WorldData.ENTITY_UPDATE_DISTANCE)) : this;
 		for(const entity of entities) {
-			entity.update(world, canvasIO);
+			entity.update(canvasIO);
 		}
 	}
 
@@ -63,10 +63,10 @@ export class Entities<EntityType extends Entity = Entity> extends BoundingBoxStr
 		return Math.min(maxDistance, ...distances);
 	}
 
-	render(camera: Camera, renderer: Renderer, canvasIO: CanvasIO, world: World) {
+	render(camera: Camera, renderer: Renderer, canvasIO: CanvasIO) {
 		const region = camera.visibleRegion(canvasIO, WorldData.ENTITY_RENDER_DISTANCE);
 		for(const entity of this.possiblyIntersecting(region)) {
-			for(const renderable of entity.render(world)) {
+			for(const renderable of entity.render()) {
 				renderer.renderables.push(renderable);
 			}
 			if(entity instanceof Collideable) {

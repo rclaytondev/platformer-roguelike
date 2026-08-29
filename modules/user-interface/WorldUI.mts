@@ -8,7 +8,7 @@ import { World } from "../world/World.mjs";
 export class WorldUI {
 	display(world: World, canvasIO: CanvasIO) {
 		this.displayHealth(world.player.health, canvasIO);
-		this.displayItems(world.player.equippedItems, canvasIO);
+		this.displayItems(world.player.equippedItems, canvasIO, world);
 	}
 
 	displayHealth(amount: number, canvasIO: CanvasIO) {
@@ -26,7 +26,7 @@ export class WorldUI {
 		canvasIO.ctx.fillText(amount.toString(), center.x, center.y);
 	}
 
-	displayItems(items: (ThrowableTile | null)[], canvasIO: CanvasIO) {
+	displayItems(items: (ThrowableTile | null)[], canvasIO: CanvasIO, world: World) {
 		for(const [index, item] of items.entries()) {
 			const x = WorldUIData.HEALTH_BOX_MARGIN + WorldUIData.HEALTH_BOX_SIZE + WorldUIData.ITEM_BOX_MARGIN * (index + 1) + WorldUIData.ITEM_BOX_SIZE * index;
 			const y = WorldUIData.HEALTH_BOX_MARGIN;
@@ -35,7 +35,7 @@ export class WorldUI {
 
 			if(item) {
 				const rect = Rectangle.fromDimensions(x, y, WorldUIData.ITEM_BOX_SIZE, WorldUIData.ITEM_BOX_SIZE);
-				item.displayIcon(canvasIO, rect);
+				item.displayIcon(canvasIO, rect, world);
 			}
 		}
 	}

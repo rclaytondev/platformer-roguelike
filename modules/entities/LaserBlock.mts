@@ -15,7 +15,6 @@ import { World } from "../world/World.mjs";
 import { Spawnable } from "../level-generator/Spawnable.mjs";
 
 export class LaserBlock extends RectangularCollideable {
-	world: World;
 	lasers: number;
 	speed: number;
 	startAngle: number;
@@ -30,7 +29,7 @@ export class LaserBlock extends RectangularCollideable {
 	}
 
 	private constructor(position: Vector, lasers: number, speed: number, startAngle: number, direction: 1 | -1, world: World) {
-		super(Rectangle.square(position.x, position.y, WorldData.TILE_SIZE));
+		super(Rectangle.square(position.x, position.y, WorldData.TILE_SIZE), world);
 		this.lasers = lasers;
 		this.speed = speed;
 		this.startAngle = startAngle;

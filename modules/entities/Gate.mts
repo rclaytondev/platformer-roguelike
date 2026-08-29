@@ -49,7 +49,6 @@ export class GateController extends StaticEntity {
 }
 
 export class Gate extends RectangularCollideable {
-	world: World;
 	direction: Direction; // which way the gate moves when closing
 	playerSide: "positive" | "negative" = "positive";
 	toggled: boolean = false;
@@ -57,7 +56,7 @@ export class Gate extends RectangularCollideable {
 	openness: number;
 
 	private constructor(hitbox: Rectangle, direction: Direction, toggled: boolean, world: World) {
-		super(hitbox);
+		super(hitbox, world);
 		this.direction = direction;
 		this.toggled = toggled;
 		this.openness = toggled ? 0 : 1;
@@ -137,7 +136,7 @@ export class Gate extends RectangularCollideable {
 		}
 		canvasIO.ctx.restore();
 	}
-	update(_world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		if(this.lastFrameUpdated !== this.world.frameCount - 1) {
 			this.initialize(this.world.player);
 		}

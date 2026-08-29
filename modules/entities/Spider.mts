@@ -477,14 +477,13 @@ class RechargingState extends ProjectileState {
 
 
 export class Spider extends RectangularCollideable {
-	world: World;
 	movement: CrawlingState | FallingState;
 	projectileState: TelegraphState | DefaultState | RechargingState = new DefaultState();
 	angle: number = 0;
 	legs: SpiderLeg[] = [];
 
 	constructor(position: Vector, movement: CrawlingState | FallingState, world: World) {
-		super(Rectangle.square(position.x, position.y, SpiderData.HITBOX_SIZE));
+		super(Rectangle.square(position.x, position.y, SpiderData.HITBOX_SIZE), world);
 		this.movement = movement;
 		this.world = world;
 		this.legs = this.initializeLegs();
@@ -592,7 +591,7 @@ export class Spider extends RectangularCollideable {
 		canvasIO.strokeLine(point.x, point.y, smoothedEndpoint.x, smoothedEndpoint.y);
 	}
 
-	update(_world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		this.movement.update(this, canvasIO);
 		for(const leg of this.legs) {
 			leg.update(this);

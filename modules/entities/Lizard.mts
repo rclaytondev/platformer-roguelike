@@ -42,8 +42,8 @@ export class Lizard extends Collideable {
 	waitingTimer: number = -1;
 	fireSpawner: FireSpawner;
 
-	constructor(position: Vector, direction: Direction, length: number, speed: number) {
-		super();
+	constructor(position: Vector, direction: Direction, length: number, speed: number, world: World) {
+		super(world);
 		this.position = position;
 		this.direction = direction;
 		this.headAngle = Vector.unit(this.direction).angle();
@@ -196,37 +196,37 @@ export class Lizard extends Collideable {
 		canvasIO.strokeRect(rectangle);
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		if(this.waitingTimer < 0) {
-			this.updateMotion(world, canvasIO);
+			this.updateMotion(canvasIO);
 		}
 		this.waitingTimer --;
 
 		this.updateLegs();
 		this.updateMouth();
-		this.checkForPlayer(world);
-		this.checkForCollisions(world);
+		this.checkForPlayer();
+		this.checkForCollisions();
 		this.updateJoints();
 		this.updateHeadAngle();
-		this.updateFire(world, canvasIO);
-		this.fireSpawner.updateHurtbox(world, canvasIO);
+		this.updateFire(canvasIO);
+		this.fireSpawner.updateHurtbox(this.world, canvasIO);
 	}
-	updateMotion(world: World, canvasIO: CanvasIO) {
+	updateMotion(canvasIO: CanvasIO) {
 		for(let i = 0; i < this.speed; i ++) {
-			this.updateMotion1Pixel(world, canvasIO);
+			this.updateMotion1Pixel(canvasIO);
 		}
 	}
-	updateMotion1Pixel(world: World, canvasIO: CanvasIO) {
+	updateMotion1Pixel(canvasIO: CanvasIO) {
 		const rect = this.lookaheadRectangle(this.direction, LizardData.HITBOX_WIDTH / 2, 1, LizardData.HITBOX_WIDTH - 2);
-		const collideable = new InvisibleRectangle(rect);
-		collideable.moveUnit(this.direction, world, canvasIO, { collides: (o) => o !== this, moveRiders: false, movedObjects: new Set() });
+		const collideable = new InvisibleRectangle(rect, this.world);
+		collideable.moveUnit(this.direction, this.world, canvasIO, { collides: (o) => o !== this, moveRiders: false, movedObjects: new Set() });
 		const offset = Vector.unit(this.direction);
 		this.position = this.position.add(offset);
-		if(this.hitboxes().some(h => world.isInSolid(h, (o) => o !== this))) {
+		if(this.hitboxes().some(h => this.world.isInSolid(h, (o) => o !== this))) {
 			this.position = this.position.subtract(offset);
 			return false;
 		}
-		world.entities.updatePosition(this);
+		this.world.entities.updatePosition(this);
 		return true;
 	}
 	updateLegs() {
@@ -253,15 +253,15 @@ export class Lizard extends Collideable {
 			this.mouthDestination = LizardData.FIRE_MOUTH_OPENNESS;
 		}
 	}
-	checkForCollisions(world: World) {
+	checkForCollisions() {
 		const lookaheadPoint = this.position.add(Vector.unit(this.direction).multiply(LizardData.LOOKAHEAD_DISTANCE));
-		if(this.isObstructed(world, this.direction) && this.waitingTimer < 0) {
+		if(this.isObstructed(this.world, this.direction) && this.waitingTimer < 0) {
 			const distance = LizardData.HITBOX_WIDTH / 2;
 			const length = WorldData.TILE_SIZE - distance;
 			const clockwise = Directions.rotateClockwise[this.direction];
 			const counterclockwise = Directions.rotateCounterclockwise[this.direction];
-			const obstructedCounterclockwise = this.isObstructed(world, counterclockwise, distance, length);
-			const obstructedClockwise = this.isObstructed(world, clockwise, distance, length);
+			const obstructedCounterclockwise = this.isObstructed(this.world, counterclockwise, distance, length);
+			const obstructedClockwise = this.isObstructed(this.world, clockwise, distance, length);
 			if(obstructedClockwise && obstructedCounterclockwise) {
 				this.fireSpawner.startFire(LizardData.FIRE_DURATION);
 			}
@@ -273,7 +273,7 @@ export class Lizard extends Collideable {
 			}
 			else {
 				const tileCoordinates = Tiles.getTileCoordinates(lookaheadPoint);
-				const tile = world.tiles.get(tileCoordinates);
+				const tile = this.world.tiles.get(tileCoordinates);
 				if(tile instanceof SlopeTile) {
 					this.turnFromSlope(tile);
 				}
@@ -344,32 +344,32 @@ export class Lizard extends Collideable {
 		this.headAngle = MathUtils.generalizedModulo(this.headAngle, 2 * Math.PI);
 		this.targetHeadAngle = MathUtils.generalizedModulo(this.targetHeadAngle, 2 * Math.PI);
 	}
-	updateFire(world: World, canvasIO: CanvasIO) {
+	updateFire(canvasIO: CanvasIO) {
 		this.fireSpawner.position = this.position;
 		this.fireSpawner.direction = this.direction;
-		this.fireSpawner.update(world, canvasIO);
+		this.fireSpawner.update(this.world, canvasIO);
 	}
-	checkForPlayer(world: World) {
-		this.checkForPlayerFire(world);
-		this.checkForPlayerTurns(world);
+	checkForPlayer() {
+		this.checkForPlayerFire();
+		this.checkForPlayerTurns();
 	}
-	checkForPlayerFire(world: World) {
+	checkForPlayerFire() {
 		const hurtbox = this.fireSpawner.hurtbox(this.fireSpawner.maxHurtboxSize);
-		if(!world.player.dead && world.player.hitbox.interiorIntersects(hurtbox) && this.seesPlayerAhead(world)) {
+		if(!this.world.player.dead && this.world.player.hitbox.interiorIntersects(hurtbox) && this.seesPlayerAhead()) {
 			this.fireSpawner.startFire(LizardData.FIRE_DURATION);
 		}
 	}
-	checkForPlayerTurns(world: World) {
-		if(world.player.dead) { return; }
-		const player = world.player.hitbox;
+	checkForPlayerTurns() {
+		if(this.world.player.dead) { return; }
+		const player = this.world.player.hitbox;
 		const xDirection = player.center().x < this.position.x ? "left" : "right";
 		const yDirection = player.center().y < this.position.y ? "up" : "down";
 
 		let nextTurn: Direction | null = null;
-		if(this.seesPlayerHorizontal(xDirection, world)) {
+		if(this.seesPlayerHorizontal(xDirection)) {
 			nextTurn = xDirection;
 		}
-		else if(this.seesPlayerVertical(yDirection, world)) {
+		else if(this.seesPlayerVertical(yDirection)) {
 			nextTurn = yDirection;
 		}
 		if(nextTurn !== null && nextTurn !== Directions.opposite[this.direction]) {
@@ -384,40 +384,40 @@ export class Lizard extends Collideable {
 			this.waitingTimer = LizardData.TURN_DELAY;
 		}
 		if(this.waitingTimer === 0 && this.nextTurn) {
-			this.attemptTurn(this.nextTurn, world);
+			this.attemptTurn(this.nextTurn, this.world);
 			this.nextTurn = null;
 		}
 	}
-	seesPlayerHorizontal(xDirection: "left" | "right", world: World) {
-		const player = world.player.hitbox;
+	seesPlayerHorizontal(xDirection: "left" | "right") {
+		const player = this.world.player.hitbox;
 		const lookaheadPoint = this.lookaheadPoint();
 		return (
 			player.bottom > this.position.y - LizardData.PLAYER_DETECTION_WIDTH / 2 &&
 			player.top < this.position.y + LizardData.PLAYER_DETECTION_WIDTH / 2 &&
 			!this.isObstructed(
-				world, xDirection, LizardData.LOOKAHEAD_DISTANCE,
+				this.world, xDirection, LizardData.LOOKAHEAD_DISTANCE,
 				Math.min(MathUtils.dist(lookaheadPoint.x, player.left), MathUtils.dist(lookaheadPoint.x, player.right)) - LizardData.LOOKAHEAD_DISTANCE,
 			)
 		);
 	}
-	seesPlayerVertical(yDirection: "up" | "down", world: World) {
-		const player = world.player.hitbox;
+	seesPlayerVertical(yDirection: "up" | "down") {
+		const player = this.world.player.hitbox;
 		const lookaheadPoint = this.lookaheadPoint();
 		return (
 			player.right > this.position.x - LizardData.PLAYER_DETECTION_WIDTH / 2 &&
 			player.left < this.position.x + LizardData.PLAYER_DETECTION_WIDTH / 2 &&
 			!this.isObstructed(
-				world, yDirection, LizardData.LOOKAHEAD_DISTANCE,
+				this.world, yDirection, LizardData.LOOKAHEAD_DISTANCE,
 				Math.min(MathUtils.dist(lookaheadPoint.y, player.top), MathUtils.dist(lookaheadPoint.y, player.bottom)) - LizardData.LOOKAHEAD_DISTANCE,
 			)
 		);
 	}
-	seesPlayerAhead(world: World) {
+	seesPlayerAhead() {
 		if(Directions.isHorizontal(this.direction)) {
-			return this.seesPlayerHorizontal(this.direction, world);
+			return this.seesPlayerHorizontal(this.direction);
 		}
 		else {
-			return this.seesPlayerVertical(this.direction, world);
+			return this.seesPlayerVertical(this.direction);
 		}
 	}
 
@@ -621,6 +621,7 @@ export class Lizard extends Collideable {
 				direction,
 				(RandomUtils.randomInt(LizardData.MIN_LENGTH, length) + 1/2) * WorldData.TILE_SIZE,
 				LizardData.SPEED,
+				world,
 			));
 			return true;
 		}

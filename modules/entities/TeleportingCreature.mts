@@ -56,14 +56,13 @@ class CooldownMode {
 }
 
 export class TeleportingCreature extends RectangularCollideable {
-	world: World;
 	velocity: Vector = new Vector(0, 0);
 
 	mode: ReadyMode | PauseMode | CooldownMode = new ReadyMode();
 	fireSpawner: FireSpawner = new FireSpawner(new Vector(0, 0), "up", TeleportingCreatureData.FIRE);
 
 	private constructor(position: Vector, world: World) {
-		super(Rectangle.fromDimensions(position.x, position.y, TeleportingCreatureData.HITBOX_WIDTH, TeleportingCreatureData.HITBOX_HEIGHT));
+		super(Rectangle.fromDimensions(position.x, position.y, TeleportingCreatureData.HITBOX_WIDTH, TeleportingCreatureData.HITBOX_HEIGHT), world);
 		this.world = world;
 	}
 	static atTile(tilePosition: Vector, world: World) {
@@ -136,7 +135,7 @@ export class TeleportingCreature extends RectangularCollideable {
 		);
 	}
 
-	update(_world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		this.mode.update(this);
 		this.fireSpawner.position = this.hitbox.center();
 		this.fireSpawner.update(this.world, canvasIO);
@@ -207,13 +206,12 @@ export class TeleportingCreature extends RectangularCollideable {
 }
 
 class TeleportParticle extends Entity {
-	world: World;
 	endpoint1: Vector;
 	endpoint2: Vector;
 	lineWidth: number;
 
 	constructor(endpoint1: Vector, endpoint2: Vector, world: World) {
-		super();
+		super(world);
 		this.world = world;
 		this.endpoint1 = endpoint1;
 		this.endpoint2 = endpoint2;

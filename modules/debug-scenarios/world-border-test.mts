@@ -5,7 +5,7 @@ import { World } from "../world/World.mjs";
 
 export const worldBorderScenario = new TestScenario(() => {
 	const world = new World(false);
-	world.entities.add(new WorldBorder(Rectangle.fromBounds(-Infinity, Infinity, 0, 100)));
+	world.entities.add(new WorldBorder(Rectangle.fromBounds(-Infinity, Infinity, 0, 100), world));
 
 	return [world];
 });

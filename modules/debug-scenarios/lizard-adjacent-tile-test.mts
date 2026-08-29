@@ -18,10 +18,12 @@ export const lizardAdjacentTileScenario = new TestScenario(() => {
 		"right",
 		125,
 		3,
+		world,
 	));
 	world.entities.add(tile = new ThrowableTileEntity(
 		new Vector(4.5, -2).multiply(WorldData.TILE_SIZE),
 		[],
+		world,
 	));
 
 	return [world, lizard, tile];

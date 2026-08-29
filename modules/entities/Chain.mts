@@ -13,8 +13,8 @@ export class Chain extends Entity {
 	height: number;
 	isClimbed: boolean = false;
 
-	constructor(tilePosition: Vector, height: number) {
-		super();
+	constructor(tilePosition: Vector, height: number, world: World) {
+		super(world);
 		this.tilePosition = tilePosition;
 		this.height = height;
 	}
@@ -58,14 +58,14 @@ export class Chain extends Entity {
 		canvasIO.fillPoly(...Chain.THICK_SEGMENT_POLY_REFLECTED.map(v => v.add(position)));
 	}
 
-	update(world: World) {
-		if(this.isClimbed && !world.player.hitbox.intersects(this.climbRegion())) {
+	update(_canvasIO: CanvasIO) {
+		if(this.isClimbed && !this.world.player.hitbox.intersects(this.climbRegion())) {
 			this.isClimbed = false;
 		}
 
-		const tileAbove = world.tiles.get(this.tilePosition.add(0, -1));
+		const tileAbove = this.world.tiles.get(this.tilePosition.add(0, -1));
 		if(tileAbove === EmptyTile.EMPTY) {
-			world.entities.delete(this);
+			this.world.entities.delete(this);
 		}
 	}
 

@@ -182,8 +182,6 @@ class StoredVelocity {
 }
 
 export class Player extends RectangularCollideable {
-	world: World;
-
 	velocity: Vector = new Vector(0, 0);
 	hasDoubleJump: boolean = false;
 	dead: boolean = false;
@@ -205,8 +203,7 @@ export class Player extends RectangularCollideable {
 	equippedItems: [ThrowableTile | null, ThrowableTile | null] = [null, null];
 
 	constructor(world: World) {
-		super(Rectangle.fromDimensions(0, -WorldData.TILE_SIZE, PlayerData.HITBOX_WIDTH, PlayerData.HITBOX_HEIGHT));
-		this.world = world;
+		super(Rectangle.fromDimensions(0, -WorldData.TILE_SIZE, PlayerData.HITBOX_WIDTH, PlayerData.HITBOX_HEIGHT), world);
 	}
 
 	render() {
@@ -270,7 +267,7 @@ export class Player extends RectangularCollideable {
 		);
 	}
 
-	update(_world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		if(Main.screen instanceof RoomEditor) { return; }
 		const input = Debug.getInput(canvasIO);
 		this.updateBuffers(input);

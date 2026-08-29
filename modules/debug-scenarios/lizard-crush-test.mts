@@ -14,7 +14,7 @@ export const lizardCrushScenario = new TestScenario(() => {
 	world.tiles.fillRect(Rectangle.fromDimensions(-2, 4, 5, 2), TowerTile.TOWER_TILE);
 	world.entities.add(Gate.atTile(new Vector(0, 2), "right", true, world));
 	world.entities.add(Gate.atTile(new Vector(-3, 2), "right", true, world));
-	world.entities.add(new Lizard(new Vector(-2.5 * WorldData.TILE_SIZE, 1 * WorldData.TILE_SIZE), "down", 300, 3));
+	world.entities.add(new Lizard(new Vector(-2.5 * WorldData.TILE_SIZE, 1 * WorldData.TILE_SIZE), "down", 300, 3, world));
 
 	return [world];
 });

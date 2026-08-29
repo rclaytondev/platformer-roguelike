@@ -12,18 +12,18 @@ import { SpawnPoint } from "./SpawnPoint.mjs";
 export class Portal extends Entity {
 	position: Vector;
 
-	constructor(position: Vector) {
-		super();
+	constructor(position: Vector, world: World) {
+		super(world);
 		this.position = position;
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
-		if(world.frameCount % PortalData.FRAMES_PER_LINE === 0) {
-			this.addLine(world, canvasIO);
+	update(canvasIO: CanvasIO) {
+		if(this.world.frameCount % PortalData.FRAMES_PER_LINE === 0) {
+			this.addLine(canvasIO);
 		}
 
-		if(world.player.hitbox.intersects(this.teleportHitbox())) {
-			this.teleportPlayer(world);
+		if(this.world.player.hitbox.intersects(this.teleportHitbox())) {
+			this.teleportPlayer();
 		}
 	}
 	teleportHitbox() {
@@ -32,26 +32,26 @@ export class Portal extends Entity {
 			PortalData.HITBOX_WIDTH, PortalData.HITBOX_HEIGHT,
 		);
 	}
-	addLine(world: World, canvasIO: CanvasIO) {
-		world.particles.add(new Particle(
+	addLine(canvasIO: CanvasIO) {
+		this.world.particles.add(new Particle(
 			new Vector(
 				this.position.x + RandomUtils.random(-PortalData.LINE_SPAWN_WIDTH / 2, PortalData.LINE_SPAWN_WIDTH / 2),
 				this.position.y,
 			),
 			new Vector(0, -PortalData.LINE_SPEED),
 			PortalData.PARTICLE_SETTINGS,
-		), world, canvasIO);
+		), this.world, canvasIO);
 	}
-	teleportPlayer(world: World) {
-		const generator = world.worldGenerator;
+	teleportPlayer() {
+		const generator = this.world.worldGenerator;
 		if(generator) {
 			if(generator.towerGenerator.levelsGenerated <= generator.towerGenerator.levelsVisited) {
-				generator.towerGenerator.generate(world);
+				generator.towerGenerator.generate(this.world);
 			}
 			const nextLevel = generator.towerGenerator.nextLevelTileRectangle().scale(WorldData.TILE_SIZE);
-			const nextSpawn = [...world.entities.possiblyIntersecting(nextLevel)].find(e => e instanceof SpawnPoint)!;
-			world.player.hitbox.x = nextSpawn.position.x;
-			world.player.hitbox.y = nextSpawn.position.y;
+			const nextSpawn = [...this.world.entities.possiblyIntersecting(nextLevel)].find(e => e instanceof SpawnPoint)!;
+			this.world.player.hitbox.x = nextSpawn.position.x;
+			this.world.player.hitbox.y = nextSpawn.position.y;
 		}
 	}
 

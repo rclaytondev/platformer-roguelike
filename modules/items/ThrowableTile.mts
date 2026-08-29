@@ -17,13 +17,14 @@ export class ThrowableTile {
 	}
 
 	use(world: World, canvasIO: CanvasIO) {
-		const entity = new ThrowableTileEntity(new Vector(0, 0), this.modifiers);
+		const entity = new ThrowableTileEntity(new Vector(0, 0), this.modifiers, world);
 		entity.reset();
 		return world.player.throw(entity, world, canvasIO);
 	}
 
-	displayIcon(canvasIO: CanvasIO, displayRect: Rectangle) {
-		const entity = new ThrowableTileEntity(new Vector(0, 0), this.modifiers);
+	displayIcon(canvasIO: CanvasIO, displayRect: Rectangle, world: World) {
+		// TODO: refactor this - make ThrowableTileEntity.display static
+		const entity = new ThrowableTileEntity(new Vector(0, 0), this.modifiers, world);
 		const center = displayRect.center();
 		entity.reset();
 		entity.hitbox = entity.hitbox.translate(center.subtract(entity.hitbox.width / 2, entity.hitbox.height / 2));
@@ -49,7 +50,7 @@ LoadingManager.onload(() => {
 					EntitySpawner.spawnRequirements.notOnPortal,
 				],
 				(position: Vector, world: World) => {
-					return world.addEntityIfEmpty(new ThrowableTileEntity(position.multiply(WorldData.TILE_SIZE), []));
+					return world.addEntityIfEmpty(new ThrowableTileEntity(position.multiply(WorldData.TILE_SIZE), [], world));
 				},
 				safeRegion,
 				world,

@@ -15,7 +15,7 @@ export const spikeballObstructionScenario = new TestScenario(() => {
 	world.tiles.fillRect(Rectangle.fromDimensions(-1, -2, 8, 4), EmptyTile.EMPTY);
 	world.tiles.set(5, 2, EmptyTile.EMPTY);
 	world.entities.add(SpikeballBlock.atTile(new Vector(5, 2), SpikeballBlockData.PATTERNS[0], world));
-	world.entities.add(new ThrowableTileEntity(new Vector(5 * WorldData.TILE_SIZE, WorldData.TILE_SIZE), []));
+	world.entities.add(new ThrowableTileEntity(new Vector(5 * WorldData.TILE_SIZE, WorldData.TILE_SIZE), [], world));
 
 	return [world];
 });

@@ -8,7 +8,6 @@ import { Directions } from "../../utils-ts/modules/geometry/Direction.mjs";
 import { InvisibleRectangle } from "../game-utilities/physics-engine/InvisibleRectangle.mjs";
 import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Tiles } from "../world/Tiles.mjs";
-import { Entities } from "../world/Entities.mjs";
 import { Platform } from "../tiles/Platform.mjs";
 
 // describe("PointOnSurface.surfaceEndDistanceCW", () => {
@@ -74,8 +73,9 @@ describe("Tiles.angularMotionBlockers", () => {
 });
 describe("Entitites.angularMotionBlockers", () => {
 	it("works for corners of collideables", () => {
-		const entities = new Entities();
-		entities.add(new InvisibleRectangle(Rectangle.square(0, 0, WorldData.TILE_SIZE)));
+		const world = new World(false);
+		const entities = world.entities;
+		entities.add(new InvisibleRectangle(Rectangle.square(0, 0, WorldData.TILE_SIZE), world));
 
 		const octantsTopLeft = entities.angularMotionBlockers(new Vector(0, 0));
 		assert.sameMembers(octantsTopLeft, ["right", "down-right", "down"]);
@@ -90,15 +90,17 @@ describe("Entitites.angularMotionBlockers", () => {
 		assert.sameMembers(octantsBottomRight, ["left", "up-left", "up"]);
 	});
 	it("returns a list containing all eight directions when the point is inside a collideable", () => {
-		const entities = new Entities();
-		entities.add(new InvisibleRectangle(Rectangle.square(0, 0, WorldData.TILE_SIZE)));
+		const world = new World(false);
+		const entities = world.entities;
+		entities.add(new InvisibleRectangle(Rectangle.square(0, 0, WorldData.TILE_SIZE), world));
 
 		const octants = entities.angularMotionBlockers(new Vector(1, 1));
 		assert.sameMembers(octants, [...Directions.DIRECTIONS, ...Directions.DIAGONALS]);
 	});
 	it("works when the point is on an edge of a collideable", () => {
-		const entities = new Entities();
-		entities.add(new InvisibleRectangle(Rectangle.square(0, 0, WorldData.TILE_SIZE)));
+		const world = new World(false);
+		const entities = world.entities;
+		entities.add(new InvisibleRectangle(Rectangle.square(0, 0, WorldData.TILE_SIZE), world));
 
 		const octantsTop = entities.angularMotionBlockers(new Vector(1, 0));
 		assert.sameMembers(octantsTop, ["right", "down-right", "down", "down-left", "left"]);
@@ -118,20 +120,20 @@ describe("PointOnSurface.move1Pixel", () => {
 	it("works when moving from a tile to an entity", () => {
 		const world = new World(false);
 		world.tiles.set(0, 0, TowerTile.TOWER_TILE);
-		world.entities.add(new InvisibleRectangle(Rectangle.fromDimensions(10, -10, 10, 10)));
+		world.entities.add(new InvisibleRectangle(Rectangle.fromDimensions(10, -10, 10, 10), world));
 
 		const point = new PointOnSurface(new Vector(10, 0), "up");
-		const next = point.move1Pixel(new InvisibleRectangle(Rectangle.fromDimensions(-100, -100, 1, 1)), world, "clockwise");
+		const next = point.move1Pixel(new InvisibleRectangle(Rectangle.fromDimensions(-100, -100, 1, 1), world), world, "clockwise");
 		assert.isNotNull(next);
 		assert.deepEqual(next, new PointOnSurface(new Vector(10, -1), "left"));
 	});
 	it("works when moving from a tile to an entity counterclockwise", () => {
 		const world = new World(false);
 		world.tiles.set(0, 0, TowerTile.TOWER_TILE);
-		world.entities.add(new InvisibleRectangle(Rectangle.fromDimensions(10, -10, 10, 10)));
+		world.entities.add(new InvisibleRectangle(Rectangle.fromDimensions(10, -10, 10, 10), world));
 
 		const point = new PointOnSurface(new Vector(10, 0), "up");
-		const next = point.move1Pixel(new InvisibleRectangle(Rectangle.fromDimensions(-100, -100, 1, 1)), world, "counterclockwise");
+		const next = point.move1Pixel(new InvisibleRectangle(Rectangle.fromDimensions(-100, -100, 1, 1), world), world, "counterclockwise");
 		assert.isNotNull(next);
 		assert.deepEqual(next, new PointOnSurface(new Vector(9, 0), "up"));
 	});
@@ -179,8 +181,8 @@ describe("PointOnSurface.move", () => {
 	it("works when there are overlapping entities that are an odd number of pixels away", () => {
 		/* Overlapping entities are allowed in rare cases (e.g. spikeballs being spawned) */
 		const world = new World(false);
-		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(-20, 0, 0, 20)));
-		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(-10, 10, 10, 30)));
+		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(-20, 0, 0, 20), world));
+		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(-10, 10, 10, 30), world));
 
 		const point = new PointOnSurface(new Vector(0, 5), "right");
 		const [distance, newPoint] = point.move(null, world, "clockwise", 10, true);
@@ -190,8 +192,8 @@ describe("PointOnSurface.move", () => {
 	});
 	it("works when there are overlapping entities that are an even number of pixels away", () => {
 		const world = new World(false);
-		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(-20, 0, 0, 20)));
-		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(-10, 10, 10, 30)));
+		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(-20, 0, 0, 20), world));
+		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(-10, 10, 10, 30), world));
 
 		const point = new PointOnSurface(new Vector(0, 6), "right");
 		const [distance, newPoint] = point.move(null, world, "clockwise", 10, true);
@@ -202,7 +204,7 @@ describe("PointOnSurface.move", () => {
 	it("works when encountering an entity that is partway through a platform", () => {
 		const world = new World(false);
 		world.tiles.set(0, 0, Platform.PLATFORM);
-		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(10, 20, -10, 10)));
+		world.entities.add(new InvisibleRectangle(Rectangle.fromBounds(10, 20, -10, 10), world));
 
 		const point = new PointOnSurface(new Vector(0, 0), "up");
 		const [distance, newPoint] = point.move(null, world, "clockwise", 50, true);

@@ -22,7 +22,6 @@ import { ThrowableTileEntity } from "../items/ThrowableTileEntity.mjs";
 import { Spawnable } from "../level-generator/Spawnable.mjs";
 
 export class SpikeballBlock extends RectangularCollideable {
-	world: World;
 	timeUntilSpawn: number = 0;
 	timeSinceSpawn: number = 0;
 	pattern: SpikeballPattern;
@@ -36,7 +35,7 @@ export class SpikeballBlock extends RectangularCollideable {
 	};
 
 	constructor(position: Vector, pattern: SpikeballPattern = SpikeballBlockData.PATTERNS[0], world: World) {
-		super(Rectangle.square(position.x, position.y, WorldData.TILE_SIZE));
+		super(Rectangle.square(position.x, position.y, WorldData.TILE_SIZE), world);
 		this.pattern = pattern;
 		this.world = world;
 	}
@@ -113,7 +112,7 @@ export class SpikeballBlock extends RectangularCollideable {
 		];
 	}
 
-	update(_world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		this.updateSpikeballs();
 		this.updateDoors(canvasIO);
 	}

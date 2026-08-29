@@ -11,7 +11,7 @@ export const showcaseScenario = new TestScenario(() => {
 	const world = new World(false);
 	world.tiles.set(0, 1, TowerTile.TOWER_TILE);
 
-	const lizard = new Lizard(new Vector(325, 25), "right", 300, 0);
+	const lizard = new Lizard(new Vector(325, 25), "right", 300, 0, world);
 	lizard.mouthAngle = 15;
 	lizard.joints.push({ position: new Vector(275, 25), direction: "down" });
 	lizard.joints.push({ position: new Vector(275, -75), direction: "right" });

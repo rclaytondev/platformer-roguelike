@@ -89,7 +89,6 @@ class AttackState extends SpikeballState {
 }
 
 export class Spikeball extends RectangularCollideable {
-	world: World;
 	state: SpikeballState = new MovingState();
 	direction: Diagonal;
 	age: number = 0;
@@ -101,7 +100,7 @@ export class Spikeball extends RectangularCollideable {
 	slideDownSlopes: boolean = false;
 
 	constructor(position: Vector, direction: Diagonal, world: World) {
-		super(Rectangle.fromDimensions(position.x, position.y, 2 * SpikeballData.RADIUS, 2 * SpikeballData.RADIUS));
+		super(Rectangle.fromDimensions(position.x, position.y, 2 * SpikeballData.RADIUS, 2 * SpikeballData.RADIUS), world);
 		this.direction = direction;
 		this.world = world;
 	}
@@ -210,7 +209,7 @@ export class Spikeball extends RectangularCollideable {
 			this.direction = Directions.reflectY[this.direction];
 		}
 	}
-	update(_world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		this.state.update(this, canvasIO);
 		if(this.bounces < 0) {
 			this.world.entities.delete(this);

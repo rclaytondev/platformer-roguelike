@@ -117,7 +117,7 @@ class TallCreatureStabber {
 		return tallCreature.head.extend(this.direction, this.extension).extend(Directions.opposite[this.direction], -tallCreature.head.width);
 	}
 	setExtension(amount: number, tallCreature: TallCreature, world: World, canvasIO: CanvasIO) {
-		const rect = new InvisibleRectangle(this.hitbox(tallCreature));
+		const rect = new InvisibleRectangle(this.hitbox(tallCreature), world);
 		if(amount <= this.extension) {
 			for(let i = 0; i < this.extension - amount; i ++) {
 				rect.moveRiders(Directions.opposite[this.direction], world, canvasIO, {
@@ -159,12 +159,12 @@ export class TallCreature extends Collideable {
 	stabberRight = new TallCreatureStabber("right");
 
 	constructor(position: Vector, legHeight: number, world: World) {
-		super();
+		super(world);
 		const rect = Rectangle.fromCenter(position.x, position.y, TallCreatureData.HEAD_WIDTH, TallCreatureData.HEAD_HEIGHT);
 		this.head = Rectangle.fromDimensions(Math.floor(rect.x), Math.floor(rect.y), Math.floor(rect.width), Math.floor(rect.height));
 		this.subpixel = rect.getCorner("top-left").subtract(rect.getCorner("top-left").floor());
 		this.legHeight = legHeight;
-		this.legs = TallCreatureData.LEG_ATTACHMENTS.map((o, i) => TallCreatureLeg.initialize(this, o, i % 2 === 0 ? 1 : -1, world));
+		this.legs = TallCreatureData.LEG_ATTACHMENTS.map((o, i) => TallCreatureLeg.initialize(this, o, i % 2 === 0 ? 1 : -1, world ?? this.world));
 	}
 
 	render() {
@@ -203,31 +203,31 @@ export class TallCreature extends Collideable {
 		);
 	}
 
-	update(world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		if(!this.stabberLeft.isMoving() && !this.stabberRight.isMoving()) {
-			this.updateMovement(world, canvasIO);
-			this.updateLegs(world);
+			this.updateMovement(canvasIO);
+			this.updateLegs();
 		}
-		this.stabberLeft.update(this, world, canvasIO);
-		this.stabberRight.update(this, world, canvasIO);
+		this.stabberLeft.update(this, this.world, canvasIO);
+		this.stabberRight.update(this, this.world, canvasIO);
 	}
-	updateMovement(world: World, canvasIO: CanvasIO) {
-		const onGroundBefore = !this.canMove("down", world, canvasIO);
-		this.move(Vector.unit(this.direction).multiply(TallCreatureData.SPEED), world, canvasIO, {});
-		const onGroundAfter = !this.canMove("down", world, canvasIO);
+	updateMovement(canvasIO: CanvasIO) {
+		const onGroundBefore = !this.canMove("down", this.world, canvasIO);
+		this.move(Vector.unit(this.direction).multiply(TallCreatureData.SPEED), this.world, canvasIO, {});
+		const onGroundAfter = !this.canMove("down", this.world, canvasIO);
 		if(onGroundBefore && !onGroundAfter) {
-			const stepHeight = world.rectIntersectionDistance(this.legsHitbox(), "down", TallCreatureData.MAX_STEP_SIZE, (e) => e !== this);
+			const stepHeight = this.world.rectIntersectionDistance(this.legsHitbox(), "down", TallCreatureData.MAX_STEP_SIZE, (e) => e !== this);
 			if(stepHeight < TallCreatureData.MAX_STEP_SIZE) {
 				this.legHeight += stepHeight;
 			}
 		}
 
 
-		world.entities.updatePosition(this);
+		this.world.entities.updatePosition(this);
 	}
-	updateLegs(world: World) {
+	updateLegs() {
 		for(const leg of this.legs) {
-			leg.update(this, world);
+			leg.update(this, this.world);
 		}
 	}
 	onCollision(collision: CollisionEvent) {

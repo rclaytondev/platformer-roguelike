@@ -16,15 +16,15 @@ export class WorldBorderGenerator extends WorldGenerationSegment {
 		world.entities.add(new WorldBorder(Rectangle.fromBounds(
 			-Infinity, WorldData.TILE_SIZE * (floorZero.left - WorldGeneratorData.TOWER_OUTSIDE_WIDTH),
 			-Infinity, Infinity,
-		)));
+		), world));
 		world.entities.add(new WorldBorder(Rectangle.fromBounds(
 			WorldData.TILE_SIZE * (floorZero.right + WorldGeneratorData.TOWER_OUTSIDE_WIDTH), Infinity,
 			-Infinity, Infinity,
-		)));
+		), world));
 		world.entities.add(new WorldBorder(Rectangle.fromBounds(
 			-Infinity, Infinity,
 			WorldData.TILE_SIZE * (floorZero.y + WorldGeneratorData.GROUND_OFFSET + WorldGeneratorData.GROUND_DEPTH), Infinity,
-		)));
+		), world));
 		this.generated = true;
 	}
 }

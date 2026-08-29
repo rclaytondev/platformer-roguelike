@@ -8,8 +8,8 @@ import { Collideable, MoveOptions } from "./Collideable.mjs";
 export abstract class RectangularCollideable extends Collideable {
 	hitbox: Rectangle;
 
-	constructor(hitbox: Rectangle) {
-		super();
+	constructor(hitbox: Rectangle, world: World) {
+		super(world);
 
 		this.hitbox = hitbox;
 		if(Number.isFinite(hitbox.left)) {

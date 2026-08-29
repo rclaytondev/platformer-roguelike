@@ -12,7 +12,7 @@ export class SpawnPointSpawner extends FixedEntitySpawner {
 	}
 
 	spawn(position: Vector, world: World): void {
-		world.entities.add(new SpawnPoint(this.position.add(position.multiply(WorldData.TILE_SIZE))));
+		world.entities.add(new SpawnPoint(this.position.add(position.multiply(WorldData.TILE_SIZE)), world));
 	}
 
 	reflect(): FixedEntitySpawner {

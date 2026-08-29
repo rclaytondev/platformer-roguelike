@@ -12,7 +12,6 @@ import { Renderable } from "../world/Renderer.mjs";
 import { World } from "../world/World.mjs";
 
 export class Fireball extends RectangularCollideable {
-	world: World;
 	velocity: Vector;
 	acceleration: Vector;
 	ignoredEntities: Collideable[];
@@ -20,14 +19,14 @@ export class Fireball extends RectangularCollideable {
 	slideDownSlopes: boolean = false;
 
 	constructor(position: Vector, velocity: Vector, acceleration: Vector, ignoredEntities: Collideable[], world: World) {
-		super(Rectangle.square(position.x, position.y, 1));
+		super(Rectangle.square(position.x, position.y, 1), world);
 		this.velocity = velocity;
 		this.acceleration = acceleration;
 		this.ignoredEntities = ignoredEntities;
 		this.world = world;
 	}
 
-	update(_world: World, canvasIO: CanvasIO) {
+	update(canvasIO: CanvasIO) {
 		this.velocity = this.velocity.add(this.acceleration);
 		this.move(this.velocity, this.world, canvasIO, {
 			collides: (obj) => !(this.ignoredEntities as unknown[]).includes(obj),

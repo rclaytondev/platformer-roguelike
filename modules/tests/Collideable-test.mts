@@ -16,8 +16,8 @@ class CollideableSpy extends RectangularCollideable {
 	destroyed: boolean = false;
 	amountTranslated: Vector = new Vector(0, 0);
 
-	constructor(hitbox: Rectangle, name: string, pushable: boolean, crushable: boolean = pushable) {
-		super(hitbox);
+	constructor(hitbox: Rectangle, name: string, world: World, pushable: boolean, crushable: boolean = pushable) {
+		super(hitbox, world);
 		this.name = name;
 		this.pushable = pushable;
 		this.crushable = crushable;
@@ -53,37 +53,37 @@ class CollideableSpy extends RectangularCollideable {
 }
 
 describe("Collideable.moveUnit", () => {
-	const createWorld = (collideables: Collideable[], tiles: TileWithPosition[] = []) => {
+	const createWorld = (tiles: TileWithPosition[] = []) => {
 		const world = new World(false);
 		world.entities.clear();
 		for(const { tile, position } of tiles) {
 			world.tiles.set(position, tile);
 		}
-		for(const collideable of collideables) {
-			const added = world.addEntityIfEmpty(collideable);
+		return world;
+	};
+	const addEntities = (entities: Collideable[], world: World) => {
+		for(const entity of entities) {
+			const added = world.addEntityIfEmpty(entity);
 			if(!added) {
 				throw new Error("Error in test setup: entities overlapped.");
 			}
 		}
-		return world;
 	};
 
 	it("moves the Collideable if there is no obstruction", () => {
-		let collideable;
-		const world = createWorld([
-			collideable = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "collideable", true),
-		]);
+		const world = new World(false);
+		const collideable = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "collideable", world, true);
+		addEntities([collideable], world);
 		collideable.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.hitbox, Rectangle.fromDimensions(1, 0, 10, 10));
 		assert.equal(collideable.collisions, 0);
 	});
 	it("pushes the next Collideable if there is a collision and it is pushable", () => {
-		let pusher, pushed;
-		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", true),
-			pushed = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushed", true),
-		]);
+		const world = new World(false);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", world, true);
+		const pushed = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushed", world, true);
+		addEntities([pusher, pushed], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.hitbox, Rectangle.fromDimensions(1, 0, 10, 10));
@@ -92,11 +92,10 @@ describe("Collideable.moveUnit", () => {
 		assert.equal(pushed.collisions, 1);
 	});
 	it("does not move if the next object is not pushable", () => {
-		let pusher, pushed;
-		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", true),
-			pushed = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushed", false),
-		]);
+		const world = new World(false);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", world, true);
+		const pushed = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushed", world, false);
+		addEntities([pusher, pushed], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.hitbox, Rectangle.fromDimensions(0, 0, 10, 10));
@@ -105,12 +104,11 @@ describe("Collideable.moveUnit", () => {
 		assert.equal(pushed.collisions, 1);
 	});
 	it("destroys the next object if the object after that one is unpushable", () => {
-		let pusher, pushed, unpushable;
-		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", true),
-			pushed = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushed", true),
-			unpushable = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "unpushable", false),
-		]);
+		const world = new World(false);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", world, true);
+		const pushed = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushed", world, true);
+		const unpushable = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "unpushable", world, false);
+		addEntities([pusher, pushed, unpushable], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.hitbox, Rectangle.fromDimensions(1, 0, 10, 10));
@@ -125,13 +123,12 @@ describe("Collideable.moveUnit", () => {
 		assert.isFalse(unpushable.destroyed);
 	});
 	it("does not destroy the object or call any collision handler if the move is blocked simultaneously", () => {
-		let pusher, pushable, unpushable1, unpushable2;
-		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 20), "pusher", true),
-			pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", true),
-			unpushable1 = new CollideableSpy(Rectangle.fromDimensions(10, 10, 10, 10), "unpushable1", false),
-			unpushable2 = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "unpushable2", false),
-		]);
+		const world = new World(false);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 20), "pusher", world, true);
+		const pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", world, true);
+		const unpushable1 = new CollideableSpy(Rectangle.fromDimensions(10, 10, 10, 10), "unpushable1", world, false);
+		const unpushable2 = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "unpushable2", world, false);
+		addEntities([pusher, pushable, unpushable1, unpushable2], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(0, 0));
@@ -147,14 +144,13 @@ describe("Collideable.moveUnit", () => {
 		assert.equal(unpushable2.collisions, 0);
 	});
 	it("moves everything the correct amount even when the collision graph is not a tree", () => {
-		let first, middle1, middle2, last, uninvolved;
-		const world = createWorld([
-			first = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 20), "first", true),
-			middle1 = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "middle1", true),
-			middle2 = new CollideableSpy(Rectangle.fromDimensions(10, 10, 10, 10), "middle2", true),
-			last = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "last", true),
-			uninvolved = new CollideableSpy(Rectangle.fromDimensions(40, 0, 10, 10), "uninvolved", true),
-		]);
+		const world = new World(false);
+		const first = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 20), "first", world, true);
+		const middle1 = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "middle1", world, true);
+		const middle2 = new CollideableSpy(Rectangle.fromDimensions(10, 10, 10, 10), "middle2", world, true);
+		const last = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "last", world, true);
+		const uninvolved = new CollideableSpy(Rectangle.fromDimensions(40, 0, 10, 10), "uninvolved", world, true);
+		addEntities([first, middle1, middle2, last, uninvolved], world);
 		first.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(first.amountTranslated, new Vector(1, 0));
@@ -165,12 +161,11 @@ describe("Collideable.moveUnit", () => {
 	});
 
 	it("does not move when the pushed object is obstructed and pushable but not crushable", () => {
-		let pusher, pushable, unpushable;
-		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", true),
-			pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", true, false),
-			unpushable = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "unpushable", false),
-		]);
+		const world = new World(false);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", world, true);
+		const pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", world, true, false);
+		const unpushable = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "unpushable", world, false);
+		addEntities([pusher, pushable, unpushable], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(0, 0));
@@ -178,13 +173,12 @@ describe("Collideable.moveUnit", () => {
 		assert.deepEqual(unpushable.amountTranslated, new Vector(0, 0));
 	});
 	it("does not collide if the move is blocked simultaneously by a pushable-but-not-crushable object", () => {
-		let pusher, pushable, pushableButUncrushable, unpushable;
-		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 20), "pusher", true),
-			pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", true),
-			pushableButUncrushable = new CollideableSpy(Rectangle.fromDimensions(10, 10, 10, 10), "pushableButUncrushable", true, false),
-			unpushable = new CollideableSpy(Rectangle.fromDimensions(20, 10, 10, 10), "unpushable", false),
-		]);
+		const world = new World(false);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 20), "pusher", world, true);
+		const pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", world, true);
+		const pushableButUncrushable = new CollideableSpy(Rectangle.fromDimensions(10, 10, 10, 10), "pushableButUncrushable", world, true, false);
+		const unpushable = new CollideableSpy(Rectangle.fromDimensions(20, 10, 10, 10), "unpushable", world, false);
+		addEntities([pusher, pushable, pushableButUncrushable, unpushable], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(0, 0));
@@ -197,58 +191,53 @@ describe("Collideable.moveUnit", () => {
 	});
 
 	it("correctly moves Collideables down slopes of type up-right", () => {
-		let collideable;
 		const world = createWorld([
-			collideable = new CollideableSpy(Rectangle.fromDimensions(0, -10, 10, 10), "collideable", true),
-		], [
 			{ position: new Vector(0, 0), tile: TowerSlope.SLOPE_UP_RIGHT },
 		]);
+		const collideable = new CollideableSpy(Rectangle.fromDimensions(0, -10, 10, 10), "collideable", world, true);
+		addEntities([collideable], world);
 		collideable.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.amountTranslated, new Vector(1, 1));
 	});
 	it("correctly moves Collideables down slopes of type up-left", () => {
-		let collideable;
 		const world = createWorld([
-			collideable = new CollideableSpy(Rectangle.fromDimensions(WorldData.TILE_SIZE - 10, -10, 10, 10), "collideable", true),
-		], [
 			{ position: new Vector(0, 0), tile: TowerSlope.SLOPE_UP_LEFT },
 		]);
+		const collideable = new CollideableSpy(Rectangle.fromDimensions(WorldData.TILE_SIZE - 10, -10, 10, 10), "collideable", world, true);
+		addEntities([collideable], world);
 		collideable.moveUnit("left", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.amountTranslated, new Vector(-1, 1));
 	});
 	it("correctly moves Collideables up slopes of type up-right", () => {
-		let collideable;
 		const world = createWorld([
-			collideable = new CollideableSpy(Rectangle.fromDimensions(WorldData.TILE_SIZE, WorldData.TILE_SIZE - 10, 10, 10), "collideable", true),
-		], [
 			{ position: new Vector(0, 0), tile: TowerSlope.SLOPE_UP_RIGHT },
 		]);
+		const collideable = new CollideableSpy(Rectangle.fromDimensions(WorldData.TILE_SIZE, WorldData.TILE_SIZE - 10, 10, 10), "collideable", world, true);
+		addEntities([collideable], world);
 		collideable.moveUnit("left", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.amountTranslated, new Vector(-1, -1));
 	});
 	it("correctly moves Collideables up slopes of type up-left", () => {
-		let collideable;
 		const world = createWorld([
-			collideable = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 10, 10, 10), "collideable", true),
-		], [
 			{ position: new Vector(0, 0), tile: TowerSlope.SLOPE_UP_LEFT },
 		]);
+		const collideable = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 10, 10, 10), "collideable", world, true);
+		addEntities([collideable], world);
 		collideable.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.amountTranslated, new Vector(1, -1));
 	});
 
 	it("works when an object pushes another object up a slope", () => {
-		let pusher, pushed;
 		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 20, 10, 20), "pusher", true),
-			pushed = new CollideableSpy(Rectangle.fromDimensions(0, WorldData.TILE_SIZE - 20, 10, 10), "pushed", true),
-		], [
 			{ position: new Vector(0, 0), tile: TowerSlope.SLOPE_UP_LEFT },
 		]);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 20, 10, 20), "pusher", world, true);
+		const pushed = new CollideableSpy(Rectangle.fromDimensions(0, WorldData.TILE_SIZE - 20, 10, 10), "pushed", world, true);
+		addEntities([pusher, pushed], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(1, -1));
@@ -259,13 +248,12 @@ describe("Collideable.moveUnit", () => {
 		assert.isFalse(pushed.destroyed);
 	});
 	it("does not move the object when the object tries to move up a slope but is blocked from above, even by a pushable object", () => {
-		let pusher, pushable;
 		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 10, 10, 10), "pusher", true),
-			pushable = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 20, 10, 10), "pushable", true),
-		], [
 			{ position: new Vector(0, 0), tile: TowerSlope.SLOPE_UP_LEFT },
 		]);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 10, 10, 10), "pusher", world, true);
+		const pushable = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 20, 10, 10), "pushable", world, true);
+		addEntities([pusher, pushable], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(0, 0));
@@ -274,26 +262,24 @@ describe("Collideable.moveUnit", () => {
 		assert.isFalse(pushable.destroyed);
 	});
 	it("works when an object pushes another object down a slope", () => {
-		let pusher, pushed;
 		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(0, -10, 10, 10), "pusher", true),
-			pushed = new CollideableSpy(Rectangle.fromDimensions(10, -10, 10, 20), "pushed", true),
-		], [
 			{ position: new Vector(0, 0), tile: TowerSlope.SLOPE_UP_RIGHT },
 		]);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, -10, 10, 10), "pusher", world, true);
+		const pushed = new CollideableSpy(Rectangle.fromDimensions(10, -10, 10, 20), "pushed", world, true);
+		addEntities([pusher, pushed], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(1, 1));
 		assert.deepEqual(pushed.amountTranslated, new Vector(1, 1));
 	});
 	it("moves horizontally when the object tries to move down a slope but is blocked from below, even by a pushable object", () => {
-		let pusher, pushable;
 		const world = createWorld([
-			pusher = new CollideableSpy(Rectangle.fromDimensions(0, -10, 20, 10), "pusher", true),
-			pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", true),
-		], [
 			{ position: new Vector(0, 0), tile: TowerSlope.SLOPE_UP_RIGHT },
 		]);
+		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, -10, 20, 10), "pusher", world, true);
+		const pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", world, true);
+		addEntities([pusher, pushable], world);
 		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(1, 0));
