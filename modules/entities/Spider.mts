@@ -201,26 +201,26 @@ export class CrawlingState {
 		this.direction = direction;
 	}
 
-	update(spider: Spider, canvasIO: CanvasIO) {
+	update(spider: Spider) {
 		if(this.isFloating(spider) || this.isBasepointDetached(spider)) {
 			spider.beginFalling();
 			return;
 		}
-		this.move(spider, canvasIO);
+		this.move(spider);
 		spider.projectileState.update(spider);
 	}
-	move(spider: Spider, canvasIO: CanvasIO) {
+	move(spider: Spider) {
 		this.subpixel += spider.projectileState.speed;
 		let amountMoved = 0;
 		while(this.subpixel >= 1) {
 			amountMoved ++;
 			const moved = this.move1Pixel(spider);
 			if(moved && amountMoved % SpiderData.MAX_DISTANCE_PER_MOVE === 0 && this.subpixel >= 1) {
-				this.updateHitbox(spider, canvasIO);
+				this.updateHitbox(spider);
 			}
 		}
 		const [normal, angle] = this.getNormalAndAngle(spider);
-		this.updateHitbox(spider, canvasIO, normal);
+		this.updateHitbox(spider, normal);
 		spider.angle = GeomUtils.moveAngleTowards(spider.angle, angle, SpiderData.ANGULAR_SPEED);
 	}
 	move1Pixel(spider: Spider) {
@@ -249,12 +249,12 @@ export class CrawlingState {
 		const normal = hitboxCalculator.scaledSmoothedNormal(angle);
 		return [normal, angle];
 	}
-	updateHitbox(spider: Spider, canvasIO: CanvasIO, normal?: Vector) {
+	updateHitbox(spider: Spider, normal?: Vector) {
 		normal ??= this.getNormalAndAngle(spider)[0];
 		const preferredCenter = this.pointOnSurface.position.add(normal);
 		const offset = preferredCenter.subtract(spider.hitbox.center().add(spider.subpixel));
 		const collides = (obj: Collideable | TileWithPosition) => !(obj instanceof Fireball && obj.ignoredEntities.includes(spider));
-		spider.move(offset, spider.world, canvasIO, { collides });
+		spider.move(offset, spider.world, { collides });
 	}
 	isFloating(spider: Spider) {
 		const opposite = this.direction === "clockwise" ? "counterclockwise" : "clockwise";
@@ -347,8 +347,8 @@ export class SpiderLeg {
 export class FallingState {
 	velocity: Vector = new Vector(0, 0);
 
-	update(spider: Spider, canvasIO: CanvasIO) {
-		spider.move(this.velocity, spider.world, canvasIO, { });
+	update(spider: Spider) {
+		spider.move(this.velocity, spider.world, { });
 		this.velocity = this.velocity.add(0, PlayerData.GRAVITY);
 	}
 }
@@ -591,8 +591,8 @@ export class Spider extends RectangularCollideable {
 		canvasIO.strokeLine(point.x, point.y, smoothedEndpoint.x, smoothedEndpoint.y);
 	}
 
-	update(canvasIO: CanvasIO) {
-		this.movement.update(this, canvasIO);
+	update() {
+		this.movement.update(this);
 		for(const leg of this.legs) {
 			leg.update(this);
 		}

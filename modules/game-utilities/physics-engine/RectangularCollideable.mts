@@ -39,7 +39,7 @@ export abstract class RectangularCollideable extends Collideable {
 			this.hitbox = this.hitbox.extend(direction, Math.floor(amount));
 		}
 		for(let i = 0; i < amount; i ++) {
-			const moved = this.moveUnit(direction, world, canvasIO, { ...options, movedObjects: new Set() });
+			const moved = this.moveUnit(direction, world, { ...options, movedObjects: new Set() });
 			if(moved) {
 				this.hitbox = this.hitbox.extend(Directions.opposite[direction], 1);
 			}

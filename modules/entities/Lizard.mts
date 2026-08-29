@@ -196,9 +196,9 @@ export class Lizard extends Collideable {
 		canvasIO.strokeRect(rectangle);
 	}
 
-	update(canvasIO: CanvasIO) {
+	update() {
 		if(this.waitingTimer < 0) {
-			this.updateMotion(canvasIO);
+			this.updateMotion();
 		}
 		this.waitingTimer --;
 
@@ -211,15 +211,15 @@ export class Lizard extends Collideable {
 		this.updateFire();
 		this.fireSpawner.updateHurtbox(this.world);
 	}
-	updateMotion(canvasIO: CanvasIO) {
+	updateMotion() {
 		for(let i = 0; i < this.speed; i ++) {
-			this.updateMotion1Pixel(canvasIO);
+			this.updateMotion1Pixel();
 		}
 	}
-	updateMotion1Pixel(canvasIO: CanvasIO) {
+	updateMotion1Pixel() {
 		const rect = this.lookaheadRectangle(this.direction, LizardData.HITBOX_WIDTH / 2, 1, LizardData.HITBOX_WIDTH - 2);
 		const collideable = new InvisibleRectangle(rect, this.world);
-		collideable.moveUnit(this.direction, this.world, canvasIO, { collides: (o) => o !== this, moveRiders: false, movedObjects: new Set() });
+		collideable.moveUnit(this.direction, this.world, { collides: (o) => o !== this, moveRiders: false, movedObjects: new Set() });
 		const offset = Vector.unit(this.direction);
 		this.position = this.position.add(offset);
 		if(this.hitboxes().some(h => this.world.isInSolid(h, (o) => o !== this))) {

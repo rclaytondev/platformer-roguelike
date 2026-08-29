@@ -44,7 +44,7 @@ export class ThrowableTileEntity extends RectangularCollideable {
 		}
 		this.velocity.y *= this.frictionY;
 		this.velocity.y += this.gravity;
-		this.move(this.velocity, this.world, canvasIO, {
+		this.move(this.velocity, this.world, {
 			collides: (obj) => obj !== this,
 		});
 

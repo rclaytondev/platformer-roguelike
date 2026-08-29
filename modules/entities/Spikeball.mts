@@ -22,8 +22,8 @@ abstract class SpikeballState {
 }
 
 class MovingState extends SpikeballState {
-	update(self: Spikeball, canvasIO: CanvasIO): void {
-		self.moveForward(canvasIO);
+	update(self: Spikeball): void {
+		self.moveForward();
 	}
 
 	render() {
@@ -223,7 +223,7 @@ export class Spikeball extends RectangularCollideable {
 			));
 		}
 	}
-	moveForward(canvasIO: CanvasIO) {
+	moveForward() {
 		const options = {
 			collides: this.collides.bind(this),
 			movedObjects: new Set<Collideable>(),
@@ -233,9 +233,9 @@ export class Spikeball extends RectangularCollideable {
 			const hitbox = Rectangle.fromBounds(this.hitbox.left, this.hitbox.right, this.hitbox.top, this.hitbox.bottom);
 			const xDirection = (this.direction === "up-left" || this.direction === "down-left") ? "left" : "right";
 			const yDirection = (this.direction === "up-left" || this.direction === "up-right") ? "up" : "down";
-			const canMoveX = this.canMove(xDirection, this.world, canvasIO);
-			const canMoveY = this.canMove(yDirection, this.world, canvasIO);
-			this.move(Vector.gridUnit(this.direction), this.world, canvasIO, options);
+			const canMoveX = this.canMove(xDirection, this.world);
+			const canMoveY = this.canMove(yDirection, this.world);
+			this.move(Vector.gridUnit(this.direction), this.world, options);
 			if(canMoveX === canMoveY && this.direction !== direction) {
 				/* Hit a corner perfectly or hit a slope */
 				this.direction = Directions.opposite[direction];

@@ -1,7 +1,6 @@
 import { assert } from "chai";
 import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { TileWithPosition, World } from "../world/World.mjs";
-import { canvasIO } from "../app-entry-points/CanvasIOInitializer.mjs";
 import { RectangularCollideable } from "../game-utilities/physics-engine/RectangularCollideable.mjs";
 import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
@@ -74,7 +73,7 @@ describe("Collideable.moveUnit", () => {
 		const world = new World(false);
 		const collideable = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "collideable", world, true);
 		addEntities([collideable], world);
-		collideable.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		collideable.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.hitbox, Rectangle.fromDimensions(1, 0, 10, 10));
 		assert.equal(collideable.collisions, 0);
@@ -84,7 +83,7 @@ describe("Collideable.moveUnit", () => {
 		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", world, true);
 		const pushed = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushed", world, true);
 		addEntities([pusher, pushed], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.hitbox, Rectangle.fromDimensions(1, 0, 10, 10));
 		assert.deepEqual(pushed.hitbox, Rectangle.fromDimensions(11, 0, 10, 10));
@@ -96,7 +95,7 @@ describe("Collideable.moveUnit", () => {
 		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, 0, 10, 10), "pusher", world, true);
 		const pushed = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushed", world, false);
 		addEntities([pusher, pushed], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.hitbox, Rectangle.fromDimensions(0, 0, 10, 10));
 		assert.deepEqual(pushed.hitbox, Rectangle.fromDimensions(10, 0, 10, 10));
@@ -109,7 +108,7 @@ describe("Collideable.moveUnit", () => {
 		const pushed = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushed", world, true);
 		const unpushable = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "unpushable", world, false);
 		addEntities([pusher, pushed, unpushable], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.hitbox, Rectangle.fromDimensions(1, 0, 10, 10));
 		assert.deepEqual(unpushable.hitbox, Rectangle.fromDimensions(20, 0, 10, 10));
@@ -129,7 +128,7 @@ describe("Collideable.moveUnit", () => {
 		const unpushable1 = new CollideableSpy(Rectangle.fromDimensions(10, 10, 10, 10), "unpushable1", world, false);
 		const unpushable2 = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "unpushable2", world, false);
 		addEntities([pusher, pushable, unpushable1, unpushable2], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(0, 0));
 		assert.deepEqual(pushable.amountTranslated, new Vector(0, 0));
@@ -151,7 +150,7 @@ describe("Collideable.moveUnit", () => {
 		const last = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "last", world, true);
 		const uninvolved = new CollideableSpy(Rectangle.fromDimensions(40, 0, 10, 10), "uninvolved", world, true);
 		addEntities([first, middle1, middle2, last, uninvolved], world);
-		first.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		first.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(first.amountTranslated, new Vector(1, 0));
 		assert.deepEqual(middle1.amountTranslated, new Vector(1, 0));
@@ -166,7 +165,7 @@ describe("Collideable.moveUnit", () => {
 		const pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", world, true, false);
 		const unpushable = new CollideableSpy(Rectangle.fromDimensions(20, 0, 10, 10), "unpushable", world, false);
 		addEntities([pusher, pushable, unpushable], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(0, 0));
 		assert.deepEqual(pushable.amountTranslated, new Vector(0, 0));
@@ -179,7 +178,7 @@ describe("Collideable.moveUnit", () => {
 		const pushableButUncrushable = new CollideableSpy(Rectangle.fromDimensions(10, 10, 10, 10), "pushableButUncrushable", world, true, false);
 		const unpushable = new CollideableSpy(Rectangle.fromDimensions(20, 10, 10, 10), "unpushable", world, false);
 		addEntities([pusher, pushable, pushableButUncrushable, unpushable], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(0, 0));
 		assert.deepEqual(pushable.amountTranslated, new Vector(0, 0));
@@ -196,7 +195,7 @@ describe("Collideable.moveUnit", () => {
 		]);
 		const collideable = new CollideableSpy(Rectangle.fromDimensions(0, -10, 10, 10), "collideable", world, true);
 		addEntities([collideable], world);
-		collideable.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		collideable.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.amountTranslated, new Vector(1, 1));
 	});
@@ -206,7 +205,7 @@ describe("Collideable.moveUnit", () => {
 		]);
 		const collideable = new CollideableSpy(Rectangle.fromDimensions(WorldData.TILE_SIZE - 10, -10, 10, 10), "collideable", world, true);
 		addEntities([collideable], world);
-		collideable.moveUnit("left", world, canvasIO!, { movedObjects: new Set() });
+		collideable.moveUnit("left", world, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.amountTranslated, new Vector(-1, 1));
 	});
@@ -216,7 +215,7 @@ describe("Collideable.moveUnit", () => {
 		]);
 		const collideable = new CollideableSpy(Rectangle.fromDimensions(WorldData.TILE_SIZE, WorldData.TILE_SIZE - 10, 10, 10), "collideable", world, true);
 		addEntities([collideable], world);
-		collideable.moveUnit("left", world, canvasIO!, { movedObjects: new Set() });
+		collideable.moveUnit("left", world, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.amountTranslated, new Vector(-1, -1));
 	});
@@ -226,7 +225,7 @@ describe("Collideable.moveUnit", () => {
 		]);
 		const collideable = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 10, 10, 10), "collideable", world, true);
 		addEntities([collideable], world);
-		collideable.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		collideable.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(collideable.amountTranslated, new Vector(1, -1));
 	});
@@ -238,7 +237,7 @@ describe("Collideable.moveUnit", () => {
 		const pusher = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 20, 10, 20), "pusher", world, true);
 		const pushed = new CollideableSpy(Rectangle.fromDimensions(0, WorldData.TILE_SIZE - 20, 10, 10), "pushed", world, true);
 		addEntities([pusher, pushed], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(1, -1));
 		assert.deepEqual(pushed.amountTranslated, new Vector(1, -1));
@@ -254,7 +253,7 @@ describe("Collideable.moveUnit", () => {
 		const pusher = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 10, 10, 10), "pusher", world, true);
 		const pushable = new CollideableSpy(Rectangle.fromDimensions(-10, WorldData.TILE_SIZE - 20, 10, 10), "pushable", world, true);
 		addEntities([pusher, pushable], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(0, 0));
 		assert.deepEqual(pushable.amountTranslated, new Vector(0, 0));
@@ -268,7 +267,7 @@ describe("Collideable.moveUnit", () => {
 		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, -10, 10, 10), "pusher", world, true);
 		const pushed = new CollideableSpy(Rectangle.fromDimensions(10, -10, 10, 20), "pushed", world, true);
 		addEntities([pusher, pushed], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(1, 1));
 		assert.deepEqual(pushed.amountTranslated, new Vector(1, 1));
@@ -280,7 +279,7 @@ describe("Collideable.moveUnit", () => {
 		const pusher = new CollideableSpy(Rectangle.fromDimensions(0, -10, 20, 10), "pusher", world, true);
 		const pushable = new CollideableSpy(Rectangle.fromDimensions(10, 0, 10, 10), "pushable", world, true);
 		addEntities([pusher, pushable], world);
-		pusher.moveUnit("right", world, canvasIO!, { movedObjects: new Set() });
+		pusher.moveUnit("right", world, { movedObjects: new Set() });
 
 		assert.deepEqual(pusher.amountTranslated, new Vector(1, 0));
 		assert.deepEqual(pushable.amountTranslated, new Vector(0, 0));

@@ -135,12 +135,12 @@ export class TeleportingCreature extends RectangularCollideable {
 		);
 	}
 
-	update(canvasIO: CanvasIO) {
+	update() {
 		this.mode.update(this);
 		this.fireSpawner.position = this.hitbox.center();
 		this.fireSpawner.update(this.world);
 		this.fireSpawner.updateHurtbox(this.world);
-		this.move(this.velocity, this.world, canvasIO, {});
+		this.move(this.velocity, this.world, {});
 		this.velocity.y += PlayerData.GRAVITY;
 	}
 	hasLineOfSight() {
