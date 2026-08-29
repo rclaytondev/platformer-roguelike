@@ -120,7 +120,7 @@ export class GraphicsUtils {
 	}
 
 
-	static shatterParticles(display: (canvasIO: CanvasIO) => void, world: World, position: Vector, pieces: number, maxVelocity: number, canvasIO: CanvasIO, angleEvenness: number, settings: ParticleSettings) {
+	static shatterParticles(display: (canvasIO: CanvasIO) => void, world: World, position: Vector, pieces: number, maxVelocity: number, angleEvenness: number, settings: ParticleSettings) {
 		const angles = RandomUtils.randomEvenlySpaced({
 			generate: () => RandomUtils.random(0, 2 * Math.PI),
 			metric: MathUtils.dist,
@@ -132,7 +132,7 @@ export class GraphicsUtils {
 			const next = angles[i + 1];
 			if(typeof next !== "number") { break; }
 			const velocity = new Vector(Math.cos(-(angle + next) / 2), -Math.sin(-(angle + next) / 2)).multiply(maxVelocity);
-			const displaySector = () => {
+			const displaySector = (canvasIO: CanvasIO) => {
 				canvasIO.ctx.save();
 				canvasIO.clipArc(0, 0, 100, angle, next);
 				canvasIO.ctx.translate(-position.x, -position.y);

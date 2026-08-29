@@ -16,7 +16,7 @@ import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
 import { MathUtils } from "../../utils-ts/modules/math/MathUtils.mjs";
 
 abstract class SpikeballState {
-	abstract update(self: Spikeball, canvasIO: CanvasIO): void;
+	abstract update(self: Spikeball): void;
 
 	abstract render(self: Spikeball): Renderable[];
 }
@@ -209,11 +209,11 @@ export class Spikeball extends RectangularCollideable {
 			this.direction = Directions.reflectY[this.direction];
 		}
 	}
-	update(canvasIO: CanvasIO) {
-		this.state.update(this, canvasIO);
+	update() {
+		this.state.update(this);
 		if(this.bounces < 0) {
 			this.world.entities.delete(this);
-			this.die(canvasIO);
+			this.die();
 		}
 		this.age ++;
 		if(this.age > (WorldData.TILE_SIZE - 2 * SpikeballData.RADIUS) / SpikeballData.SPEED) {
@@ -244,14 +244,13 @@ export class Spikeball extends RectangularCollideable {
 		}
 	}
 
-	die(canvasIO: CanvasIO) {
+	die() {
 		GraphicsUtils.shatterParticles(
 			(canvasIO: CanvasIO) => this.display(canvasIO),
 			this.world,
 			this.hitbox.center(),
 			SpikeballData.SHATTER_PIECES,
 			SpikeballData.SHATTER_PARTICLE_SPEED,
-			canvasIO,
 			SpikeballData.SHATTER_ANGLE_EVENNESS,
 			SpikeballData.SHATTER_PARTICLE_SETTINGS,
 		);
