@@ -455,19 +455,19 @@ export class Player extends RectangularCollideable {
 	onGround(canvasIO: CanvasIO) {
 		return !this.canMove("down", this.world, canvasIO);
 	}
-	damage(hurtbox: Rectangle, world: World) {
+	damage() {
 		if(this.invulnerabilityTime < 0) {
 			this.health --;
-			world.worldScreen?.visualEffects.effectsList.add(new ScreenFade(
+			this.world.worldScreen?.visualEffects.effectsList.add(new ScreenFade(
 				PlayerData.DAMAGE_FLASH_TIME,
 				PlayerData.DAMAGE_FLASH_OPACITY, 0,
 				PlayerData.DAMAGE_FLASH_COLOR,
 				"damage-flash",
 			));
 			if(this.health <= 0 && !this.dead) {
-				DeathScreen.show(world);
+				DeathScreen.show(this.world);
 				this.dead = true;
-				world.entities.delete(this);
+				this.world.entities.delete(this);
 			}
 			this.invulnerabilityTime = PlayerData.INVULNERABIlITY_TIME;
 		}

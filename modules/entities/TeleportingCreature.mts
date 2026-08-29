@@ -139,7 +139,7 @@ export class TeleportingCreature extends RectangularCollideable {
 		this.mode.update(this);
 		this.fireSpawner.position = this.hitbox.center();
 		this.fireSpawner.update(this.world);
-		this.fireSpawner.updateHurtbox(this.world, canvasIO);
+		this.fireSpawner.updateHurtbox(this.world);
 		this.move(this.velocity, this.world, canvasIO, {});
 		this.velocity.y += PlayerData.GRAVITY;
 	}

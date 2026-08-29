@@ -48,7 +48,7 @@ class AttackState extends SpikeballState {
 		const center = self.hitbox.center();
 		const hurtbox = Rectangle.fromCenter(center.x, center.y, SpikeballData.HURTBOX_SIZE, SpikeballData.HURTBOX_SIZE);
 		if(self.world.player.hitbox.intersects(hurtbox)) {
-			self.world.player.damage(hurtbox, self.world);
+			self.world.player.damage();
 		}
 	}
 

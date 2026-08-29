@@ -1,4 +1,3 @@
-import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { WorldData } from "../constants/GameData.mjs";
@@ -51,11 +50,11 @@ export class Explosion {
 		};
 	}
 
-	explode(world: World, canvasIO: CanvasIO) {
+	explode(world: World) {
 		this.applyScreenShake(world);
 		this.destroyTiles(world);
 		this.addParticles(world);
-		this.damage(world, canvasIO);
+		this.damage(world);
 	}
 	applyScreenShake(world: World) {
 		world.worldScreen?.visualEffects.effectsList.add(new ShakeEffect(this.screenShakeTime, this.screenShakeIntensity));
@@ -79,11 +78,11 @@ export class Explosion {
 			world.particles.add(particle, world);
 		}
 	}
-	damage(world: World, canvasIO: CanvasIO) {
+	damage(world: World) {
 		world.damage(Rectangle.fromCenter(
 			this.position.x, this.position.y,
 			2 * this.damageRadius,
 			2 * this.damageRadius,
-		), canvasIO);
+		));
 	}
 }

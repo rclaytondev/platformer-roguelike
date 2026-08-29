@@ -134,7 +134,7 @@ class TallCreatureStabber {
 				onCollision: (collisionEvent: CollisionEvent) => {
 					const collidingObject = collisionEvent.collidingObject(rect);
 					if(collidingObject instanceof Collideable) {
-						collidingObject.damage(rect.hitbox.translate(Vector.unit(this.direction)), world, canvasIO);
+						collidingObject.damage(rect.hitbox.translate(Vector.unit(this.direction)));
 					}
 					this.beginRetracting();
 				},

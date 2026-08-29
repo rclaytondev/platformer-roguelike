@@ -209,7 +209,7 @@ export class Lizard extends Collideable {
 		this.updateJoints();
 		this.updateHeadAngle();
 		this.updateFire();
-		this.fireSpawner.updateHurtbox(this.world, canvasIO);
+		this.fireSpawner.updateHurtbox(this.world);
 	}
 	updateMotion(canvasIO: CanvasIO) {
 		for(let i = 0; i < this.speed; i ++) {
@@ -447,16 +447,16 @@ export class Lizard extends Collideable {
 		const length = this.lengthAfterDamage(rectangle);
 		return (Math.floor(length / WorldData.TILE_SIZE - 1/2) + 1/2) * WorldData.TILE_SIZE;
 	}
-	damage(rectangle: Rectangle, world: World) {
-		if(!world.entities.has(this)) { return; }
+	damage(rectangle: Rectangle) {
+		if(!this.world.entities.has(this)) { return; }
 		const length = this.roundedLengthAfterDamage(rectangle);;
 		this.roundedLengthAfterDamage(rectangle);
 		if(length < (LizardData.MIN_LENGTH + 1/2) * WorldData.TILE_SIZE) {
-			world.entities.delete(this);
-			this.spawnDamageParticles(0, world);
+			this.world.entities.delete(this);
+			this.spawnDamageParticles(0, this.world);
 		}
 		else {
-			this.spawnDamageParticles(length, world);
+			this.spawnDamageParticles(length, this.world);
 			this.length = length;
 		}
 	}

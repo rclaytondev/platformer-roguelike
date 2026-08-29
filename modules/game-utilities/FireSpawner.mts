@@ -139,7 +139,7 @@ export class FireSpawner {
 			(tile === Platform.PLATFORM && this.direction !== "down")
 		);
 	}
-	updateHurtbox(world: World, canvasIO: CanvasIO) {
+	updateHurtbox(world: World) {
 		if(this.hurtboxSize === 0) { return; }
 		const hurtbox = this.hurtbox();
 		for(const { position, tile } of world.tiles.getTilesAt(hurtbox)) {
@@ -147,7 +147,7 @@ export class FireSpawner {
 				world.destroyTile(position);
 			}
 		}
-		world.damage(hurtbox, canvasIO, e => !(e instanceof Fireball));
+		world.damage(hurtbox, e => !(e instanceof Fireball));
 	}
 	displayHurtbox(canvasIO: CanvasIO) {
 		canvasIO.ctx.strokeStyle = DEBUG_SETTINGS.LIZARDS.HURTBOX_COLOR;

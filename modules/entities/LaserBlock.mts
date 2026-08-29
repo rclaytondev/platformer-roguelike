@@ -121,7 +121,7 @@ export class LaserBlock extends RectangularCollideable {
 					this.setSpeed(0);
 				}
 				if(this.mode === "activated") {
-					this.world.player.damage(this.world.player.hitbox, this.world);
+					this.world.player.damage();
 				}
 			}
 		}

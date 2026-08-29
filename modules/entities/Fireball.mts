@@ -6,7 +6,6 @@ import { Explosion } from "../game-utilities/Explosion.mjs";
 import { GraphicsUtils } from "../game-utilities/GraphicsUtils.mjs";
 import { Particle } from "../game-utilities/Particle.mjs";
 import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
-import { CollisionEvent } from "../game-utilities/physics-engine/CollisionEvent.mjs";
 import { RectangularCollideable } from "../game-utilities/physics-engine/RectangularCollideable.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { World } from "../world/World.mjs";
@@ -55,13 +54,13 @@ export class Fireball extends RectangularCollideable {
 	}
 
 
-	onCollision(collision: CollisionEvent, _world: World, canvasIO: CanvasIO): void {
-		this.explode(canvasIO);
+	onCollision(): void {
+		this.explode();
 	}
-	explode(canvasIO: CanvasIO) {
+	explode() {
 		this.world.entities.delete(this);
 
 		const center = this.hitbox.center();
-		new Explosion(center).explode(this.world, canvasIO);
+		new Explosion(center).explode(this.world);
 	}
 }

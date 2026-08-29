@@ -145,13 +145,13 @@ export class World {
 		}
 		return false;
 	}
-	damage(hurtbox: Rectangle, canvasIO: CanvasIO, damages: (e: Entity) => boolean = () => true) {
+	damage(hurtbox: Rectangle, damages: (e: Entity) => boolean = () => true) {
 		if(this.player.hitbox.intersects(hurtbox) && damages(this.player)) {
-			this.player.damage(hurtbox, this);
+			this.player.damage();
 		}
 		for(const entity of this.entities.collideablesIntersecting(hurtbox)) {
 			if(damages(entity) && entity.damageable) {
-				entity.damage(hurtbox, this, canvasIO);
+				entity.damage(hurtbox);
 			}
 		}
 	}
