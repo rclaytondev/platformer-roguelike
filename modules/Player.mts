@@ -28,21 +28,20 @@ import { World } from "./world/World.mjs";
 type Input = { [key: string]: boolean };
 
 class DefaultState {
-	update(self: Player, canvasIO: CanvasIO) {
-		const input = Debug.getInput(canvasIO);
+	update(self: Player) {
+		const input = self.keyInputs();
 		self.velocity.y += input.KeyZ && self.velocity.y <= 0 ? PlayerData.GRAVITY_WHILE_JUMPING : PlayerData.GRAVITY;
 		self.checkFriction();
 	}
 
-	checkInputs(self: Player, canvasIO: CanvasIO) {
-		const input = Debug.getInput(canvasIO);
-		self.checkDirectionInputs(input);
+	checkInputs(self: Player) {
+		self.checkDirectionInputs();
 		self.checkMoveInputs();
 		self.checkJumpInputs();
-		self.checkThrowInputs(canvasIO);
-		self.checkCrouchInputs(input);
+		self.checkThrowInputs();
+		self.checkCrouchInputs();
 		self.checkPickUpInputs();
-		self.checkClimbStartInputs(input);
+		self.checkClimbStartInputs();
 	}
 }
 
@@ -53,14 +52,14 @@ class ClimbingState {
 		this.chain = chain;
 	}
 
-	checkInputs(self: Player, canvasIO: CanvasIO) {
-		const input = Debug.getInput(canvasIO);
-		this.checkClimbingInputs(self, input);
+	checkInputs(self: Player) {
+		this.checkClimbingInputs(self);
 		self.checkFriction();
-		this.checkJumpInputs(self, input, canvasIO);
+		this.checkJumpInputs(self);
 		this.checkChainEnd(self);
 	}
-	checkClimbingInputs(self: Player, input: Input) {
+	checkClimbingInputs(self: Player) {
+		const input = self.keyInputs();
 		if(input.ArrowUp) {
 			self.velocity = new Vector(0, -ChainData.CLIMB_SPEED);
 		}
@@ -71,9 +70,10 @@ class ClimbingState {
 			self.velocity = new Vector(0, 0);
 		}
 	}
-	checkJumpInputs(self: Player, input: Input, canvasIO: CanvasIO) {
+	checkJumpInputs(self: Player) {
+		const input = self.keyInputs();
 		if(input.ArrowDown) {
-			if(canvasIO.keys.KeyZ) {
+			if(input.KeyZ) {
 				self.state = new DefaultState();
 			}
 		}
@@ -90,15 +90,15 @@ class ClimbingState {
 		}
 	}
 
-	update(self: Player, canvasIO: CanvasIO) {
+	update(self: Player) {
 		self.hasDoubleJump = true;
 		self.uncrouch();
 		this.snapToCenter(self);
-		this.checkOnGround(self, canvasIO);
+		this.checkOnGround(self);
 	}
-	checkOnGround(self: Player, canvasIO: CanvasIO) {
+	checkOnGround(self: Player) {
 		const onGround = !self.canMove("down", self.world);
-		const input = Debug.getInput(canvasIO);
+		const input = self.keyInputs();
 		if(onGround && !input.ArrowUp) {
 			self.state = new DefaultState();
 		}
@@ -182,6 +182,7 @@ class StoredVelocity {
 }
 
 export class Player extends RectangularCollideable {
+	readonly keyInputs: (() => Input);
 	velocity: Vector = new Vector(0, 0);
 	hasDoubleJump: boolean = false;
 	dead: boolean = false;
@@ -202,8 +203,9 @@ export class Player extends RectangularCollideable {
 
 	equippedItems: [ThrowableTile | null, ThrowableTile | null] = [null, null];
 
-	constructor(world: World) {
+	constructor(world: World, keyInputs: () => Input) {
 		super(Rectangle.fromDimensions(0, -WorldData.TILE_SIZE, PlayerData.HITBOX_WIDTH, PlayerData.HITBOX_HEIGHT), world);
+		this.keyInputs = keyInputs;
 	}
 
 	render() {
@@ -267,14 +269,13 @@ export class Player extends RectangularCollideable {
 		);
 	}
 
-	update(canvasIO: CanvasIO) {
+	update() {
 		if(Main.screen instanceof RoomEditor) { return; }
-		const input = Debug.getInput(canvasIO);
-		this.updateBuffers(input);
+		this.updateBuffers();
 
-		this.state.checkInputs(this, canvasIO);
+		this.state.checkInputs(this);
 		this.updateCrouching();
-		this.state.update(this, canvasIO);
+		this.state.update(this);
 		this.updateCoyoteTime();
 		this.coyoteTime --;
 		this.invulnerabilityTime --;
@@ -356,13 +357,15 @@ export class Player extends RectangularCollideable {
 		this.hitbox = originalHitbox;
 		return false;
 	}
-	updateBuffers(input: Input) {
+	updateBuffers() {
+		const input = this.keyInputs();
 		this.jumpBuffer.update(input);
 		this.pickupBuffer.update(input);
 		this.throwBuffer1.update(input);
 		this.throwBuffer2.update(input);
 	}
-	checkDirectionInputs(input: Input) {
+	checkDirectionInputs() {
+		const input = this.keyInputs();
 		if(input.ArrowLeft && (!input.ArrowRight || !InputUtils.pastKeys.ArrowLeft)) {
 			this.keyDirection = "left";
 		}
@@ -402,23 +405,24 @@ export class Player extends RectangularCollideable {
 		}
 		return false;
 	}
-	checkThrowInputs(canvasIO: CanvasIO) {
+	checkThrowInputs() {
 		if(this.throwBuffer1.isActive()) {
-			const used = this.equippedItems[0]?.use(this.world, canvasIO);
+			const used = this.equippedItems[0]?.use(this.world);
 			if(used) {
 				this.throwBuffer1.reset();
 				this.equippedItems[0] = null;
 			}
 		}
 		if(this.throwBuffer2.isActive()) {
-			const used = this.equippedItems[1]?.use(this.world, canvasIO);
+			const used = this.equippedItems[1]?.use(this.world);
 			if(used) {
 				this.throwBuffer2.reset();
 				this.equippedItems[1] = null;
 			}
 		}
 	}
-	checkCrouchInputs(input: Input) {
+	checkCrouchInputs() {
+		const input = this.keyInputs();
 		if(input.ArrowDown && this.onGround()) {
 			this.crouch();
 		}
@@ -434,7 +438,8 @@ export class Player extends RectangularCollideable {
 			}
 		}
 	}
-	checkClimbStartInputs(input: Input) {
+	checkClimbStartInputs() {
+		const input = this.keyInputs();
 		const up = input.ArrowUp;
 		const down = (input.ArrowDown && !this.onGround());
 		if(up || down) {
@@ -522,32 +527,32 @@ export class Player extends RectangularCollideable {
 		return this.hitbox.height === PlayerData.CROUCHED_HITBOX_HEIGHT;
 	}
 
-	itemThrowVelocity(canvasIO: CanvasIO) {
-		const input = Debug.getInput(canvasIO);
+	itemThrowVelocity() {
+		const input = this.keyInputs();
 		if(input.ArrowDown) {
 			return ItemData.DOWN_THROW_VELOCITY.clone();
 		}
 		return (this.facing === "left") ? ItemData.THROW_VELOCITY.reflectX() : ItemData.THROW_VELOCITY.clone();
 	}
-	throwDirection(canvasIO: CanvasIO) {
-		const input = Debug.getInput(canvasIO);
+	throwDirection() {
+		const input = this.keyInputs();
 		if(input.ArrowDown) {
 			return "down";
 		}
 		return this.facing;
 	}
-	attemptThrow(item: ThrowableTileEntity, itemCenter: Vector, world: World, canvasIO: CanvasIO) {
+	attemptThrow(item: ThrowableTileEntity, itemCenter: Vector) {
 		const throwStart = new Vector(itemCenter.x - item.hitbox.width / 2, itemCenter.y - item.hitbox.height / 2);
-		if(!world.isInSolid(item.hitbox.translate(throwStart))) {
+		if(!this.world.isInSolid(item.hitbox.translate(throwStart))) {
 			item.translate(throwStart);
-			item.velocity = this.itemThrowVelocity(canvasIO);
-			world.entities.add(item);
+			item.velocity = this.itemThrowVelocity();
+			this.world.entities.add(item);
 			return true;
 		}
 		return false;
 	}
-	throw(item: ThrowableTileEntity, world: World, canvasIO: CanvasIO) {
-		const direction = this.throwDirection(canvasIO);
+	throw(item: ThrowableTileEntity) {
+		const direction = this.throwDirection();
 		const size = (direction === "down" ? item.hitbox.height : item.hitbox.width);
 		const throwStartCenter = (
 			this.hitbox.edgeCenter(direction).add(Vector.unit(direction)
@@ -559,8 +564,8 @@ export class Player extends RectangularCollideable {
 		const maxDists = (
 			Directions.isHorizontal(direction)
 			? {
-				"clockwise": world.rectIntersectionDistance(hitbox, Directions.rotateClockwise[direction], ItemData.THROW_CORRECTION, () => true),
-				"counterclockwise": world.rectIntersectionDistance(hitbox, Directions.rotateClockwise[direction], ItemData.THROW_CORRECTION, () => true),
+				"clockwise": this.world.rectIntersectionDistance(hitbox, Directions.rotateClockwise[direction], ItemData.THROW_CORRECTION, () => true),
+				"counterclockwise": this.world.rectIntersectionDistance(hitbox, Directions.rotateClockwise[direction], ItemData.THROW_CORRECTION, () => true),
 			}
 			: {
 				"clockwise": ItemData.THROW_CORRECTION,
@@ -572,7 +577,7 @@ export class Player extends RectangularCollideable {
 			for(const angularDirection of ["clockwise", "counterclockwise"] as const) {
 				if(correctionAmount < maxDists[angularDirection]) {
 					const correctionDirection = Directions.rotate[angularDirection][direction];
-					const threw = this.attemptThrow(item, throwStartCenter.add(Vector.unit(correctionDirection).multiply(correctionAmount)), world, canvasIO);
+					const threw = this.attemptThrow(item, throwStartCenter.add(Vector.unit(correctionDirection).multiply(correctionAmount)));
 					if(threw) {
 						if(Directions.isHorizontal(direction)) {
 							const opposite = Directions.opposite[direction];

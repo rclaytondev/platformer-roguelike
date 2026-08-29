@@ -34,8 +34,8 @@ export class World {
 
 	frameCount: number = 0;
 
-	constructor(enableGeneration: boolean) {
-		this.player = new Player(this);
+	constructor(enableGeneration: boolean, canvasIO: CanvasIO | null = null) {
+		this.player = new Player(this, () => Debug.getInput(canvasIO));
 		this.entities.add(this.player);
 		if(enableGeneration) {
 			this.worldGenerator = new WorldGenerator();

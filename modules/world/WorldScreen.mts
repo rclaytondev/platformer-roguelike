@@ -50,18 +50,18 @@ export class WorldScreen {
 		));
 	}
 
-	resetWorld() {
-		this.world = new World(true);
+	resetWorld(canvasIO: CanvasIO) {
+		this.world = new World(true, canvasIO);
 		this.world.worldScreen = this;
 		this.initializeCamera();
 	}
 	initializeCamera() {
 		this.camera.position = this.world.player.hitbox.center();
 	}
-	beginDeathTransition() {
+	beginDeathTransition(canvasIO: CanvasIO) {
 		const delay = new ScreenFade(PlayerData.DEATH_RESET_DELAY, 0, 0, "black", "transition-start-delay");
 		const fadeOut = new ScreenFade(PlayerData.FADE_DURATION, 0, 1, "black", "transition-fade-out");
-		const pause = new ScreenFade(PlayerData.FADE_DELAY, 1, 1, "black", "transition-pause", () => this.resetWorld());
+		const pause = new ScreenFade(PlayerData.FADE_DELAY, 1, 1, "black", "transition-pause", () => this.resetWorld(canvasIO));
 		const fadeIn = new ScreenFade(PlayerData.FADE_DURATION, 1, 0, "black", "transition-fade-in");
 		this.visualEffects.effectsList.add(ScreenFade.sequence([delay, fadeOut, pause, fadeIn], this.visualEffects));
 	}

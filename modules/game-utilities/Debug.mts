@@ -91,11 +91,11 @@ export class Debug {
 
 
 	static recordedInput: { [key: string]: boolean }[] = [];
-	static getInput(canvasIO: CanvasIO) {
+	static getInput(canvasIO: CanvasIO | null) {
 		if(GameUtils.frameCount < DEBUG_SETTINGS.INPUT_RECORD.length) {
 			return DEBUG_SETTINGS.INPUT_RECORD[GameUtils.frameCount];
 		}
-		return canvasIO.keys;
+		return canvasIO?.keys ?? {};
 	}
 	static updateInputRecord(canvasIO: CanvasIO) {
 		const keys = Object.keys(canvasIO.keys).filter(k => canvasIO.keys[k]);

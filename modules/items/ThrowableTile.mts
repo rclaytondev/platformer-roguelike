@@ -16,10 +16,10 @@ export class ThrowableTile {
 		this.modifiers = modifiers;
 	}
 
-	use(world: World, canvasIO: CanvasIO) {
+	use(world: World) {
 		const entity = new ThrowableTileEntity(new Vector(0, 0), this.modifiers, world);
 		entity.reset();
-		return world.player.throw(entity, world, canvasIO);
+		return world.player.throw(entity);
 	}
 
 	displayIcon(canvasIO: CanvasIO, displayRect: Rectangle, world: World) {

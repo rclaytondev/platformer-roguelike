@@ -59,7 +59,7 @@ export class DeathScreen extends StaticEntity {
 			&& InputUtils.startedPressingKey(canvasIO)
 			&& world.worldScreen && !world.worldScreen.isTransitioning()
 		) {
-			world.worldScreen.beginDeathTransition();
+			world.worldScreen.beginDeathTransition(canvasIO);
 		}
 	}
 
