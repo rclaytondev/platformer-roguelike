@@ -1,4 +1,3 @@
-import { CanvasIO } from "../../../utils-ts/modules/CanvasIO.mjs";
 import { Direction, Directions } from "../../../utils-ts/modules/geometry/Direction.mjs";
 import { Rectangle } from "../../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../../utils-ts/modules/geometry/Vector.mjs";
@@ -34,7 +33,7 @@ export abstract class RectangularCollideable extends Collideable {
 		this.world.entities.updatePosition(this);
 	}
 
-	extend(amount: number, direction: Direction, world: World, canvasIO: CanvasIO, options: MoveOptions & { queryOnly?: boolean }) {
+	extend(amount: number, direction: Direction, world: World, options: MoveOptions & { queryOnly?: boolean }) {
 		if(amount < 0) {
 			this.hitbox = this.hitbox.extend(direction, Math.floor(amount));
 		}

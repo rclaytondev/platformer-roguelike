@@ -77,15 +77,15 @@ class TallCreatureStabber {
 		this.direction = direction;
 	}
 
-	update(tallCreature: TallCreature, world: World, canvasIO: CanvasIO) {
+	update(tallCreature: TallCreature, world: World) {
 		if(this.mode === "retracting") {
-			this.setExtension(this.extension - TallCreatureData.RETRACTING_SPEED, tallCreature, world, canvasIO);
+			this.setExtension(this.extension - TallCreatureData.RETRACTING_SPEED, tallCreature, world);
 			if(this.extension === 0) {
 				this.checkStabbing(tallCreature, world);
 			}
 		}
 		if(this.mode === "stabbing") {
-			this.setExtension(this.extension + TallCreatureData.STABBING_SPEED, tallCreature, world, canvasIO);
+			this.setExtension(this.extension + TallCreatureData.STABBING_SPEED, tallCreature, world);
 		}
 	}
 	checkStabbing(tallCreature: TallCreature, world: World) {
@@ -116,7 +116,7 @@ class TallCreatureStabber {
 	hitbox(tallCreature: TallCreature) {
 		return tallCreature.head.extend(this.direction, this.extension).extend(Directions.opposite[this.direction], -tallCreature.head.width);
 	}
-	setExtension(amount: number, tallCreature: TallCreature, world: World, canvasIO: CanvasIO) {
+	setExtension(amount: number, tallCreature: TallCreature, world: World) {
 		const rect = new InvisibleRectangle(this.hitbox(tallCreature), world);
 		if(amount <= this.extension) {
 			for(let i = 0; i < this.extension - amount; i ++) {
@@ -128,7 +128,7 @@ class TallCreatureStabber {
 			this.extension = Math.max(0, amount);
 		}
 		else {
-			rect.extend(amount - rect.hitbox.width, this.direction, world, canvasIO, {
+			rect.extend(amount - rect.hitbox.width, this.direction, world, {
 				collides: (o) => o !== tallCreature,
 				canMoveRider: (o) => o !== tallCreature,
 				onCollision: (collisionEvent: CollisionEvent) => {
@@ -203,13 +203,13 @@ export class TallCreature extends Collideable {
 		);
 	}
 
-	update(canvasIO: CanvasIO) {
+	update() {
 		if(!this.stabberLeft.isMoving() && !this.stabberRight.isMoving()) {
 			this.updateMovement();
 			this.updateLegs();
 		}
-		this.stabberLeft.update(this, this.world, canvasIO);
-		this.stabberRight.update(this, this.world, canvasIO);
+		this.stabberLeft.update(this, this.world);
+		this.stabberRight.update(this, this.world);
 	}
 	updateMovement() {
 		const onGroundBefore = !this.canMove("down", this.world);

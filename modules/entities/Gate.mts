@@ -136,20 +136,20 @@ export class Gate extends RectangularCollideable {
 		}
 		canvasIO.ctx.restore();
 	}
-	update(canvasIO: CanvasIO) {
+	update() {
 		if(this.lastFrameUpdated !== this.world.frameCount - 1) {
 			this.initialize(this.world.player);
 		}
 		this.lastFrameUpdated = this.world.frameCount;
 		this.checkPlayer();
-		this.updateOpenness(canvasIO);
+		this.updateOpenness();
 		this.checkAdjacentTiles();
 	}
-	updateOpenness(canvasIO: CanvasIO) {
+	updateOpenness() {
 		const target = this.opennessTarget(GateController.getOrInitialize(this.world));
 		const length = Directions.isHorizontal(this.direction) ? this.hitbox.width : this.hitbox.height;
 		const targetLength = (1 - target) * WorldData.TILE_SIZE;
-		this.extend(targetLength - length, this.direction, this.world, canvasIO, {});
+		this.extend(targetLength - length, this.direction, this.world, {});
 	}
 	fullHitbox() {
 		const length = Directions.isHorizontal(this.direction) ? this.hitbox.width : this.hitbox.height;
