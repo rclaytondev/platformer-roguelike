@@ -8,7 +8,7 @@ export abstract class TileModifier {
 	frictionY: number | null = 1;
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	update(tile: ThrowableTileEntity, world: World, canvasIO: CanvasIO) { }
+	update(tile: ThrowableTileEntity, world: World) { }
 	abstract displayIcon(canvasIO: CanvasIO, world: World): void;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	onCollision(tile: ThrowableTileEntity, collision: CollisionEvent) { }

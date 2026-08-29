@@ -38,7 +38,7 @@ export class ThrowableTileEntity extends RectangularCollideable {
 		return new ThrowableTile(this.modifiers);
 	}
 
-	update(canvasIO: CanvasIO) {
+	update() {
 		if(this.velocity.x !== 0) {
 			this.velocity.x *= this.isGrounded() ? this.groundedFrictionX : this.frictionX;
 		}
@@ -49,7 +49,7 @@ export class ThrowableTileEntity extends RectangularCollideable {
 		});
 
 		for(const modifier of this.modifiers) {
-			modifier.update(this, this.world, canvasIO);
+			modifier.update(this, this.world);
 		}
 	}
 	isGrounded() {

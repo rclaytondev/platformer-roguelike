@@ -58,7 +58,7 @@ export class Chain extends Entity {
 		canvasIO.fillPoly(...Chain.THICK_SEGMENT_POLY_REFLECTED.map(v => v.add(position)));
 	}
 
-	update(_canvasIO: CanvasIO) {
+	update() {
 		if(this.isClimbed && !this.world.player.hitbox.intersects(this.climbRegion())) {
 			this.isClimbed = false;
 		}
