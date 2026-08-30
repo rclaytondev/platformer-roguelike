@@ -6,9 +6,11 @@ import { LevelGenerator } from "../level-generator/LevelGenerator.mjs";
 import { Main } from "../Main.mjs";
 import { WorldScreen } from "../world/WorldScreen.mjs";
 import { spiderProjectileScenario } from "../debug-scenarios/spider-projectile-test.mjs";
+import { Debug } from "../game-utilities/Debug.mjs";
 
 const [world] = spiderProjectileScenario.setupWorld();
 Main.screen = new WorldScreen(world, canvasIO);
+world.player.keyInputs = (() => Debug.getInput(canvasIO));
 
 
 if(DEBUG_SETTINGS.GENERATOR_VISUALIZATION.ENABLED && Main.screen instanceof WorldScreen) {

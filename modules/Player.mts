@@ -182,7 +182,7 @@ class StoredVelocity {
 }
 
 export class Player extends RectangularCollideable {
-	readonly keyInputs: (() => Input);
+	keyInputs: (() => Input);
 	velocity: Vector = new Vector(0, 0);
 	hasDoubleJump: boolean = false;
 	dead: boolean = false;
