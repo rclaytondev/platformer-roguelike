@@ -7,8 +7,6 @@ import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { Diagonal, Direction } from "../../utils-ts/modules/geometry/Direction.mjs";
 import { Octants } from "../game-utilities/Octant.mjs";
 import { Camera } from "./Camera.mjs";
-import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
-import { World } from "./World.mjs";
 import { Renderable, Renderer } from "./Renderer.mjs";
 import { GeomUtils } from "../game-utilities/GeomUtils.mjs";
 
@@ -21,10 +19,10 @@ export class Entities<EntityType extends Entity = Entity> extends BoundingBoxStr
 		}
 	}
 
-	update(world: World, canvasIO: CanvasIO, camera?: Camera) {
+	update(camera?: Camera) {
 		const entities = camera ? this.possiblyIntersecting(camera.visibleRegion(WorldData.ENTITY_UPDATE_DISTANCE)) : this;
 		for(const entity of entities) {
-			entity.update(canvasIO);
+			entity.update();
 		}
 	}
 

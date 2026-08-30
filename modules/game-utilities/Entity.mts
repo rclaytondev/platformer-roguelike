@@ -14,6 +14,6 @@ export abstract class Entity {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	displayDebug(canvasIO: CanvasIO) { }
 
-	abstract update(canvasIO: CanvasIO): void;
+	abstract update(): void;
 	abstract boundingBox(): Rectangle;
 }

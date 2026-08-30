@@ -67,7 +67,7 @@ export class World {
 	}
 
 	update(canvasIO: CanvasIO, camera?: Camera) {
-		this.entities.update(this, canvasIO, camera);
+		this.entities.update(camera);
 		this.staticEntities.update(this, canvasIO);
 		this.particles.update();
 		this.worldGenerator?.update(this);
