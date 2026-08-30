@@ -47,6 +47,7 @@ export class Fireball extends RectangularCollideable {
 			FireballData.GLOW_COLOR.red, FireballData.GLOW_COLOR.green, FireballData.GLOW_COLOR.blue,
 		);
 	}
+	display() { }
 	render() {
 		return [
 			new Renderable(c => this.displayGlowEffect(c), "glow"),

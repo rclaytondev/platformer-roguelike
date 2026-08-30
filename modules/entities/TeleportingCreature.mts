@@ -93,7 +93,7 @@ export class TeleportingCreature extends RectangularCollideable {
 			new Renderable(c => this.display(c, false), "entity"),
 		];
 	}
-	display(canvasIO: CanvasIO, glow: boolean) {
+	display(canvasIO: CanvasIO, glow: boolean = true) {
 		canvasIO.ctx.save();
 		canvasIO.ctx.translate(0, TeleportingCreatureData.GRAPHICS.BODY_OFFSET_Y);
 		this.displayBody(canvasIO);

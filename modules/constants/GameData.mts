@@ -772,3 +772,9 @@ export class ChainData {
 	static CLIMB_WIDTH = 30;
 	static SNAP_SPEED = 7;
 }
+
+export class DeathParticleData {
+	static VELOCITY = 5;
+	static INITIAL_SCALE = 1.05;
+	static SCALE_DECAY = 0.05;
+}

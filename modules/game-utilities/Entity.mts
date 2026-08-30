@@ -11,9 +11,14 @@ export abstract class Entity {
 	}
 
 	abstract render(): Renderable[];
+	abstract display(canvasIO: CanvasIO): void;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	displayDebug(canvasIO: CanvasIO) { }
 
 	abstract update(): void;
 	abstract boundingBox(): Rectangle;
+
+	deathParticleCenter() {
+		return this.boundingBox().center();
+	}
 }

@@ -10,5 +10,6 @@ export class WorldBorder extends RectangularCollideable {
 	}
 
 	render() { return []; }
+	display() { }
 	update() { }
 }

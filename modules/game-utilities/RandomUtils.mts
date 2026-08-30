@@ -49,6 +49,10 @@ export class RandomUtils {
 		const distance = Math.sqrt(Math.random()) * radius;
 		return new Vector(centerX, centerY).add(new Vector(0, distance).rotate(angle));
 	}
+	static randomWithMagnitude(magnitude: number) {
+		const angle = RandomUtils.random(0, 2 * Math.PI);
+		return new Vector(magnitude * Math.cos(angle), magnitude * Math.sin(angle));
+	}
 	static randomInRect(rectangle: Rectangle, random: (min: number, max: number) => number = RandomUtils.random) {
 		return new Vector(
 			random(rectangle.left, rectangle.right),
