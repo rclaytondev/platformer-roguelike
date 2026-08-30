@@ -61,6 +61,14 @@ export class Entities<EntityType extends Entity = Entity> extends BoundingBoxStr
 		return Math.min(maxDistance, ...distances);
 	}
 
+	damage(hurtbox: Rectangle, damages: (e: Entity) => boolean = () => true) {
+		for(const entity of this.collideablesIntersecting(hurtbox)) {
+			if(damages(entity) && entity.damageable) {
+				entity.damage(hurtbox);
+			}
+		}
+	}
+
 	render(camera: Camera, renderer: Renderer) {
 		const region = camera.visibleRegion(WorldData.ENTITY_RENDER_DISTANCE);
 		for(const entity of this.possiblyIntersecting(region)) {

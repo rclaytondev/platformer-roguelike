@@ -470,12 +470,15 @@ export class Player extends RectangularCollideable {
 				"damage-flash",
 			));
 			if(this.health <= 0 && !this.dead) {
-				DeathScreen.show(this.world);
-				this.dead = true;
-				this.world.entities.delete(this);
+				this.destroy();
 			}
 			this.invulnerabilityTime = PlayerData.INVULNERABIlITY_TIME;
 		}
+	}
+	destroy() {
+		DeathScreen.show(this.world);
+		this.dead = true;
+		this.world.entities.delete(this);
 	}
 
 	jump() {

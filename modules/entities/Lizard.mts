@@ -447,7 +447,7 @@ export class Lizard extends Collideable {
 		const length = this.lengthAfterDamage(rectangle);
 		return (Math.floor(length / WorldData.TILE_SIZE - 1/2) + 1/2) * WorldData.TILE_SIZE;
 	}
-	damage(rectangle: Rectangle) {
+	destroy(rectangle: Rectangle) {
 		if(!this.world.entities.has(this)) { return; }
 		const length = this.roundedLengthAfterDamage(rectangle);;
 		this.roundedLengthAfterDamage(rectangle);

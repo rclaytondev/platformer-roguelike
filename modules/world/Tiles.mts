@@ -108,6 +108,15 @@ export class Tiles extends Grid<Tile> {
 		return tiles;
 	}
 
+	destroy(hurtbox: Rectangle, damagesTile: (tile: Tile) => boolean = () => true) {
+		for(const { position } of this.getTilesAt(hurtbox)) {
+			const tile = this.get(position);
+			if(damagesTile(tile)) {
+				this.set(position, EmptyTile.EMPTY);
+			}
+		}
+	}
+
 	render(camera: Camera, renderer: Renderer, canvasIO: CanvasIO, world: World) {
 		const region = camera.visibleTileRegion(0);
 		for(const position of region.squares()) {

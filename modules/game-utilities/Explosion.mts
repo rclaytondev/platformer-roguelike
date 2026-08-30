@@ -1,7 +1,6 @@
 import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { WorldData } from "../constants/GameData.mjs";
-import { Gate } from "../entities/Gate.mjs";
 import { World } from "../world/World.mjs";
 import { RandomUtils } from "./RandomUtils.mjs";
 import { Particle, ParticleSettings } from "./Particle.mjs";
@@ -52,22 +51,11 @@ export class Explosion {
 
 	explode(world: World) {
 		this.applyScreenShake(world);
-		this.destroyTiles(world);
 		this.addParticles(world);
 		this.damage(world);
 	}
 	applyScreenShake(world: World) {
 		world.worldScreen?.visualEffects.effectsList.add(new ShakeEffect(this.screenShakeTime, this.screenShakeIntensity));
-	}
-	destroyTiles(world: World) {
-		const tileExplosion = Rectangle.fromCenter(
-			this.position.x, this.position.y,
-			this.destructionRadius * 2,
-			this.destructionRadius * 2,
-		);
-		for(const { position } of world.tiles.getTilesAt(tileExplosion)) {
-			Gate.destroyNonGateTile(position, world);
-		}
 	}
 	addParticles(world: World) {
 		const area = Math.PI * this.visualRadius ** 2;
@@ -79,10 +67,15 @@ export class Explosion {
 		}
 	}
 	damage(world: World) {
-		world.damage(Rectangle.fromCenter(
+		world.entities.damage(Rectangle.fromCenter(
 			this.position.x, this.position.y,
 			2 * this.damageRadius,
 			2 * this.damageRadius,
+		));
+		world.tiles.destroy(Rectangle.fromCenter(
+			this.position.x, this.position.y,
+			this.destructionRadius * 2,
+			this.destructionRadius * 2,
 		));
 	}
 }

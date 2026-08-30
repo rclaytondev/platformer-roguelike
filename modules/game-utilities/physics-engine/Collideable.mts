@@ -23,8 +23,11 @@ export type MoveUnitOptions = MoveOptions & {
 
 export abstract class Collideable extends Entity {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	damage(hurtbox: Rectangle) {
+	destroy(hurtbox: Rectangle) {
 		this.world.entities.delete(this);
+	}
+	damage(hurtbox: Rectangle) {
+		this.destroy(hurtbox);
 	}
 
 	subpixel: Vector = new Vector(0, 0);
@@ -110,7 +113,7 @@ export abstract class Collideable extends Entity {
 						onCollision: (collision: CollisionEvent) => {
 							if(pushable.tangible && !collision.moveSuccessful) {
 								for(const collidingHitbox of this.collidingHitboxes(pushable, Vector.unit(direction))) {
-									pushable.damage(collidingHitbox);
+									pushable.destroy(collidingHitbox);
 								}
 							}
 						},

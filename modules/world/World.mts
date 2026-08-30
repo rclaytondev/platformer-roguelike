@@ -145,15 +145,9 @@ export class World {
 		}
 		return false;
 	}
-	damage(hurtbox: Rectangle, damages: (e: Entity) => boolean = () => true) {
-		if(this.player.hitbox.intersects(hurtbox) && damages(this.player)) {
-			this.player.damage();
-		}
-		for(const entity of this.entities.collideablesIntersecting(hurtbox)) {
-			if(damages(entity) && entity.damageable) {
-				entity.damage(hurtbox);
-			}
-		}
+	damage(hurtbox: Rectangle, damagesEntity: (e: Entity) => boolean = () => true, damagesTile: (t: Tile) => boolean = () => true) {
+		this.entities.damage(hurtbox, damagesEntity);
+		this.tiles.destroy(hurtbox, damagesTile);
 	}
 
 	static intersectingSolids(tiles: TileWithPosition[], entities: Iterable<Entity>) {

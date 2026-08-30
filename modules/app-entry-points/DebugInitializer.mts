@@ -5,10 +5,10 @@ import { DEBUG_SETTINGS } from "../constants/DebugSettings.mjs";
 import { LevelGenerator } from "../level-generator/LevelGenerator.mjs";
 import { Main } from "../Main.mjs";
 import { WorldScreen } from "../world/WorldScreen.mjs";
-import { spiderProjectileScenario } from "../debug-scenarios/spider-projectile-test.mjs";
 import { Debug } from "../game-utilities/Debug.mjs";
+import { lizardCrushScenario } from "../debug-scenarios/lizard-crush-test.mjs";
 
-const [world] = spiderProjectileScenario.setupWorld();
+const [world] = lizardCrushScenario.setupWorld();
 Main.screen = new WorldScreen(world, canvasIO);
 world.player.keyInputs = (() => Debug.getInput(canvasIO));
 
