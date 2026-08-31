@@ -1,4 +1,3 @@
-import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Direction } from "../../utils-ts/modules/geometry/Direction.mjs";
 import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
@@ -117,7 +116,7 @@ export class Tiles extends Grid<Tile> {
 		}
 	}
 
-	render(camera: Camera, renderer: Renderer, canvasIO: CanvasIO, originalTiles: Tiles) {
+	render(camera: Camera, renderer: Renderer, originalTiles: Tiles) {
 		const region = camera.visibleTileRegion(0);
 		for(const position of region.squares()) {
 			for(const renderable of this.get(position).render(position, originalTiles)) {
