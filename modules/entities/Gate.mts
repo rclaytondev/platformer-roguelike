@@ -164,7 +164,7 @@ export class Gate extends RectangularCollideable {
 		const solidBefore = isGateOrSolid(tilePosition.add(Vector.unit(this.direction)));
 		const solidAfter = isGateOrSolid(tilePosition.add(Vector.unit(Directions.opposite[this.direction])));
 		if(!solidBefore || !solidAfter) {
-			this.world.entities.delete(this);
+			this.destroy(this.hitbox);
 		}
 	}
 	adjacentGates(x: number, y: number, direction: Direction) {
