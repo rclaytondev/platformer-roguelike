@@ -782,4 +782,10 @@ export class DeathParticleData {
 	static SCALE_ACCELERATION = 0.0005;
 	static ROTATION_AMOUNT = 0.05;
 	static GRAVITY = 0.4;
+
+	static FLASHING = {
+		DURATION: 12,
+		PAUSE: 5,
+		COUNT: 1,
+	};
 }

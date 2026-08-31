@@ -9,6 +9,8 @@ import { RandomUtils } from "./RandomUtils.mjs";
 export class DeathParticle extends Particle {
 	entity: Entity;
 	image: CanvasIO;
+	flashingImage: CanvasIO;
+	age: number = 0;
 	constructor(entity: Entity, position: Vector) {
 		super(
 			position,
@@ -28,6 +30,7 @@ export class DeathParticle extends Particle {
 			},
 		);
 		this.image = DeathParticle.getImage(entity, position);
+		this.flashingImage = DeathParticle.getFlashingImage(this.image);
 		this.entity = entity;
 	}
 	static getImage(entity: Entity, position: Vector) {
@@ -39,13 +42,36 @@ export class DeathParticle extends Particle {
 		entity.display(image);
 		return image;
 	}
+	static getFlashingImage(image: CanvasIO) {
+		const flashingImage = new CanvasIO();
+		flashingImage.canvas.width = image.canvas.width;
+		flashingImage.canvas.height = image.canvas.height;
+		flashingImage.ctx.drawImage(image.canvas, 0, 0);
+		flashingImage.ctx.globalCompositeOperation = "source-atop";
+		flashingImage.ctx.fillStyle = "white";
+		flashingImage.ctx.fillRect(0, 0, flashingImage.canvas.width, flashingImage.canvas.height);
+		return flashingImage;
+	}
 
 	update(): void {
-		super.update();
-		this.sizeDecay += DeathParticleData.SCALE_ACCELERATION;
+		if(this.doneFlashing()) {
+			super.update();
+			this.sizeDecay += DeathParticleData.SCALE_ACCELERATION;
+		}
+		this.age ++;
 	}
-	displayDeathParticle(canvasIO: CanvasIO) {
+	doneFlashing() {
+		return this.age >= (DeathParticleData.FLASHING.DURATION + DeathParticleData.FLASHING.PAUSE * DeathParticleData.FLASHING.COUNT);
+	}
+	isFlashing() {
+		return (
+			!this.doneFlashing()
+			&& this.age % (DeathParticleData.FLASHING.DURATION + DeathParticleData.FLASHING.PAUSE) <= DeathParticleData.FLASHING.DURATION
+		);
+	}
+	displayDeathParticle(canvasIO: CanvasIO, isFlashing: boolean = this.isFlashing()) {
+		const image = isFlashing ? this.flashingImage : this.image;
 		canvasIO.ctx.scale(this.size, this.size);
-		canvasIO.ctx.drawImage(this.image.canvas, -this.image.canvas.width / 2, -this.image.canvas.height / 2);
+		canvasIO.ctx.drawImage(image.canvas, -this.image.canvas.width / 2, -this.image.canvas.height / 2);
 	}
 }
