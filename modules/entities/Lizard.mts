@@ -12,7 +12,6 @@ import { LizardData, RoomData, WorldData } from "../constants/GameData.mjs";
 import { FireSpawner } from "../game-utilities/FireSpawner.mjs";
 import { Player } from "../Player.mjs";
 import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
-import { Particle } from "../game-utilities/Particle.mjs";
 import { ArrayUtils } from "../../utils-ts/modules/core-extensions/ArrayUtils.mjs";
 import { InvisibleRectangle } from "../game-utilities/physics-engine/InvisibleRectangle.mjs";
 import { EmptyTile } from "../tiles/EmptyTile.mjs";
@@ -22,6 +21,7 @@ import { LoadingManager } from "../app-entry-points/LoadingManager.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Spawnable } from "../level-generator/Spawnable.mjs";
 import { SlopeTile } from "../tiles/SlopeTile.mjs";
+import { DeathParticle } from "../game-utilities/DeathParticle.mjs";
 
 type Joint = { position: Vector, direction: Direction };
 
@@ -66,20 +66,29 @@ export class Lizard extends Collideable {
 		this.displayHead(canvasIO);
 		this.displayLookaheadRectangle(canvasIO);
 	}
-	displayBody(canvasIO: CanvasIO) {
+	displayBody(canvasIO: CanvasIO, startLength: number = 0) {
 		canvasIO.ctx.strokeStyle = this.color;
 		canvasIO.ctx.lineWidth = LizardData.BODY_WIDTH;
 		canvasIO.linePointedness = LizardData.BODY_POINTEDNESS;
 		canvasIO.ctx.lineCap = "round";
-		const joints = [this.position, ...this.joints.map(j => j.position), this.getPointOnBody(this.length)[0]];
+		const [endpoint] = this.getPointOnBody(this.length);
+		const [startPoint] = this.getPointOnBody(startLength);
+		let distance = 0;
+		const joints = [
+			{ position: this.position },
+			...this.joints,
+			{ position: endpoint },
+		];
 		for(let i = 0; i < joints.length - 1; i ++) {
 			const [joint, next] = [joints[i], joints[i+1]];
-			if(i === joints.length - 2) {
-				canvasIO.halfPointedLine(joint.x, joint.y, next.x, next.y);
+			const segmentLength = Vector.dist(joint.position, next.position);
+			if(distance < startLength && distance + segmentLength >= startLength) {
+				canvasIO.halfPointedLine(startPoint.x, startPoint.y, next.position.x, next.position.y);
 			}
-			else {
-				canvasIO.strokeLine(joint.x, joint.y, next.x, next.y);
+			else if(distance >= startLength) {
+				canvasIO.halfPointedLine(joint.position.x, joint.position.y, next.position.x, next.position.y);
 			}
+			distance += segmentLength;
 		}
 	}
 	displayJoints(canvasIO: CanvasIO) {
@@ -129,13 +138,16 @@ export class Lizard extends Collideable {
 			return angleBefore;
 		}
 	}
-	displayLegs(canvasIO: CanvasIO) {
+	displayLegs(canvasIO: CanvasIO, startDistance: number = 0) {
+		for(const { connection, knee, foot } of this.legDisplaySegments(startDistance)) {
+			this.displayLeg(canvasIO, connection, knee, foot);
+		}
+	}
+	displayLeg(canvasIO: CanvasIO, connection: Vector, knee: Vector, foot: Vector) {
 		canvasIO.linePointedness = LizardData.LEG_POINTEDNESS;
 		canvasIO.ctx.lineWidth = LizardData.LEG_WIDTH;
-		for(const { connection, knee, foot } of this.legDisplaySegments(0)) {
-			canvasIO.strokeLine(connection.x, connection.y, knee.x, knee.y);
-			canvasIO.halfPointedLine(knee.x, knee.y, foot.x, foot.y);
-		}
+		canvasIO.strokeLine(connection.x, connection.y, knee.x, knee.y);
+		canvasIO.halfPointedLine(knee.x, knee.y, foot.x, foot.y);
 	}
 	legDisplaySegments(startDistance: number = 0) {
 		const results = [];
@@ -447,68 +459,42 @@ export class Lizard extends Collideable {
 		const length = this.lengthAfterDamage(rectangle);
 		return (Math.floor(length / WorldData.TILE_SIZE - 1/2) + 1/2) * WorldData.TILE_SIZE;
 	}
+	jointsWithLengths() {
+		let length = 0;
+		const joints: (Joint & { length: number })[] = [];
+		for(const joint of this.joints) {
+			length += Vector.dist(joint.position, joints[joints.length - 1]?.position ?? this.position);
+			joints.push({ ...joint, length });
+		}
+		return joints;
+	}
 	destroy(rectangle: Rectangle) {
 		if(!this.world.entities.has(this)) { return; }
-		const length = this.roundedLengthAfterDamage(rectangle);;
-		this.roundedLengthAfterDamage(rectangle);
+		const length = this.roundedLengthAfterDamage(rectangle);
 		if(length < (LizardData.MIN_LENGTH + 1/2) * WorldData.TILE_SIZE) {
-			this.world.entities.delete(this);
-			this.spawnDamageParticles(0, this.world);
+			super.destroy(rectangle);
 		}
 		else {
-			this.spawnDamageParticles(length, this.world);
+			const particle = this.getDamageParticle(length);
+			this.world.particles.add(particle, this.world);
 			this.length = length;
 		}
 	}
-	spawnDamageParticles(newLength: number, world: World) {
-		this.spawnLegDamageParticles(newLength, world);
-		this.spawnBodyDamageParticles(newLength, world);
-	}
-	spawnLegDamageParticles(newLength: number, world: World) {
-		for(const { connection, knee, foot } of this.legDisplaySegments(newLength)) {
-			this.spawnDamageParticle(connection, knee, world);
-			this.spawnDamageParticle(knee, foot, world);
-		}
-	}
-	spawnBodyDamageParticles(newLength: number, world: World) {
-		const [endpoint] = this.getPointOnBody(this.length);
-		const [newEndpoint] = this.getPointOnBody(newLength);
-		let distance = 0;
-		const joints = [
-			{ position: this.position },
-			...this.joints,
-			{ position: endpoint },
-		];
-		for(let i = 0; i < joints.length - 1; i ++) {
-			const [joint, next] = [joints[i], joints[i+1]];
-			const segmentLength = Vector.dist(joint.position, next.position);
-			if(distance < newLength && distance + segmentLength >= newLength) {
-				this.spawnDamageParticle(newEndpoint, next.position, world);
-			}
-			else if(distance >= newLength) {
-				this.spawnDamageParticle(joint.position, next.position, world);
-			}
-			distance += segmentLength;
-		}
-	}
-	spawnDamageParticle(endpoint1: Vector, endpoint2: Vector, world: World) {
-		const midpoint = endpoint1.add(endpoint2).divide(2);
-		const velocity = new Vector(
-			RandomUtils.random(-LizardData.DAMAGE_PARTICLES.VELOCITY.X, LizardData.DAMAGE_PARTICLES.VELOCITY.X),
-			RandomUtils.random(LizardData.DAMAGE_PARTICLES.VELOCITY.Y.MIN, LizardData.DAMAGE_PARTICLES.VELOCITY.Y.MAX),
-		);
-		const settings = {
-			...LizardData.DAMAGE_PARTICLES.SETTINGS,
-			shape: (canvasIO: CanvasIO) => {
-				const point1 = endpoint1.subtract(midpoint);
-				const point2 = endpoint2.subtract(midpoint);
-				canvasIO.ctx.strokeStyle = this.color;
-				canvasIO.ctx.lineWidth = LizardData.BODY_WIDTH;
-				canvasIO.strokeLine(point1.x, point1.y, point2.x, point2.y);
-			},
-		};
-		const particle = new Particle(midpoint, velocity, settings);
-		world.particles.add(particle, world);
+	getDamageParticle(newLength: number) {
+		const image = new CanvasIO();
+		const box = Rectangle.boundingBox([
+			this.getPointOnBody(newLength)[0],
+			...this.jointsWithLengths().filter(({ length }) => length <= newLength).map(j => j.position),
+			this.getPointOnBody(this.length)[0],
+		]);
+		const extended = box.extend("all", LizardData.LEG_DISTANCE + LizardData.LEG_WIDTH);
+		const center = box.center();
+		image.canvas.width = extended.width;
+		image.canvas.height = extended.height;
+		image.ctx.translate(image.canvas.width / 2 - center.x, image.canvas.height / 2 - center.y);
+		this.displayBody(image, newLength);
+		this.displayLegs(image, newLength);
+		return new DeathParticle(image, center);
 	}
 
 
@@ -632,6 +618,9 @@ export class Lizard extends Collideable {
 		return Rectangle.boundingBox(this.hitboxes().flatMap(
 			r => [r.getCorner("top-left"), r.getCorner("top-right"), r.getCorner("bottom-left"), r.getCorner("bottom-right")],
 		));
+	}
+	deathParticleBox(): Rectangle {
+		return this.boundingBox().extend("all", LizardData.DEATH_PARTICLE_SIZE);
 	}
 	translate(amount: Vector) {
 		this.position = this.position.add(amount);

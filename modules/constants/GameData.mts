@@ -309,23 +309,7 @@ export class LizardData {
 	static SPAWN_EVENNESS = 7; // higher number = more evenly distributed
 	static MIN_PLAYER_SPAWN_DISTANCE = 600;
 
-	static DAMAGE_PARTICLES = {
-		VELOCITY: {
-			X: 0.5,
-			Y: {
-				MIN: -0.5,
-				MAX: 0,
-			},
-		},
-		SETTINGS: {
-			color: { red: 0, green: 0, blue: 0 },
-			size: Infinity,
-			gravity: PlayerData.GRAVITY / 4,
-			opacityDecay: 0.05,
-			rotation: 0,
-			rotationalVelocity: { min: -0.01, max: 0.01 },
-		},
-	};
+	static DEATH_PARTICLE_SIZE = 50;
 }
 
 export type BackgroundGearLayerData = {
