@@ -41,14 +41,8 @@ export class TowerSlope extends SlopeTile {
 		TowerTile.displaySlopedAccent(position, canvasIO, this.normal, tiles);
 	}
 
-	copy() {
-		return new TowerSlope(this.normal);
-	}
 	reflect() {
 		const reflected = Directions.reflectX[this.normal];
 		return new TowerSlope(reflected);
-	}
-	equals(tile: unknown) {
-		return tile instanceof TowerSlope && tile.normal === this.normal;
 	}
 }

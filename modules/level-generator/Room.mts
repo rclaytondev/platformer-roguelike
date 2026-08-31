@@ -127,7 +127,7 @@ export class Room {
 		);
 	}
 	equals(room: Room) {
-		return this.worldPart.tiles.equals(room.worldPart.tiles, (t1, t2) => t1.equals(t2));
+		return this.worldPart.tiles.equals(room.worldPart.tiles);
 	}
 	toggleGates() {
 		const copy = this.copy();

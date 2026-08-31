@@ -9,12 +9,6 @@ export class EmptyTile extends Tile {
 	render() { return []; }
 	display() { }
 
-	copy() {
-		return this;
-	}
-	equals(tile: Tile) {
-		return tile instanceof EmptyTile;
-	}
 	reflect(): EmptyTile {
 		return this;
 	}
