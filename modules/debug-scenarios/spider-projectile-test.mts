@@ -9,12 +9,15 @@ import { TestScenario } from "../TestScenario.mjs";
 export const spiderProjectileScenario = new TestScenario(() => {
 	const world = new World(false);
 
-	world.tiles.fillRect(Rectangle.fromDimensions(-2, 0, 2, 6), TowerTile.TOWER_TILE);
-	world.tiles.fillRect(Rectangle.fromDimensions(-2, 4, 5, 2), TowerTile.TOWER_TILE);
-	Spider.spawn(new Vector(-3, 3), world);
+	for(const tiles of [world.tiles, world.originalTiles]) {
+		tiles.fillRect(Rectangle.fromDimensions(-2, 0, 2, 6), TowerTile.TOWER_TILE);
+		tiles.fillRect(Rectangle.fromDimensions(-2, 4, 5, 2), TowerTile.TOWER_TILE);
 
-	world.tiles.fillRect(Rectangle.fromBounds(0, 2, 8, 9), Platform.PLATFORM);
-	world.tiles.set(-1, 8, TowerTile.TOWER_TILE);
+		tiles.fillRect(Rectangle.fromBounds(0, 2, 8, 9), Platform.PLATFORM);
+		tiles.set(-1, 8, TowerTile.TOWER_TILE);
+	}
+
+	Spider.spawn(new Vector(-3, 3), world);
 	Spider.spawn(new Vector(-1, 7), world);
 
 	return [world];

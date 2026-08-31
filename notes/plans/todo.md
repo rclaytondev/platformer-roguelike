@@ -35,8 +35,8 @@ Features to add to improve game feel:
 	- [ ] Explosions should have a single large glow effect that fades quickly
 	- [ ] Spikeball spawner graphic improvements (they look slightly weird now; I'm not sure how to improve them)
 	- [ ] Activated spikeballs should have lightning that branches out from the center, is thicker, and is re-randomized every few frames (not every frame).
-	- [ ] Improved enemy death animations - make them fall out of the world while shrinking out of existence
-	- [ ] Improved tile destruction animations
+	- [x] Improved enemy death animations - make them fall out of the world while shrinking out of existence
+	- [x] Improved tile destruction animations
 	- [ ] Improved telegraph and increased delay on teleporting creature's attack
 	- [x] Chains
 	- [ ] Glowing lights on the tiles next to chains and gates

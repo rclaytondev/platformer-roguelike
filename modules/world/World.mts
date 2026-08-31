@@ -128,10 +128,10 @@ export class World {
 
 	destroyTile(position: Vector) {
 		const tile = this.tiles.get(position);
-		this.tiles.set(position, EmptyTile.EMPTY);
 		if(tile !== EmptyTile.EMPTY) {
-			this.particles.add(DeathParticle.fromTile({ tile, position }), this);
+			this.particles.add(DeathParticle.fromTile(position, this.originalTiles), this);
 		}
+		this.tiles.set(position, EmptyTile.EMPTY);
 	}
 	addTile(position: Vector, tile: Tile) {
 		this.tiles.set(position, tile);

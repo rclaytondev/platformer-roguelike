@@ -1,8 +1,8 @@
 import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { DeathParticleData, WorldData } from "../constants/GameData.mjs";
+import { Renderer } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
-import { TileWithPosition } from "../world/World.mjs";
 import { Entity } from "./Entity.mjs";
 import { Particle } from "./Particle.mjs";
 import { RandomUtils } from "./RandomUtils.mjs";
@@ -48,16 +48,23 @@ export class DeathParticle extends Particle {
 		entity.display(image);
 		return image;
 	}
-	static fromTile(tileWithPosition: TileWithPosition) {
-		const image = DeathParticle.imageFromTile(tileWithPosition);
-		const center = tileWithPosition.position.add(0.5, 0.5).multiply(WorldData.TILE_SIZE);
+	static fromTile(tilePosition: Vector, tiles: Tiles) {
+		const image = DeathParticle.imageFromTile(tilePosition, tiles);
+		const center = tilePosition.add(0.5, 0.5).multiply(WorldData.TILE_SIZE);
 		return new DeathParticle(image, center);
 	}
-	static imageFromTile(tileWithPosition: TileWithPosition) {
+	static imageFromTile(tilePosition: Vector, tiles: Tiles) {
+		const tile = tiles.get(tilePosition);
 		const image = new CanvasIO();
 		image.canvas.width = WorldData.TILE_SIZE;
 		image.canvas.height = WorldData.TILE_SIZE;
-		tileWithPosition.tile.display(image, 0, 0, new Tiles());
+		image.ctx.translate(
+			-tilePosition.x * WorldData.TILE_SIZE,
+			-tilePosition.y * WorldData.TILE_SIZE,
+		);
+		const renderer = new Renderer();
+		renderer.renderables.push(...tile.render(tilePosition, tiles));
+		renderer.displayAll(image);
 		return image;
 	}
 	static getFlashingImage(image: CanvasIO) {
