@@ -6,9 +6,9 @@ import { LevelGenerator } from "../level-generator/LevelGenerator.mjs";
 import { Main } from "../Main.mjs";
 import { WorldScreen } from "../world/WorldScreen.mjs";
 import { Debug } from "../game-utilities/Debug.mjs";
-import { enemyDestructionScenario } from "../debug-scenarios/enemy-destruction-test.mjs";
+import { basicLizardScenario } from "../debug-scenarios/basic-lizard-test.mjs";
 
-const [world] = enemyDestructionScenario.setupWorld();
+const [world] = basicLizardScenario.setupWorld();
 Main.screen = new WorldScreen(world, canvasIO);
 world.player.keyInputs = (() => Debug.getInput(canvasIO));
 

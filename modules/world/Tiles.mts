@@ -4,7 +4,6 @@ import { Rectangle } from "../../utils-ts/modules/geometry/Rectangle.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { Grid } from "../../utils-ts/modules/Grid.mjs";
 import { WorldData } from "../constants/GameData.mjs";
-import { DeathParticle } from "../game-utilities/DeathParticle.mjs";
 import { GeomUtils } from "../game-utilities/GeomUtils.mjs";
 import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
 import { EmptyTile } from "../tiles/EmptyTile.mjs";
@@ -113,10 +112,7 @@ export class Tiles extends Grid<Tile> {
 		for(const { position } of this.getTilesAt(hurtbox)) {
 			const tile = this.get(position);
 			if(damagesTile(tile)) {
-				this.set(position, EmptyTile.EMPTY);
-				if(tile !== EmptyTile.EMPTY) {
-					world.particles.add(DeathParticle.fromTile({ tile, position }), world);
-				}
+				world.destroyTile(position);
 			}
 		}
 	}

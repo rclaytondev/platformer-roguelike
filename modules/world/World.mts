@@ -19,6 +19,7 @@ import { Particles } from "../game-utilities/Particles.mjs";
 import { Debug } from "../game-utilities/Debug.mjs";
 import { SlopeTile } from "../tiles/SlopeTile.mjs";
 import { StaticEntities } from "../game-utilities/StaticEntity.mjs";
+import { DeathParticle } from "../game-utilities/DeathParticle.mjs";
 
 export type TileWithPosition = { position: Vector, tile: Tile };
 
@@ -126,7 +127,11 @@ export class World {
 
 
 	destroyTile(position: Vector) {
+		const tile = this.tiles.get(position);
 		this.tiles.set(position, EmptyTile.EMPTY);
+		if(tile !== EmptyTile.EMPTY) {
+			this.particles.add(DeathParticle.fromTile({ tile, position }), this);
+		}
 	}
 	addTile(position: Vector, tile: Tile) {
 		this.tiles.set(position, tile);
