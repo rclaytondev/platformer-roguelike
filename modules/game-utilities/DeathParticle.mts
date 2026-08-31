@@ -7,11 +7,10 @@ import { RandomUtils } from "./RandomUtils.mjs";
 
 
 export class DeathParticle extends Particle {
-	entity: Entity;
 	image: CanvasIO;
 	flashingImage: CanvasIO;
 	age: number = 0;
-	constructor(entity: Entity, position: Vector) {
+	constructor(image: CanvasIO, position: Vector) {
 		super(
 			position,
 			new Vector(DeathParticleData.VELOCITY, 0).rotate(-RandomUtils.random(45, 90 + 45)),
@@ -29,11 +28,15 @@ export class DeathParticle extends Particle {
 				shape: (c: CanvasIO) => this.displayDeathParticle(c),
 			},
 		);
-		this.image = DeathParticle.getImage(entity, position);
-		this.flashingImage = DeathParticle.getFlashingImage(this.image);
-		this.entity = entity;
+		this.image = image;
+		this.flashingImage = DeathParticle.getFlashingImage(image);
 	}
-	static getImage(entity: Entity, position: Vector) {
+	static fromEntity(entity: Entity) {
+		const center = entity.deathParticleCenter();
+		const image = DeathParticle.imageFromEntity(entity, center);
+		return new DeathParticle(image, center);
+	}
+	static imageFromEntity(entity: Entity, position: Vector) {
 		const boundingBox = entity.deathParticleBox();
 		const image = new CanvasIO();
 		image.canvas.width = boundingBox.width;

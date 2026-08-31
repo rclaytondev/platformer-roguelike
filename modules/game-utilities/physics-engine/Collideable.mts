@@ -26,7 +26,7 @@ export abstract class Collideable extends Entity {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	destroy(hurtbox: Rectangle) {
 		this.world.entities.delete(this);
-		const particle = new DeathParticle(this, this.deathParticleCenter());
+		const particle = DeathParticle.fromEntity(this);
 		this.world.particles.add(particle, this.world);
 	}
 	damage(hurtbox: Rectangle) {
