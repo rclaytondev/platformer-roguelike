@@ -16,6 +16,7 @@ export class GroundGenerator extends WorldGenerationSegment {
 	}
 
 	generate(world: World): void {
+		this.generated = true;
 		const floorZero = FloorZero.getRegion();
 		const y = floorZero.y + WorldGeneratorData.GROUND_OFFSET;
 
