@@ -17,16 +17,16 @@ export class Platform extends Tile {
 	static readonly PLATFORM = new Platform();
 
 	render(position: Vector, world: World): Renderable[] {
-		return [new Renderable(c => this.display(c, position.x, position.y, world), "tile")];
+		return [new Renderable(c => this.display(c, position.x, position.y, world.tiles), "tile")];
 	}
-	display(canvasIO: CanvasIO, x: number, y: number, world: World): void {
+	display(canvasIO: CanvasIO, x: number, y: number, tiles: Tiles): void {
 		canvasIO.ctx.fillStyle = WorldData.TILE_COLORS.tower;
 		canvasIO.ctx.fillRect(
 			x * WorldData.TILE_SIZE, y * WorldData.TILE_SIZE,
 			WorldData.TILE_SIZE + 1, 2 * WorldData.TILE_ACCENT_INSET,
 		);
-		const platformLeft = (world.tiles.get(x - 1, y) === Platform.PLATFORM);
-		const platformRight = (world.tiles.get(x + 1, y) === Platform.PLATFORM);
+		const platformLeft = (tiles.get(x - 1, y) === Platform.PLATFORM);
+		const platformRight = (tiles.get(x + 1, y) === Platform.PLATFORM);
 		const accentStart = platformLeft ? -1 : WorldData.TILE_ACCENT_INSET;
 		const accentEnd = WorldData.TILE_SIZE- (platformRight ? -1 : WorldData.TILE_ACCENT_INSET);
 		const accentY = y * WorldData.TILE_SIZE + WorldData.TILE_ACCENT_INSET;
