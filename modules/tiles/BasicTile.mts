@@ -14,9 +14,6 @@ export abstract class BasicTile extends Tile {
 	reflect(): BasicTile {
 		return this;
 	}
-	equals(tile: unknown) {
-		return tile instanceof BasicTile;
-	}
 
 	contains(point: Vector, tilePosition: Vector) {
 		const square = Tiles.getTileSquare(tilePosition);

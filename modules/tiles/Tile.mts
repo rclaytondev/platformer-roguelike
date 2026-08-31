@@ -12,7 +12,6 @@ export abstract class Tile {
 	abstract render(position: Vector, tiles: Tiles): Renderable[];
 	abstract display(canvasIO: CanvasIO, x: number, y: number, tiles: Tiles): void;
 	abstract reflect(): Tile;
-	abstract equals(tile: Tile): boolean;
 
 	abstract angularMotionBlockers(tilePosition: Vector, point: Vector, direction: "clockwise" | "counterclockwise"): (Direction | Diagonal)[];
 	static fullAngularMotionBlockers(tilePosition: Vector, point: Vector) {

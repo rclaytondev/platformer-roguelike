@@ -43,9 +43,6 @@ export class TowerSlope extends SlopeTile {
 
 	reflect() {
 		const reflected = Directions.reflectX[this.normal];
-		return new TowerSlope(reflected);
-	}
-	equals(tile: unknown) {
-		return tile instanceof TowerSlope && tile.normal === this.normal;
+		return TowerSlope.fromNormal(reflected);
 	}
 }
