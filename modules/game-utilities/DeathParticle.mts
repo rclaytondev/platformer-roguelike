@@ -54,7 +54,7 @@ export class DeathParticle extends Particle {
 	}
 
 	update(): void {
-		if(this.doneFlashing()) {
+		if(this.age > DeathParticleData.MOVEMENT_START_TIME) {
 			super.update();
 			this.sizeDecay += DeathParticleData.SCALE_ACCELERATION;
 		}
