@@ -5,6 +5,7 @@ import { Vector } from "../../../utils-ts/modules/geometry/Vector.mjs";
 import { HashSet } from "../../../utils-ts/modules/HashSet.mjs";
 import { DEBUG_SETTINGS } from "../../constants/DebugSettings.mjs";
 import { World, TileWithPosition } from "../../world/World.mjs";
+import { DeathParticle } from "../DeathParticle.mjs";
 import { Entity } from "../Entity.mjs";
 
 import { CollisionEvent } from "./CollisionEvent.mjs";
@@ -25,6 +26,8 @@ export abstract class Collideable extends Entity {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	destroy(hurtbox: Rectangle) {
 		this.world.entities.delete(this);
+		const particle = new DeathParticle(this, this.deathParticleCenter());
+		this.world.particles.add(particle, this.world);
 	}
 	damage(hurtbox: Rectangle) {
 		this.destroy(hurtbox);
