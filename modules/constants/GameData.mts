@@ -558,6 +558,8 @@ export class SpiderData {
 
 	static SPIDERS_PER_ROOM = 0.5;
 	static SPAWN_EVENNESS = 4;
+
+	static BOUNDING_BOX_SIZE = 150;
 }
 
 export class FireballData {
@@ -774,7 +776,10 @@ export class ChainData {
 }
 
 export class DeathParticleData {
-	static VELOCITY = 5;
+	static VELOCITY = 8;
 	static INITIAL_SCALE = 1.05;
-	static SCALE_DECAY = 0.05;
+	static SCALE_DECAY = 0.008;
+	static SCALE_ACCELERATION = 0.0005;
+	static ROTATION_AMOUNT = 0.05;
+	static GRAVITY = 0.4;
 }

@@ -21,4 +21,7 @@ export abstract class Entity {
 	deathParticleCenter() {
 		return this.boundingBox().center();
 	}
+	deathParticleBox() {
+		return this.boundingBox();
+	}
 }

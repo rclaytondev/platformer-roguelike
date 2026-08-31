@@ -678,6 +678,14 @@ export class Spider extends RectangularCollideable {
 			}
 		}
 	}
+
+	boundingBox(): Rectangle {
+		const center = this.hitbox.center();
+		return Rectangle.fromCenter(
+			center.x, center.y,
+			SpiderData.BOUNDING_BOX_SIZE, SpiderData.BOUNDING_BOX_SIZE,
+		);
+	}
 }
 
 
