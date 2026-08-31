@@ -142,12 +142,11 @@ export class FireSpawner {
 	updateHurtbox(world: World) {
 		if(this.hurtboxSize === 0) { return; }
 		const hurtbox = this.hurtbox();
-		for(const { position, tile } of world.tiles.getTilesAt(hurtbox)) {
-			if(this.shouldDestroy(tile)){
-				world.destroyTile(position);
-			}
-		}
-		world.damage(hurtbox, e => !(e instanceof Fireball));
+		world.damage(
+			hurtbox,
+			e => !(e instanceof Fireball),
+			t => this.shouldDestroy(t),
+		);
 	}
 	displayHurtbox(canvasIO: CanvasIO) {
 		canvasIO.ctx.strokeStyle = DEBUG_SETTINGS.LIZARDS.HURTBOX_COLOR;
