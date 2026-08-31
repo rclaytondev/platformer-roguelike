@@ -104,13 +104,7 @@ export class StoneTile extends BasicTile {
 		canvasIO.ctx.restore();
 	}
 
-	render(tilePosition: Vector, world: World) {
-		const stoneTileRenderer = world.staticEntities.entitiesList.find(e => e instanceof StoneTileRenderer);
-		if(!stoneTileRenderer) {
-			world.staticEntities.entitiesList.push(new StoneTileRenderer());
-		}
-		return [];
-	}
+	render() { return []; }
 	display() { }
 }
 

@@ -117,10 +117,10 @@ export class Tiles extends Grid<Tile> {
 		}
 	}
 
-	render(camera: Camera, renderer: Renderer, canvasIO: CanvasIO, world: World) {
+	render(camera: Camera, renderer: Renderer, canvasIO: CanvasIO, originalTiles: Tiles) {
 		const region = camera.visibleTileRegion(0);
 		for(const position of region.squares()) {
-			for(const renderable of this.get(position).render(position, world)) {
+			for(const renderable of this.get(position).render(position, originalTiles)) {
 				renderer.renderables.push(renderable);
 			}
 		}

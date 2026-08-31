@@ -8,7 +8,6 @@ import { Octant, Octants } from "../game-utilities/Octant.mjs";
 import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
-import { World } from "../world/World.mjs";
 import { Tile } from "./Tile.mjs";
 
 export abstract class BasicTile extends Tile {
@@ -50,7 +49,7 @@ export abstract class BasicTile extends Tile {
 		);
 	}
 
-	abstract render(position: Vector, world: World): Renderable[];
+	abstract render(position: Vector, tiles: Tiles): Renderable[];
 
 	rayIntersectionDistance(tilePosition: Vector, rayStart: Vector, rayDirection: Vector): number {
 		return GeomUtils.rayIntersectsRectangle(rayStart, rayDirection, Tiles.getTileSquare(tilePosition));

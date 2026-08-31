@@ -4,7 +4,6 @@ import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { WorldData } from "../constants/GameData.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
-import { World } from "../world/World.mjs";
 import { BasicTile } from "./BasicTile.mjs";
 import { SlopeTile } from "./SlopeTile.mjs";
 import { Tile } from "./Tile.mjs";
@@ -16,14 +15,14 @@ export class TowerTile extends BasicTile {
 		super();
 	}
 
-	render(position: Vector, world: World) {
+	render(position: Vector, tiles: Tiles) {
 		return [
 			new Renderable(c => this.display(c, position.x, position.y), "tile"),
-			new Renderable(c => this.displayAccent(position, c, world), "tile-accent"),
+			new Renderable(c => this.displayAccent(position, c, tiles), "tile-accent"),
 		];
 	}
-	displayAccent(position: Vector, canvasIO: CanvasIO, world: World) {
-		TowerTile.displayTileAccent(position, canvasIO, world);
+	displayAccent(position: Vector, canvasIO: CanvasIO, tiles: Tiles) {
+		TowerTile.displayTileAccent(position, canvasIO, tiles);
 	}
 	display(canvasIO: CanvasIO, x: number, y: number): void {
 		canvasIO.ctx.fillStyle = WorldData.TILE_COLORS["tower"];
@@ -32,7 +31,7 @@ export class TowerTile extends BasicTile {
 		canvasIO.ctx.fill();
 	}
 
-	static displaySlopedAccent(position: Vector, canvasIO: CanvasIO, normal: Diagonal, world: World) {
+	static displaySlopedAccent(position: Vector, canvasIO: CanvasIO, normal: Diagonal, tiles: Tiles) {
 		const inwardNormal = Vector.gridUnit(Directions.opposite[normal]);
 		const tangent = inwardNormal.rotate(90);
 		const center = position.add(1/2, 1/2).multiply(WorldData.TILE_SIZE);
@@ -43,7 +42,7 @@ export class TowerTile extends BasicTile {
 			"down-right": ["up", "right"],
 			"down-left": ["right", "down"],
 		} as const)[normal];
-		const distance1 = this.getSlopeAccentLength(position, adjacentDirection1, perpendicularDirection1, world);
+		const distance1 = this.getSlopeAccentLength(position, adjacentDirection1, perpendicularDirection1, tiles);
 
 		const [adjacentDirection2, perpendicularDirection2] = ({
 			"up-right": ["down", "right"],
@@ -51,7 +50,7 @@ export class TowerTile extends BasicTile {
 			"down-right": ["left", "down"],
 			"down-left": ["up", "left"],
 		} as const)[normal];
-		const distance2 = this.getSlopeAccentLength(position, adjacentDirection2, perpendicularDirection2, world);
+		const distance2 = this.getSlopeAccentLength(position, adjacentDirection2, perpendicularDirection2, tiles);
 
 
 		const endpoint1 = center.add(inwardNormal.multiply(WorldData.TILE_ACCENT_INSET / Math.SQRT2)).add(tangent.normalize().multiply(distance1));
@@ -65,15 +64,15 @@ export class TowerTile extends BasicTile {
 		const directions = TowerTile.slopeEdges(normal);
 		for(const [edge, direction] of [directions, [...directions].reverse()]) {
 			const edgeCenter = center.add(Vector.unit(edge).multiply(WorldData.TILE_ACCENT_RADIUS));
-			if(!TowerTile.isEdgeBasicSolid(world.originalTiles.get(position.add(Vector.unit(edge))), Directions.opposite[edge])) {
+			if(!TowerTile.isEdgeBasicSolid(tiles.get(position.add(Vector.unit(edge))), Directions.opposite[edge])) {
 				const vertex1 = edgeCenter.add(Vector.unit(direction).multiply(-(WorldData.TILE_SIZE / 2 - WorldData.TILE_ACCENT_INSET * (1 + Math.SQRT2))));
-				const vertex2 = edgeCenter.add(Vector.unit(direction).multiply(TowerTile.getAccentLength(position, edge, direction, world)));
+				const vertex2 = edgeCenter.add(Vector.unit(direction).multiply(TowerTile.getAccentLength(position, edge, direction, tiles)));
 				canvasIO.strokeLine(vertex1.x, vertex1.y, vertex2.x, vertex2.y);
 			}
 		}
 	}
-	static getSlopeAccentLength(position: Vector, adjacentDirection: Direction, perpendicularDirection: Direction, world: World) {
-		const angle = TowerTile.angle(position, adjacentDirection, perpendicularDirection, false, world.originalTiles);
+	static getSlopeAccentLength(position: Vector, adjacentDirection: Direction, perpendicularDirection: Direction, tiles: Tiles) {
+		const angle = TowerTile.angle(position, adjacentDirection, perpendicularDirection, false, tiles);
 		const defaultLength = WorldData.TILE_SIZE / Math.SQRT2 + WorldData.TILE_ACCENT_INSET * (1 + Math.SQRT2);
 		return ({
 			0: WorldData.TILE_SIZE / Math.SQRT2 - WorldData.TILE_ACCENT_INSET * (1 + Math.SQRT2),
@@ -84,8 +83,8 @@ export class TowerTile extends BasicTile {
 			225: WorldData.TILE_SIZE / Math.SQRT2 + WorldData.TILE_ACCENT_INSET,
 		} as { [key: number]: number } )[angle] ?? defaultLength;
 	}
-	static getAccentLength(position: Vector, side: Direction, direction: Direction, world: World): number {
-		const angle = TowerTile.angle(position, direction, side, false, world.originalTiles);
+	static getAccentLength(position: Vector, side: Direction, direction: Direction, tiles: Tiles): number {
+		const angle = TowerTile.angle(position, direction, side, false, tiles);
 		const defaultLength = WorldData.TILE_SIZE / 2 + WorldData.TILE_ACCENT_INSET * (Math.SQRT2 + 1);
 		return ({
 			0: WorldData.TILE_ACCENT_RADIUS,
@@ -95,19 +94,19 @@ export class TowerTile extends BasicTile {
 			180: WorldData.TILE_SIZE / 2 + WorldData.TILE_ACCENT_INSET,
 		} as { [ key: number]: number } )[angle] ?? defaultLength;
 	}
-	static displayTileAccent(position: Vector, canvasIO: CanvasIO, world: World) {
+	static displayTileAccent(position: Vector, canvasIO: CanvasIO, tiles: Tiles) {
 		canvasIO.ctx.strokeStyle = WorldData.TILE_ACCENT_COLOR;
 		canvasIO.ctx.lineWidth = WorldData.TILE_ACCENT_THICKNESS;
 		canvasIO.ctx.lineCap = "butt";
 
 		const center = position.multiply(WorldData.TILE_SIZE).add(WorldData.TILE_SIZE / 2, WorldData.TILE_SIZE / 2);
 		for(const side of Directions.DIRECTIONS) {
-			const adjacentTile = world.originalTiles.get(position.add(Vector.unit(side)));
+			const adjacentTile = tiles.get(position.add(Vector.unit(side)));
 			if(TowerTile.isEdgeBasicSolid(adjacentTile, Directions.opposite[side])) { continue; }
 
 			const edgeCenter = center.add(Vector.unit(side).multiply(WorldData.TILE_ACCENT_RADIUS));
 			for(const direction of [Directions.rotateClockwise[side], Directions.rotateCounterclockwise[side]] as Direction[]) {
-				const length = this.getAccentLength(position, side, direction, world);
+				const length = this.getAccentLength(position, side, direction, tiles);
 				canvasIO.strokeLine(
 					edgeCenter.x, edgeCenter.y,
 					edgeCenter.x + Vector.unit(direction).x * length,

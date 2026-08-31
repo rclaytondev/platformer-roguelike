@@ -7,7 +7,6 @@ import { GeomUtils } from "../game-utilities/GeomUtils.mjs";
 import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
-import { World } from "../world/World.mjs";
 import { Tile } from "./Tile.mjs";
 
 export class Platform extends Tile {
@@ -16,8 +15,8 @@ export class Platform extends Tile {
 	}
 	static readonly PLATFORM = new Platform();
 
-	render(position: Vector, world: World): Renderable[] {
-		return [new Renderable(c => this.display(c, position.x, position.y, world.tiles), "tile")];
+	render(position: Vector, tiles: Tiles): Renderable[] {
+		return [new Renderable(c => this.display(c, position.x, position.y, tiles), "tile")];
 	}
 	display(canvasIO: CanvasIO, x: number, y: number, tiles: Tiles): void {
 		canvasIO.ctx.fillStyle = WorldData.TILE_COLORS.tower;

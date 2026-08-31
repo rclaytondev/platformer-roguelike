@@ -3,7 +3,7 @@ import { Diagonal, Directions } from "../../utils-ts/modules/geometry/Direction.
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
 import { WorldData } from "../constants/GameData.mjs";
 import { Renderable } from "../world/Renderer.mjs";
-import { World } from "../world/World.mjs";
+import { Tiles } from "../world/Tiles.mjs";
 import { SlopeTile } from "./SlopeTile.mjs";
 import { TowerTile } from "./TowerTile.mjs";
 
@@ -25,10 +25,10 @@ export class TowerSlope extends SlopeTile {
 		}[normal];
 	}
 
-	render(position: Vector, world: World) {
+	render(position: Vector, tiles: Tiles) {
 		return [
 			new Renderable(c => this.display(c, position.x, position.y), "tile"),
-			new Renderable(c => this.displayAccent(position, c, world), "tile-accent"),
+			new Renderable(c => this.displayAccent(position, c, tiles), "tile-accent"),
 		];
 	}
 	display(canvasIO: CanvasIO, x: number, y: number): void {
@@ -37,8 +37,8 @@ export class TowerSlope extends SlopeTile {
 		this.addToPath(new Vector(x, y), canvasIO);
 		canvasIO.ctx.fill();
 	}
-	displayAccent(position: Vector, canvasIO: CanvasIO, world: World) {
-		TowerTile.displaySlopedAccent(position, canvasIO, this.normal, world);
+	displayAccent(position: Vector, canvasIO: CanvasIO, tiles: Tiles) {
+		TowerTile.displaySlopedAccent(position, canvasIO, this.normal, tiles);
 	}
 
 	copy() {

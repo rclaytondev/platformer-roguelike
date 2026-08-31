@@ -1,8 +1,5 @@
 import { Diagonal, Directions } from "../../utils-ts/modules/geometry/Direction.mjs";
-import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
-import { World } from "../world/World.mjs";
 import { SlopeTile } from "./SlopeTile.mjs";
-import { StoneTileRenderer } from "./StoneTile.mjs";
 import { Tile } from "./Tile.mjs";
 
 export class StoneSlope extends SlopeTile {
@@ -15,13 +12,7 @@ export class StoneSlope extends SlopeTile {
 		super(normal);
 	}
 
-	render(tilePosition: Vector, world: World) {
-		const stoneTileRenderer = world.staticEntities.entitiesList.find(e => e instanceof StoneTileRenderer);
-		if(!stoneTileRenderer) {
-			world.staticEntities.entitiesList.push(new StoneTileRenderer());
-		}
-		return [];
-	}
+	render() { return []; }
 	display() { }
 
 	copy() { return this; }

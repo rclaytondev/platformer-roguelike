@@ -7,10 +7,9 @@ import { Octants } from "../game-utilities/Octant.mjs";
 import { Collideable } from "../game-utilities/physics-engine/Collideable.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { Tiles } from "../world/Tiles.mjs";
-import { World } from "../world/World.mjs";
 
 export abstract class Tile {
-	abstract render(position: Vector, world: World): Renderable[];
+	abstract render(position: Vector, tiles: Tiles): Renderable[];
 	abstract display(canvasIO: CanvasIO, x: number, y: number, tiles: Tiles): void;
 	abstract copy(): Tile;
 	abstract reflect(): Tile;
