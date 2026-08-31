@@ -1,10 +1,6 @@
 import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
-import { MathUtils } from "../../utils-ts/modules/math/MathUtils.mjs";
-import { World } from "../world/World.mjs";
 import { GeomUtils } from "./GeomUtils.mjs";
-import { Particle, ParticleSettings } from "./Particle.mjs";
-import { RandomUtils } from "./RandomUtils.mjs";
 
 type Color = { red: number, green: number, blue: number };
 
@@ -117,29 +113,5 @@ export class GraphicsUtils {
 			ctx.drawImage(element, 0, 0, width, height);
 		};
 		return canvas;
-	}
-
-
-	static shatterParticles(display: (canvasIO: CanvasIO) => void, world: World, position: Vector, pieces: number, maxVelocity: number, angleEvenness: number, settings: ParticleSettings) {
-		const angles = RandomUtils.randomEvenlySpaced({
-			generate: () => RandomUtils.random(0, 2 * Math.PI),
-			metric: MathUtils.dist,
-			amount: pieces - 1,
-			trials: angleEvenness,
-		}).sort((a, b) => a - b);
-
-		for(const [i, angle] of [0, ...angles, 2 * Math.PI].entries()) {
-			const next = angles[i + 1];
-			if(typeof next !== "number") { break; }
-			const velocity = new Vector(Math.cos(-(angle + next) / 2), -Math.sin(-(angle + next) / 2)).multiply(maxVelocity);
-			const displaySector = (canvasIO: CanvasIO) => {
-				canvasIO.ctx.save();
-				canvasIO.clipArc(0, 0, 100, angle, next);
-				canvasIO.ctx.translate(-position.x, -position.y);
-				display(canvasIO);
-				canvasIO.ctx.restore();
-			};
-			world.particles.add(new Particle(position, velocity, { ...settings, shape: displaySector, rotation: 0 }), world);
-		}
 	}
 }

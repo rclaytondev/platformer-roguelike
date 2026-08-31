@@ -172,10 +172,10 @@ export class Spikeball extends RectangularCollideable {
 		const collidingObject = collision.collidingObject(this);
 		if(collision.movingObject === this && !(collidingObject instanceof Player)) {
 			this.bounces --;
-			if(collidingObject instanceof Spikeball) {
+			if(this.bounces > 0 && collidingObject instanceof Spikeball) {
 				this.bounceOffSpikeball(collidingObject, collision.direction);
 			}
-			else {
+			else if(this.bounces > 0) {
 				this.bounce(collision.direction);
 			}
 		}
@@ -212,8 +212,7 @@ export class Spikeball extends RectangularCollideable {
 	update() {
 		this.state.update(this);
 		if(this.bounces < 0) {
-			this.world.entities.delete(this);
-			this.die();
+			this.destroy(this.hitbox);
 		}
 		this.age ++;
 		if(this.age > (WorldData.TILE_SIZE - 2 * SpikeballData.RADIUS) / SpikeballData.SPEED) {
@@ -242,17 +241,5 @@ export class Spikeball extends RectangularCollideable {
 				this.hitbox = hitbox;
 			}
 		}
-	}
-
-	die() {
-		GraphicsUtils.shatterParticles(
-			(canvasIO: CanvasIO) => this.display(canvasIO),
-			this.world,
-			this.hitbox.center(),
-			SpikeballData.SHATTER_PIECES,
-			SpikeballData.SHATTER_PARTICLE_SPEED,
-			SpikeballData.SHATTER_ANGLE_EVENNESS,
-			SpikeballData.SHATTER_PARTICLE_SETTINGS,
-		);
 	}
 }
