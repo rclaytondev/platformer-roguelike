@@ -1,5 +1,6 @@
 import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
+import { RenderingID } from "../constants/RenderingOrder.mjs";
 import { Renderable } from "../world/Renderer.mjs";
 import { GraphicsUtils } from "./GraphicsUtils.mjs";
 import { RandomUtils } from "./RandomUtils.mjs";
@@ -22,6 +23,7 @@ export type ParticleSettings = {
 	glowSize?: number | Range;
 	glowIntensity?: number | Range;
 	grayscaleColorVariance?: number;
+	renderingID?: RenderingID;
 };
 
 export class Particle {
@@ -42,6 +44,7 @@ export class Particle {
 	glowSize: number;
 	glowIntensity: number;
 	thickness: number;
+	renderingID: RenderingID;
 
 	static randomize(info: number | Range) {
 		if(typeof info === "number") {
@@ -81,11 +84,12 @@ export class Particle {
 		this.glowSize = Particle.randomize(settings.glowSize ?? 0);
 		this.glowIntensity = Particle.randomize(settings.glowIntensity ?? 1);
 		this.thickness = Particle.randomize(settings.thickness ?? 1);
+		this.renderingID = settings.renderingID ?? "particle";
 	}
 
 	render() {
 		return [
-			new Renderable(this.display.bind(this), "particle"),
+			new Renderable(this.display.bind(this), this.renderingID),
 			new Renderable(this.displayGlow.bind(this), "glow"),
 		];
 	}

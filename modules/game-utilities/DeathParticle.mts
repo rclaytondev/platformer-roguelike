@@ -27,6 +27,7 @@ export class DeathParticle extends Particle {
 					min: -DeathParticleData.ROTATION_AMOUNT,
 					max: DeathParticleData.ROTATION_AMOUNT,
 				},
+				renderingID: "death-particle",
 				shape: (c: CanvasIO) => this.displayDeathParticle(c),
 			},
 		);

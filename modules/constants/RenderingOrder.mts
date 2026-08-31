@@ -14,6 +14,7 @@ export const RENDERING_ORDER = [
 	"tile",
 	"tile-accent",
 	"tile-entity",
+	"death-particle",
 
 	"telegraph",
 	"hitbox",
