@@ -30,7 +30,7 @@ class CollideableSpy extends RectangularCollideable {
 		this.collisions ++;
 	}
 
-	canPush(obj: Collideable | TileWithPosition): obj is Collideable {
+	canPush(obj: Collideable) {
 		if(obj instanceof CollideableSpy) {
 			return obj.pushable;
 		}

@@ -169,11 +169,7 @@ export abstract class Collideable extends Entity {
 	collidingHitboxes(entity: Collideable, offset: Vector) {
 		return this.hitboxes().map(h => h.translate(offset)).filter(h => entity.hitboxes().some(h2 => h.intersects(h2)));
 	}
-	canPush(obj: Collideable) {
-		if(obj instanceof Entity) {
-			return false; // TODO: add restrictions on what can push what
-			// return PhysicsData.CAN_PUSH[this.entityType][obj.entityType];
-		}
+	canPush(_obj: Collideable) {
 		return false;
 	}
 	canCrush(obj: Collideable) {

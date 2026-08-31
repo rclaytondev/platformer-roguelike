@@ -95,7 +95,7 @@ export class ThrowableTileEntity extends RectangularCollideable {
 		}
 	}
 
-	canPush(obj: Collideable): obj is Collideable {
+	canPush(obj: Collideable) {
 		return obj instanceof Player;
 	}
 }
