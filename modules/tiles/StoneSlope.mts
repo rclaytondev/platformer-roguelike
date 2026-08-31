@@ -15,8 +15,6 @@ export class StoneSlope extends SlopeTile {
 	render() { return []; }
 	display() { }
 
-	copy() { return this; }
-
 	reflect() {
 		const reflected = Directions.reflectX[this.normal];
 		return new StoneSlope(reflected);

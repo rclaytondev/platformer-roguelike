@@ -40,9 +40,6 @@ export class Platform extends Tile {
 	equals(tile: Tile) {
 		return tile instanceof Platform;
 	}
-	copy() {
-		return this;
-	}
 	reflect(): Platform {
 		return this;
 	}

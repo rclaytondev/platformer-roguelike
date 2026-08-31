@@ -11,7 +11,6 @@ import { Tiles } from "../world/Tiles.mjs";
 export abstract class Tile {
 	abstract render(position: Vector, tiles: Tiles): Renderable[];
 	abstract display(canvasIO: CanvasIO, x: number, y: number, tiles: Tiles): void;
-	abstract copy(): Tile;
 	abstract reflect(): Tile;
 	abstract equals(tile: Tile): boolean;
 
