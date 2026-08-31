@@ -147,7 +147,7 @@ export class World {
 	}
 	damage(hurtbox: Rectangle, damagesEntity: (e: Entity) => boolean = () => true, damagesTile: (t: Tile) => boolean = () => true) {
 		this.entities.damage(hurtbox, damagesEntity);
-		this.tiles.destroy(hurtbox, damagesTile);
+		this.tiles.destroy(hurtbox, this, damagesTile);
 	}
 
 	static intersectingSolids(tiles: TileWithPosition[], entities: Iterable<Entity>) {

@@ -76,6 +76,6 @@ export class Explosion {
 			this.position.x, this.position.y,
 			this.destructionRadius * 2,
 			this.destructionRadius * 2,
-		));
+		), world);
 	}
 }

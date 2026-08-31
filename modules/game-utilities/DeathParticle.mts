@@ -1,6 +1,8 @@
 import { CanvasIO } from "../../utils-ts/modules/CanvasIO.mjs";
 import { Vector } from "../../utils-ts/modules/geometry/Vector.mjs";
-import { DeathParticleData } from "../constants/GameData.mjs";
+import { DeathParticleData, WorldData } from "../constants/GameData.mjs";
+import { Tiles } from "../world/Tiles.mjs";
+import { TileWithPosition } from "../world/World.mjs";
 import { Entity } from "./Entity.mjs";
 import { Particle } from "./Particle.mjs";
 import { RandomUtils } from "./RandomUtils.mjs";
@@ -43,6 +45,18 @@ export class DeathParticle extends Particle {
 		image.canvas.height = boundingBox.height;
 		image.ctx.translate(image.canvas.width / 2 - position.x, image.canvas.height / 2 - position.y);
 		entity.display(image);
+		return image;
+	}
+	static fromTile(tileWithPosition: TileWithPosition) {
+		const image = DeathParticle.imageFromTile(tileWithPosition);
+		const center = tileWithPosition.position.add(0.5, 0.5).multiply(WorldData.TILE_SIZE);
+		return new DeathParticle(image, center);
+	}
+	static imageFromTile(tileWithPosition: TileWithPosition) {
+		const image = new CanvasIO();
+		image.canvas.width = WorldData.TILE_SIZE;
+		image.canvas.height = WorldData.TILE_SIZE;
+		tileWithPosition.tile.display(image, 0, 0, new Tiles());
 		return image;
 	}
 	static getFlashingImage(image: CanvasIO) {
