@@ -11,8 +11,14 @@ import { Tiles } from "../world/Tiles.mjs";
 import { Tile } from "./Tile.mjs";
 
 export abstract class BasicTile extends Tile {
+	copy() {
+		return this;
+	}
 	reflect(): BasicTile {
 		return this;
+	}
+	equals(tile: unknown) {
+		return tile instanceof BasicTile;
 	}
 
 	contains(point: Vector, tilePosition: Vector) {

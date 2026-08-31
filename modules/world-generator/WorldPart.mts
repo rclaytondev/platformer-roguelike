@@ -35,7 +35,8 @@ export class WorldPart {
 
 	add(world: World, tileOffset: Vector) {
 		for(const [tile, position] of this.tiles.entries()) {
-			world.addOriginalTile(position.add(tileOffset), tile);
+			const copy = tile.copy(); // TODO: remove this (all tiles are singletons now)
+			world.addOriginalTile(position.add(tileOffset), copy);
 		}
 		for(const entity of this.entities) {
 			entity.spawn(tileOffset, world);
