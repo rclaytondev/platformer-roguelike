@@ -41,8 +41,8 @@ export class DeathParticle extends Particle {
 	static imageFromEntity(entity: Entity, position: Vector) {
 		const boundingBox = entity.deathParticleBox();
 		const image = new CanvasIO();
-		image.canvas.width = boundingBox.width;
-		image.canvas.height = boundingBox.height;
+		image.canvas.width = Math.max(1, boundingBox.width);
+		image.canvas.height = Math.max(1, boundingBox.height);
 		image.ctx.translate(image.canvas.width / 2 - position.x, image.canvas.height / 2 - position.y);
 		entity.display(image);
 		return image;
